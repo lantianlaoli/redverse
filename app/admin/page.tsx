@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { Header } from '@/components/header';
-import { useAdminAuth } from '@/lib/admin-auth';
 import { getAllApplications, updateApplicationStatus, getNotesForApp } from '@/lib/actions';
 import { Application, Note } from '@/lib/supabase';
 import { NoteModal } from '@/components/admin/note-modal';
 
 export default function AdminDashboard() {
-  const { checkAuth, logout } = useAdminAuth();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,12 +29,14 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    if (!checkAuth()) {
-      router.push('/admin/login');
-      return;
+    if (isLoaded) {
+      if (!user || user.emailAddresses?.[0]?.emailAddress !== 'lantianlaoli@gmail.com') {
+        router.push('/');
+        return;
+      }
+      fetchApplications();
     }
-    fetchApplications();
-  }, [checkAuth, router]);
+  }, [isLoaded, user, router]);
 
   const fetchApplications = async () => {
     try {
@@ -128,7 +130,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (!checkAuth()) {
+  if (!isLoaded || !user || user.emailAddresses?.[0]?.emailAddress !== 'lantianlaoli@gmail.com') {
     return null;
   }
 
@@ -142,12 +144,9 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-gray-600 mt-2">Review and manage AI application submissions</p>
           </div>
-          <button
-            onClick={logout}
-            className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 border border-red-300 rounded-md hover:bg-red-50"
-          >
-            Logout
-          </button>
+          <div className="text-sm text-gray-600">
+            Welcome, {user.emailAddresses?.[0]?.emailAddress}
+          </div>
         </div>
 
         {isLoading ? (
@@ -159,7 +158,7 @@ export default function AdminDashboard() {
             <p className="text-red-600 mb-4">{error}</p>
             <button 
               onClick={fetchApplications}
-              className="text-sm text-red-700 hover:text-red-900 underline"
+              className="text-sm text-red-700 hover:text-red-900 underline cursor-pointer"
             >
               Try again
             </button>
@@ -200,7 +199,7 @@ export default function AdminDashboard() {
                           {app.status !== 'approved' && (
                             <button
                               onClick={() => handleStatusUpdate(app.id, 'approved')}
-                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700"
+                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 cursor-pointer"
                             >
                               Approve
                             </button>
@@ -208,7 +207,7 @@ export default function AdminDashboard() {
                           {app.status !== 'rejected' && (
                             <button
                               onClick={() => handleStatusUpdate(app.id, 'rejected')}
-                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
+                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 cursor-pointer"
                             >
                               Reject
                             </button>
@@ -216,14 +215,14 @@ export default function AdminDashboard() {
                           {app.status === 'approved' && (
                             <button
                               onClick={() => handleStatusUpdate(app.id, 'published')}
-                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
+                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
                             >
                               Publish
                             </button>
                           )}
                           <button
                             onClick={() => toggleAppExpansion(app.id)}
-                            className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                            className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
                           >
                             {expandedApp === app.id ? 'Hide Notes' : 'Manage Notes'}
                           </button>
@@ -252,7 +251,7 @@ export default function AdminDashboard() {
                                 <div className="flex space-x-2">
                                   <button 
                                     onClick={() => openNoteModal('edit', app.id, note)}
-                                    className="text-xs text-blue-600 hover:text-blue-800"
+                                    className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
                                   >
                                     Edit
                                   </button>
@@ -263,7 +262,7 @@ export default function AdminDashboard() {
                           
                           <button 
                             onClick={() => openNoteModal('create', app.id)}
-                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-black hover:bg-gray-800"
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-black hover:bg-gray-800 cursor-pointer"
                           >
                             Add New Note
                           </button>

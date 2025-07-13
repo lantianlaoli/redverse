@@ -49,39 +49,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Partners Section */}
-        <div className="py-8">
-          <div className="flex items-center justify-center space-x-16">
-            <a
-              href="https://www.repowrap.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-transform hover:scale-105"
-            >
-              <Image
-                src="/partner1.png"
-                alt="RepoWrap - AI-powered repository insights"
-                width={200}
-                height={60}
-                className="rounded-lg"
-              />
-            </a>
-            <a
-              href="https://www.textinbetween.in/text-in-between"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-transform hover:scale-105"
-            >
-              <Image
-                src="/partner2.png"
-                alt="Text in Between - Text formatting tool"
-                width={200}
-                height={60}
-                className="rounded-lg"
-              />
-            </a>
-          </div>
-        </div>
 
         {/* How it works Section */}
         <div className="py-16">

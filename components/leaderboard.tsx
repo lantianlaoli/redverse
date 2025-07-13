@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getLeaderboard } from '@/lib/actions';
 import { Application, Note } from '@/lib/supabase';
+import Image from 'next/image';
 
 interface LeaderboardItem extends Application {
   note?: Note; // Single note object, not array
@@ -59,7 +60,7 @@ export function Leaderboard() {
         <p className="text-red-600">{error}</p>
         <button 
           onClick={fetchLeaderboard}
-          className="mt-2 text-sm text-red-700 hover:text-red-900 underline"
+          className="mt-2 text-sm text-red-700 hover:text-red-900 underline cursor-pointer"
         >
           Try again
         </button>
@@ -77,87 +78,102 @@ export function Leaderboard() {
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-      <div className="grid grid-cols-1 gap-0">
-        {leaderboard.map((item, index) => (
-          <div
-            key={item.id}
-            className={`p-6 border-b border-gray-200 last:border-b-0 ${
-              index === 0 ? 'bg-yellow-50' : index === 1 ? 'bg-gray-50' : index === 2 ? 'bg-orange-50' : ''
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                  index === 1 ? 'bg-gray-400 text-gray-900' :
-                  index === 2 ? 'bg-orange-400 text-orange-900' :
-                  'bg-gray-200 text-gray-700'
-                }`}>
-                  {index + 1}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {item.name}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {item.url}
-                  </p>
-                  {item.twitter_id && (
-                    <p className="text-sm text-blue-600">
-                      @{item.twitter_id}
-                    </p>
-                  )}
-                </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {leaderboard.map((item, index) => (
+        <div
+          key={item.id}
+          className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-start space-x-4">
+            {/* Product Thumbnail */}
+            <div className="flex-shrink-0 relative">
+              <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                {item.thumbnail ? (
+                  <Image
+                    src={item.thumbnail}
+                    alt={item.name || 'Product thumbnail'}
+                    width={64}
+                    height={64}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400 text-xs">No Image</span>
+                  </div>
+                )}
               </div>
+              {/* Ranking Badge */}
+              <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                index === 1 ? 'bg-gray-400 text-gray-900' :
+                index === 2 ? 'bg-orange-400 text-orange-900' :
+                'bg-gray-200 text-gray-700'
+              }`}>
+                {index + 1}
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-gray-900 truncate">
+                {item.name}
+              </h3>
+              <p className="text-sm text-gray-500 truncate">
+                AI Application
+              </p>
+              {item.twitter_id && (
+                <p className="text-sm text-blue-600 mt-1">
+                  @{item.twitter_id}
+                </p>
+              )}
               
-              <div className="flex items-center space-x-6 text-right">
-                <div>
-                  <p className="text-sm text-gray-500">Total Engagement</p>
-                  <p className="text-xl font-bold text-gray-900">
+              {/* Engagement Stats */}
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Total Engagement</span>
+                  <span className="font-semibold text-gray-900">
                     {formatNumber(item.total_engagement)}
-                  </p>
+                  </span>
                 </div>
                 {item.note && (
                   <>
-                    <div>
-                      <p className="text-sm text-gray-500">Likes</p>
-                      <p className="text-lg font-semibold text-red-600">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Likes</span>
+                      <span className="font-semibold text-red-600">
                         {formatNumber(item.note?.likes_count)}
-                      </p>
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Saves</p>
-                      <p className="text-lg font-semibold text-yellow-600">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Saves</span>
+                      <span className="font-semibold text-yellow-600">
                         {formatNumber(item.note?.collects_count)}
-                      </p>
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Comments</p>
-                      <p className="text-lg font-semibold text-blue-600">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Comments</span>
+                      <span className="font-semibold text-blue-600">
                         {formatNumber(item.note?.comments_count)}
-                      </p>
+                      </span>
                     </div>
                   </>
                 )}
               </div>
+              
+              {/* Link to Xiaohongshu Post */}
+              {item.note?.url && (
+                <div className="mt-4">
+                  <a
+                    href={item.note?.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+                  >
+                    View Post →
+                  </a>
+                </div>
+              )}
             </div>
-            
-            {item.note?.url && (
-              <div className="mt-4">
-                <a
-                  href={item.note?.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-                >
-                  View Xiaohongshu Post →
-                </a>
-              </div>
-            )}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

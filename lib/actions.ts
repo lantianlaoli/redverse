@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
-import { supabase, Application, Note } from '@/lib/supabase';
+import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
 // Submit application server action
@@ -19,12 +19,31 @@ export async function submitApplication(formData: FormData) {
     const url = formData.get('url') as string;
     const name = formData.get('name') as string;
     const twitterId = formData.get('twitter_id') as string;
+    const thumbnailFile = formData.get('thumbnail') as File;
+    
+    console.log('Debug: Form data received:', {
+      url,
+      name,
+      twitterId,
+      thumbnailFile: thumbnailFile ? {
+        name: thumbnailFile.name,
+        size: thumbnailFile.size,
+        type: thumbnailFile.type
+      } : null
+    });
     
     // Validate required fields
-    if (!url || !name) {
+    if (!url || !name || !twitterId || !thumbnailFile || thumbnailFile.size === 0) {
+      console.log('Debug: Validation failed', {
+        hasUrl: !!url,
+        hasName: !!name,
+        hasTwitterId: !!twitterId,
+        hasThumbnailFile: !!thumbnailFile,
+        thumbnailFileSize: thumbnailFile?.size
+      });
       return {
         success: false,
-        error: 'Website URL and project name are required'
+        error: 'Website URL, project name, Twitter username, and thumbnail are required'
       };
     }
 
@@ -53,6 +72,15 @@ export async function submitApplication(formData: FormData) {
       };
     }
 
+    // Upload thumbnail image
+    const uploadResult = await uploadImage(thumbnailFile, userId);
+    if (!uploadResult.success) {
+      return {
+        success: false,
+        error: uploadResult.error || 'Failed to upload thumbnail'
+      };
+    }
+
     // Insert new application
     const { data, error } = await supabase
       .from('application')
@@ -62,6 +90,7 @@ export async function submitApplication(formData: FormData) {
         name: name.trim(),
         twitter_id: twitterId?.trim() || null,
         status: 'pending',
+        thumbnail: uploadResult.url
       })
       .select()
       .single();

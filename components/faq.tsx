@@ -35,7 +35,7 @@ export function FAQ() {
         <div key={index} className="border border-gray-200 rounded-lg">
           <button
             onClick={() => toggleFAQ(index)}
-            className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+            className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
           >
             <span className="font-medium text-gray-900">{item.question}</span>
             <span className="text-gray-500 text-xl">

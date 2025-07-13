@@ -3,31 +3,89 @@
 import { useState, useTransition } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { submitApplication } from '@/lib/actions';
+import Image from 'next/image';
+import { SubmissionSuccess } from './submission-success';
 
 interface SubmissionFormProps {
   onSuccess?: () => void;
 }
 
-export function SubmissionForm({ onSuccess }: SubmissionFormProps) {
+export function SubmissionForm({ }: SubmissionFormProps) {
   const { user } = useUser();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [projectName, setProjectName] = useState('');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const extractProjectName = (url: string): string => {
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.replace(/^www\./, '');
+      const domain = hostname.split('.')[0];
+      return domain;
+    } catch {
+      return '';
+    }
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    if (url && !projectName) {
+      const extractedName = extractProjectName(url);
+      if (extractedName) {
+        setProjectName(extractedName);
+      }
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setMessage({
+          type: 'error',
+          text: 'Image size must be less than 2MB'
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setMessage({
+          type: 'error',
+          text: 'File must be an image'
+        });
+        return;
+      }
+
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (formData: FormData) => {
     startTransition(async () => {
       setMessage(null);
       
+      // Manually add the selected image to FormData
+      if (selectedImage) {
+        formData.set('thumbnail', selectedImage);
+      }
+      
       const result = await submitApplication(formData);
       
       if (result.success) {
-        setMessage({
-          type: 'success',
-          text: 'Submission successful! Your AI application has entered our review queue.'
-        });
-        onSuccess?.();
-        // Reset form
-        const form = document.getElementById('submission-form') as HTMLFormElement;
-        form?.reset();
+        setShowSuccess(true);
+        // Don't call onSuccess here - we want user to manually navigate
       } else {
         setMessage({
           type: 'error',
@@ -37,17 +95,28 @@ export function SubmissionForm({ onSuccess }: SubmissionFormProps) {
     });
   };
 
+  const handleReset = () => {
+    setShowSuccess(false);
+    setMessage(null);
+    setProjectName('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    const form = document.getElementById('submission-form') as HTMLFormElement;
+    form?.reset();
+  };
+
   if (!user) {
     return (
-      <div className="flex items-center space-x-4">
-        <button className="rounded-full bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 transition-colors">
+      <div className="flex items-center">
+        <button className="rounded-full bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 transition-colors cursor-pointer">
           Submit Application
-        </button>
-        <button className="text-base font-medium text-gray-700 hover:text-gray-900 transition-colors">
-          View Examples
         </button>
       </div>
     );
+  }
+
+  if (showSuccess) {
+    return <SubmissionSuccess onReset={handleReset} />;
   }
 
   return (
@@ -64,6 +133,7 @@ export function SubmissionForm({ onSuccess }: SubmissionFormProps) {
               name="url"
               required
               placeholder="https://your-ai-app.com"
+              onChange={handleUrlChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition-colors"
             />
           </div>
@@ -77,6 +147,8 @@ export function SubmissionForm({ onSuccess }: SubmissionFormProps) {
               id="name"
               name="name"
               required
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
               placeholder="Your AI App Name"
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition-colors"
             />
@@ -85,30 +157,95 @@ export function SubmissionForm({ onSuccess }: SubmissionFormProps) {
 
         <div>
           <label htmlFor="twitter_id" className="block text-sm font-medium text-gray-700 mb-2">
-            Twitter Username <span className="text-gray-400">(optional)</span>
+            Twitter Username *
           </label>
-          <input
-            type="text"
-            id="twitter_id"
-            name="twitter_id"
-            placeholder="your_twitter_handle"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition-colors"
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-gray-500 text-base">@</span>
+            </div>
+            <input
+              type="text"
+              id="twitter_id"
+              name="twitter_id"
+              required
+              placeholder="username"
+              className="w-full rounded-lg border border-gray-300 pl-8 pr-4 py-3 text-gray-900 placeholder-gray-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition-colors"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Product Thumbnail *
+          </label>
+          <div
+            className={`relative border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer hover:border-gray-400 ${
+              imagePreview ? 'border-gray-300 bg-gray-50' : 'border-gray-300 hover:bg-gray-50'
+            }`}
+            onClick={() => document.getElementById('thumbnail')?.click()}
+          >
+            <input
+              type="file"
+              id="thumbnail"
+              name="thumbnail"
+              accept="image/*"
+              required
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            
+            {imagePreview ? (
+              <div className="flex flex-col items-center">
+                <div className="relative w-24 h-24 mb-4 rounded-lg overflow-hidden">
+                  <Image
+                    src={imagePreview}
+                    alt="Thumbnail preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <p className="text-sm text-gray-600 text-center">
+                  {selectedImage?.name}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Click to change image
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <svg
+                  className="w-12 h-12 text-gray-400 mb-4"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 font-medium">
+                    Click to upload product image
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PNG, JPG up to 2MB
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center">
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-full bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="rounded-full bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             {isPending ? 'Submitting...' : 'Submit Application'}
-          </button>
-          <button 
-            type="button"
-            className="text-base font-medium text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            View Examples
           </button>
         </div>
 

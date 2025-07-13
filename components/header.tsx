@@ -1,17 +1,11 @@
 'use client';
 
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { isAdminAuthenticated } from '@/lib/admin-auth';
 
 export function Header() {
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    setIsAdmin(isAdminAuthenticated());
-  }, []);
+  const { user } = useUser();
 
   return (
     <header className="bg-white py-4">
@@ -36,16 +30,23 @@ export function Header() {
             </div>
             
             <div className="flex items-center space-x-6">
-              <Link href="/#leaderboard" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              <Link href="/#leaderboard" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer">
                 Leaderboard
               </Link>
-              <Link href={isAdmin ? "/admin" : "/admin/login"} className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-                Admin
-              </Link>
+              {user && (
+                <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer">
+                  My Applications
+                </Link>
+              )}
+              {user?.emailAddresses?.[0]?.emailAddress === 'lantianlaoli@gmail.com' && (
+                <Link href="/admin" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer">
+                  Admin
+                </Link>
+              )}
               
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors">
+                  <button className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors cursor-pointer">
                     Sign In
                   </button>
                 </SignInButton>
