@@ -222,8 +222,14 @@ export function Leaderboard() {
       
       {/* Update Time Notice */}
       <div className="mt-8 text-center">
-        <p className="text-sm text-gray-500">
-          数据每日东八区8点更新
+        <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
+          <span>The data is updated daily at 8:00 in the East Eighth District</span>
+          <span 
+            className="cursor-help text-gray-500 hover:text-gray-700" 
+            title="Data refresh time: 8:00 AM Beijing Time (UTC+8)"
+          >
+            ❓
+          </span>
         </p>
       </div>
     </div>
