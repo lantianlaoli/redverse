@@ -12,7 +12,6 @@ export interface Application {
   name: string | null;
   url: string | null;
   twitter_id: string | null;
-  status: string | null;
   user_id: string | null;
   thumbnail: string | null;
 }

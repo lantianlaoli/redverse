@@ -89,7 +89,6 @@ export async function submitApplication(formData: FormData) {
         url: url.trim(),
         name: name.trim(),
         twitter_id: twitterId?.trim() || null,
-        status: 'pending',
         thumbnail: uploadResult.url
       })
       .select()
@@ -172,11 +171,10 @@ export async function getLeaderboard(): Promise<{
   error?: string;
 }> {
   try {
-    // Step 1: Query published applications
+    // Step 1: Query all applications
     const { data: applications, error: appError } = await supabase
       .from('application')
       .select('*')
-      .eq('status', 'published')
       .order('created_at', { ascending: false });
 
     if (appError) {
@@ -218,10 +216,11 @@ export async function getLeaderboard(): Promise<{
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )[0];
 
+        // Weighted engagement calculation: collects (3x), comments (2x), likes (1x)
         const totalEngagement = mostRecentNote ? 
-          (mostRecentNote.likes_count || 0) + 
-          (mostRecentNote.collects_count || 0) + 
-          (mostRecentNote.comments_count || 0) : 0;
+          (mostRecentNote.likes_count || 0) * 1 + 
+          (mostRecentNote.collects_count || 0) * 3 + 
+          (mostRecentNote.comments_count || 0) * 2 : 0;
         
         return {
           ...app,

@@ -230,7 +230,7 @@ export function AllApplicationsView() {
                       className="rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-15 h-15 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg flex items-center justify-center">
                       <FileText className="w-6 h-6 text-blue-500" />
                     </div>
                   )}

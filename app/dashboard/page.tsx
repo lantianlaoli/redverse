@@ -38,18 +38,6 @@ export default function Dashboard() {
     }
   };
 
-  const getStatusBadge = (status: string | null) => {
-    switch (status) {
-      case 'approved':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>;
-      case 'rejected':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejected</span>;
-      case 'published':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Published</span>;
-      default:
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending Review</span>;
-    }
-  };
 
   if (!user) {
     return (
@@ -71,7 +59,7 @@ export default function Dashboard() {
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
-          <p className="text-gray-600 mt-2">Manage your submitted AI applications and view review status</p>
+          <p className="text-gray-600 mt-2">Manage your submitted AI applications</p>
         </div>
 
         {isLoading ? (
@@ -119,7 +107,6 @@ export default function Dashboard() {
                         )}
                       </div>
                       <div className="flex items-center space-x-4">
-                        {getStatusBadge(app.status)}
                         <div className="text-sm text-gray-500">
                           {new Date(app.created_at).toLocaleDateString('en-US')}
                         </div>
