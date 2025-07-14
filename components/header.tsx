@@ -3,14 +3,15 @@
 import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
+import { SmoothScrollLink } from './smooth-scroll-link';
 
 export function Header() {
   const { user } = useUser();
 
   return (
-    <header className="bg-white py-4">
+    <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md py-4 z-50 border-b border-gray-100">
       <div className="mx-auto max-w-4xl px-6">
-        <div className="bg-white border border-gray-200 rounded-2xl px-6 py-3">
+        <div className="bg-white/90 backdrop-blur border border-gray-200 rounded-2xl px-6 py-3 animate-fadeIn shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Link href="/" className="flex items-center space-x-3">
@@ -30,16 +31,37 @@ export function Header() {
             </div>
             
             <div className="flex items-center space-x-6">
-              <Link href="/#leaderboard" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer">
+              <SmoothScrollLink 
+                href="/#leaderboard" 
+                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+              >
                 Leaderboard
-              </Link>
+              </SmoothScrollLink>
+              <SmoothScrollLink 
+                href="/#pricing" 
+                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+              >
+                Pricing
+              </SmoothScrollLink>
+              <SmoothScrollLink 
+                href="/#how-it-works" 
+                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+              >
+                How it works
+              </SmoothScrollLink>
+              <SmoothScrollLink 
+                href="/#questions" 
+                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+              >
+                Questions
+              </SmoothScrollLink>
               {user && (
-                <Link href="/dashboard" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer">
+                <Link href="/dashboard" className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1">
                   My Applications
                 </Link>
               )}
               {user?.emailAddresses?.[0]?.emailAddress === 'lantianlaoli@gmail.com' && (
-                <Link href="/admin" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer">
+                <Link href="/admin" className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1">
                   Admin
                 </Link>
               )}

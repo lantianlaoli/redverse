@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getLeaderboard } from '@/lib/actions';
 import { Application, Note } from '@/lib/supabase';
 import Image from 'next/image';
+import { ScrollAnimation } from './scroll-animation';
 
 interface LeaderboardItem extends Application {
   note?: Note; // Single note object, not array
@@ -70,20 +71,22 @@ export function Leaderboard() {
 
   if (leaderboard.length === 0) {
     return (
-      <div className="bg-gray-50 rounded-lg p-8 text-center">
-        <p className="text-gray-500">No published application data yet</p>
-        <p className="text-sm text-gray-400 mt-2">Be the first app on the leaderboard!</p>
-      </div>
+      <ScrollAnimation animation="fadeIn">
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <p className="text-gray-500">No published application data yet</p>
+          <p className="text-sm text-gray-400 mt-2">Be the first app on the leaderboard!</p>
+        </div>
+      </ScrollAnimation>
     );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {leaderboard.map((item, index) => (
-        <div
-          key={item.id}
-          className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-        >
+        <ScrollAnimation key={item.id} animation="fadeInUp" delay={index * 100}>
+          <div
+            className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-300 hover-lift"
+          >
           <div className="flex items-start space-x-4">
             {/* Product Thumbnail */}
             <div className="flex-shrink-0 relative">
@@ -172,7 +175,8 @@ export function Leaderboard() {
               )}
             </div>
           </div>
-        </div>
+          </div>
+        </ScrollAnimation>
       ))}
     </div>
   );

@@ -281,39 +281,6 @@ export async function getAllApplications(): Promise<{
   }
 }
 
-export async function updateApplicationStatus(appId: string, status: string): Promise<{
-  success: boolean;
-  error?: string;
-}> {
-  try {
-    const { error } = await supabase
-      .from('application')
-      .update({ status })
-      .eq('id', appId);
-
-    if (error) {
-      console.error('Database error:', error);
-      return {
-        success: false,
-        error: 'Failed to update application status'
-      };
-    }
-
-    // Revalidate relevant pages
-    revalidatePath('/admin');
-    revalidatePath('/');
-    revalidatePath('/dashboard');
-
-    return { success: true };
-
-  } catch (error) {
-    console.error('Update application status error:', error);
-    return {
-      success: false,
-      error: 'Something went wrong. Please try again.'
-    };
-  }
-}
 
 export async function createNote(appId: string, formData: FormData): Promise<{
   success: boolean;
@@ -488,3 +455,119 @@ export async function getNotesForApp(appId: string): Promise<{
     };
   }
 }
+
+export async function deleteApplication(appId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    // First delete all notes associated with this application
+    const { error: notesError } = await supabase
+      .from('note')
+      .delete()
+      .eq('app_id', appId);
+
+    if (notesError) {
+      console.error('Failed to delete associated notes:', notesError);
+      return {
+        success: false,
+        error: 'Failed to delete associated notes'
+      };
+    }
+
+    // Then delete the application
+    const { error: appError } = await supabase
+      .from('application')
+      .delete()
+      .eq('id', appId);
+
+    if (appError) {
+      console.error('Database error:', appError);
+      return {
+        success: false,
+        error: 'Failed to delete application'
+      };
+    }
+
+    // Revalidate relevant pages
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('Delete application error:', error);
+    return {
+      success: false,
+      error: 'Something went wrong. Please try again.'
+    };
+  }
+}
+
+// New Admin Dashboard Functions
+
+
+export async function getApplicationsByTwitter(): Promise<{
+  success: boolean;
+  twitterGroups?: Array<{
+    twitterId: string;
+    applications: Application[];
+    totalCount: number;
+  }>;
+  error?: string;
+}> {
+  try {
+    const { data: applications, error } = await supabase
+      .from('application')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Database error:', error);
+      return {
+        success: false,
+        error: 'Failed to fetch applications'
+      };
+    }
+
+    if (!applications || applications.length === 0) {
+      return {
+        success: true,
+        twitterGroups: []
+      };
+    }
+
+    // Group by twitter_id
+    const groupedByTwitter = applications.reduce((groups, app) => {
+      const twitterId = app.twitter_id || 'unknown';
+      if (!groups[twitterId]) {
+        groups[twitterId] = [];
+      }
+      groups[twitterId].push(app);
+      return groups;
+    }, {} as { [key: string]: Application[] });
+
+    // Transform to required format
+    const twitterGroups = Object.entries(groupedByTwitter).map(([twitterId, apps]) => {
+      return {
+        twitterId,
+        applications: apps as Application[],
+        totalCount: (apps as Application[]).length,
+      };
+    }).sort((a, b) => b.totalCount - a.totalCount); // Sort by application count
+
+    return {
+      success: true,
+      twitterGroups
+    };
+
+  } catch (error) {
+    console.error('Get applications by Twitter error:', error);
+    return {
+      success: false,
+      error: 'Something went wrong. Please try again.'
+    };
+  }
+}
+

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ScrollAnimation } from './scroll-animation';
 
 interface FAQItem {
   question: string;
@@ -32,7 +33,8 @@ export function FAQ() {
   return (
     <div className="space-y-4">
       {faqData.map((item, index) => (
-        <div key={index} className="border border-gray-200 rounded-lg">
+        <ScrollAnimation key={index} animation="fadeInUp" delay={index * 100}>
+          <div className="border border-gray-200 rounded-lg hover-lift transition-all duration-300">
           <button
             onClick={() => toggleFAQ(index)}
             className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer"
@@ -51,7 +53,8 @@ export function FAQ() {
               <p className="text-gray-600 leading-relaxed">{item.answer}</p>
             </div>
           </div>
-        </div>
+          </div>
+        </ScrollAnimation>
       ))}
     </div>
   );

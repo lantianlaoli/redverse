@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createNote, updateNote, deleteNote } from '@/lib/actions';
 import { Note } from '@/lib/supabase';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface NoteModalProps {
   isOpen: boolean;
@@ -14,15 +15,39 @@ interface NoteModalProps {
 }
 
 export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: NoteModalProps) {
+  // 获取当前日期作为默认发布时间
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
     url: note?.url || '',
-    publish_date: note?.publish_date ? new Date(note.publish_date).toISOString().split('T')[0] : '',
+    publish_date: note?.publish_date ? new Date(note.publish_date).toISOString().split('T')[0] : getTodayDate(),
     likes_count: note?.likes_count?.toString() || '0',
     collects_count: note?.collects_count?.toString() || '0',
     comments_count: note?.comments_count?.toString() || '0',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // 当模态框打开且为创建模式时，重置表单并设置默认日期
+  useEffect(() => {
+    if (isOpen && mode === 'create') {
+      setFormData({
+        url: '',
+        publish_date: getTodayDate(),
+        likes_count: '0',
+        collects_count: '0',
+        comments_count: '0',
+      });
+    }
+    if (!isOpen) {
+      setShowDeleteConfirm(false);
+      setError('');
+    }
+  }, [isOpen, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +83,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
   };
 
   const handleDelete = async () => {
-    if (!note || !confirm('Are you sure you want to delete this note?')) return;
+    if (!note) return;
 
     setIsLoading(true);
     try {
@@ -79,8 +104,8 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div className="fixed inset-0 backdrop-blur-md overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-6 border border-gray-200 w-96 shadow-xl rounded-xl bg-white/90 backdrop-blur-sm">
         <div className="mt-3">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             {mode === 'create' ? 'Add New Note' : 'Edit Note'}
@@ -97,7 +122,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
                 required
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
                 placeholder="https://www.xiaohongshu.com/..."
               />
             </div>
@@ -111,7 +136,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
                 id="publish_date"
                 value={formData.publish_date}
                 onChange={(e) => setFormData({ ...formData, publish_date: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
               />
             </div>
 
@@ -126,7 +151,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
                   min="0"
                   value={formData.likes_count}
                   onChange={(e) => setFormData({ ...formData, likes_count: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
                 />
               </div>
 
@@ -140,7 +165,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
                   min="0"
                   value={formData.collects_count}
                   onChange={(e) => setFormData({ ...formData, collects_count: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
                 />
               </div>
 
@@ -154,7 +179,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
                   min="0"
                   value={formData.comments_count}
                   onChange={(e) => setFormData({ ...formData, comments_count: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
                 />
               </div>
             </div>
@@ -168,7 +193,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
                 {mode === 'edit' && (
                   <button
                     type="button"
-                    onClick={handleDelete}
+                    onClick={() => setShowDeleteConfirm(true)}
                     disabled={isLoading}
                     className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
                   >
@@ -197,6 +222,17 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
           </form>
         </div>
       </div>
+      
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Note"
+        message="Are you sure you want to delete this note? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }
