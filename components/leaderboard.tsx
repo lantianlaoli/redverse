@@ -5,7 +5,6 @@ import { getLeaderboard } from '@/lib/actions';
 import { Application, Note } from '@/lib/supabase';
 import Image from 'next/image';
 import { ScrollAnimation } from './scroll-animation';
-import { ProgressBar } from './progress-bar';
 import { TrendingUpIcon, HeartIcon, BookmarkIcon, MessageCircleIcon, TwitterIcon } from './icons';
 
 interface LeaderboardItem extends Application {
@@ -138,79 +137,84 @@ export function Leaderboard() {
 
                   {/* Progress Bars */}
                   {item.note && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {/* Total Engagement - Most Prominent */}
-                      <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
-                        <div className="flex items-center justify-between mb-2">
+                      <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 border border-gray-200">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
                             <TrendingUpIcon className="w-5 h-5 text-gray-600" />
                             <span className="text-sm font-bold text-gray-900">Total Engagement</span>
                           </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-gray-900">
-                              {item.total_engagement.toLocaleString()}
-                            </div>
+                          <div className="text-3xl font-bold text-gray-900">
+                            {item.total_engagement.toLocaleString()}
                           </div>
                         </div>
-                        <ProgressBar
-                          value={item.total_engagement}
-                          maxValue={0}
-                          color="gray"
-                          label=""
-                          size="lg"
-                          showValue={false}
-                          className="mt-2"
-                        />
                       </div>
                       
                       {/* Individual Metrics */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-red-50 rounded-lg p-3 border border-red-100">
-                          <ProgressBar
-                            value={item.note.likes_count || 0}
-                            maxValue={0}
-                            color="red"
-                            label="Likes"
-                            icon={<HeartIcon className="w-4 h-4 text-red-500" />}
-                            size="sm"
-                          />
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div className="bg-red-50 rounded-lg p-2 border border-red-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <HeartIcon className="w-4 h-4 text-red-500" />
+                              <span className="text-xs font-medium text-gray-700">Likes</span>
+                            </div>
+                            <span className="text-lg font-bold text-gray-900">
+                              {(item.note.likes_count || 0).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-100">
-                          <ProgressBar
-                            value={item.note.collects_count || 0}
-                            maxValue={0}
-                            color="yellow"
-                            label="Saves"
-                            icon={<BookmarkIcon className="w-4 h-4 text-yellow-600" />}
-                            size="sm"
-                          />
+                        <div className="bg-yellow-50 rounded-lg p-2 border border-yellow-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <BookmarkIcon className="w-4 h-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-gray-700">Saves</span>
+                            </div>
+                            <span className="text-lg font-bold text-gray-900">
+                              {(item.note.collects_count || 0).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                          <ProgressBar
-                            value={item.note.comments_count || 0}
-                            maxValue={0}
-                            color="blue"
-                            label="Comments"
-                            icon={<MessageCircleIcon className="w-4 h-4 text-blue-500" />}
-                            size="sm"
-                          />
+                        <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <MessageCircleIcon className="w-4 h-4 text-blue-500" />
+                              <span className="text-xs font-medium text-gray-700">Comments</span>
+                            </div>
+                            <span className="text-lg font-bold text-gray-900">
+                              {(item.note.comments_count || 0).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Link to Xiaohongshu Post */}
-                  {item.note?.url && (
-                    <div className="mt-6 flex justify-end">
-                      <a
-                        href={item.note?.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                      >
-                        <span>View Post</span>
-                        <span>→</span>
-                      </a>
+                  {/* Action Buttons */}
+                  {(item.url || item.note?.url) && (
+                    <div className="mt-4 flex justify-end space-x-3">
+                      {item.url && (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center space-x-2 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+                        >
+                          <span>View Project</span>
+                          <span>→</span>
+                        </a>
+                      )}
+                      {item.note?.url && (
+                        <a
+                          href={item.note?.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                        >
+                          <span>View Post</span>
+                          <span>→</span>
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>
@@ -218,19 +222,6 @@ export function Leaderboard() {
             </div>
           </ScrollAnimation>
         ))}
-      </div>
-      
-      {/* Update Time Notice */}
-      <div className="mt-8 text-center">
-        <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-          <span>The data is updated daily at 8:00 in the East Eighth District</span>
-          <span 
-            className="cursor-help text-gray-500 hover:text-gray-700" 
-            title="Data refresh time: 8:00 AM Beijing Time (UTC+8)"
-          >
-            ❓
-          </span>
-        </p>
       </div>
     </div>
   );

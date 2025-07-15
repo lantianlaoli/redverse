@@ -12,6 +12,7 @@ interface ProgressBarProps {
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'gradient' | 'outlined';
   className?: string;
+  hideMilestone?: boolean; // Hide the /milestone display
 }
 
 export function ProgressBar({ 
@@ -22,7 +23,8 @@ export function ProgressBar({
   showValue = true, 
   size = 'md',
   variant = 'gradient',
-  className = '' 
+  className = '',
+  hideMilestone = false
 }: ProgressBarProps) {
   const [animatedWidth, setAnimatedWidth] = useState(0);
   
@@ -146,7 +148,7 @@ export function ProgressBar({
             <div className={`${sizeClasses.text} font-bold text-gray-900`}>
               {formatNumber(value)}
             </div>
-            {!isMax && value > 0 && (
+            {!isMax && value > 0 && !hideMilestone && (
               <div className="text-xs text-gray-500">
                 /{formatNumber(milestone)}
               </div>

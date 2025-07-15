@@ -78,6 +78,10 @@ export default function Home() {
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Leaderboard
               </h2>
+              <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
+                <span>The data is updated daily at 8:00 in the East Eighth District</span>
+              
+              </p>
             </div>
             
             <Leaderboard />

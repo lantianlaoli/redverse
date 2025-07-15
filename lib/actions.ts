@@ -123,7 +123,7 @@ export async function submitApplication(formData: FormData) {
 // Get user applications server action
 export async function getUserApplications(): Promise<{
   success: boolean;
-  applications?: Application[];
+  applications?: Array<Application & { note?: Note; total_engagement: number }>;
   error?: string;
 }> {
   try {
@@ -136,23 +136,68 @@ export async function getUserApplications(): Promise<{
       };
     }
 
-    const { data: applications, error } = await supabase
+    // Step 1: Get user's applications
+    const { data: applications, error: appError } = await supabase
       .from('application')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Database error:', error);
+    if (appError) {
+      console.error('Database error:', appError);
       return {
         success: false,
         error: 'Failed to fetch applications'
       };
     }
 
+    if (!applications || applications.length === 0) {
+      return {
+        success: true,
+        applications: []
+      };
+    }
+
+    // Step 2: Get all notes for these applications
+    const appIds = applications.map(app => app.id);
+    const { data: notes, error: noteError } = await supabase
+      .from('note')
+      .select('*')
+      .in('app_id', appIds);
+
+    if (noteError) {
+      console.error('Database error:', noteError);
+      return {
+        success: false,
+        error: 'Failed to fetch notes data'
+      };
+    }
+
+    // Step 3: Join data and calculate engagement
+    const applicationsWithNotes = applications.map((app: Application) => {
+      // Find the most recent note for this app
+      const appNotes = notes?.filter(note => note.app_id === app.id) || [];
+      const mostRecentNote = appNotes.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )[0];
+
+      // Weighted engagement calculation: collects (3x), comments (2x), likes (1x)
+      const totalEngagement = mostRecentNote ? 
+        (mostRecentNote.likes_count || 0) * 1 + 
+        (mostRecentNote.collects_count || 0) * 3 + 
+        (mostRecentNote.comments_count || 0) * 2 : 0;
+      
+      return {
+        ...app,
+        note: mostRecentNote,
+        total_engagement: totalEngagement,
+      };
+    })
+    .sort((a, b) => b.total_engagement - a.total_engagement);
+
     return {
       success: true,
-      applications
+      applications: applicationsWithNotes
     };
 
   } catch (error) {
