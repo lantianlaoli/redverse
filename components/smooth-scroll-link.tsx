@@ -7,16 +7,23 @@ interface SmoothScrollLinkProps {
   children: ReactNode;
   className?: string;
   offset?: number;
+  onClick?: () => void;
 }
 
 export function SmoothScrollLink({ 
   href, 
   children, 
   className = '',
-  offset = 120 // Default offset for fixed header height
+  offset = 120, // Default offset for fixed header height
+  onClick
 }: SmoothScrollLinkProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    
+    // Call the additional onClick callback if provided
+    if (onClick) {
+      onClick();
+    }
     
     // Extract the hash from href
     const targetId = href.replace('/#', '').replace('#', '');

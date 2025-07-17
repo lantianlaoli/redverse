@@ -17,26 +17,26 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      <main className="mx-auto max-w-7xl px-8 pt-24">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 md:pt-24">
         {/* Hero Section */}
-        <div className="min-h-[calc(100vh-6rem)] flex flex-col justify-center text-center py-16">
+        <div className="hero-section min-h-[calc(100vh-6rem)] flex flex-col justify-center text-center py-8 sm:py-12 md:py-16">
           {/* Profile Avatar and Status */}
-          <div className="flex flex-col items-center mb-8 animate-fadeIn">
+          <div className="flex flex-col items-center mb-6 sm:mb-8 animate-fadeIn">
             <Image
               src="/me.jpg"
               alt="Profile"
               width={80}
               height={80}
-              className="rounded-full mb-3 animate-scaleIn"
+              className="rounded-full mb-3 animate-scaleIn w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20"
             />
-            <div className="flex items-center space-x-2 border border-gray-200 rounded-full px-3 py-1 animate-fadeIn animate-delay-200">
+            <div className="flex items-center space-x-2 border border-gray-200 rounded-full px-2 sm:px-3 py-1 animate-fadeIn animate-delay-200">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-breathe"></div>
-              <span className="text-sm font-medium text-gray-700">Available for new projects</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700">Available for new projects</span>
             </div>
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight animate-fadeInUp animate-delay-300">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight animate-fadeInUp animate-delay-300 px-2">
             Bridge the AI Divide: Go Viral on{" "}
             <a 
               href="https://www.xiaohongshu.com/user/profile/646ced020000000011001e47" 
@@ -49,7 +49,7 @@ export default function Home() {
           </h1>
           
           {/* Subtitle */}
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed animate-fadeInUp animate-delay-400">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 sm:mb-10 md:mb-12 max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed animate-fadeInUp animate-delay-400 px-2">
             Submit Your Global AI Innovation. I&apos;ll Transform It Into China&apos;s Next Big Trend.
           </p>
           
@@ -57,15 +57,19 @@ export default function Home() {
           <div className="flex justify-center mb-8 animate-fadeInUp animate-delay-500">
             {user ? (
               <Link href="/submit">
-                <button className="rounded-full bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-lg button-hover">
-                  Get Started
-                </button>
+                <div className="button-hole">
+                  <button className="bouncy-button">
+                    <span className="button-text">Get Started</span>
+                  </button>
+                </div>
               </Link>
             ) : (
               <SignInButton mode="modal">
-                <button className="rounded-full bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-lg button-hover">
-                  Get Started
-                </button>
+                <div className="button-hole">
+                  <button className="bouncy-button">
+                    <span className="button-text">Get Started</span>
+                  </button>
+                </div>
               </SignInButton>
             )}
           </div>

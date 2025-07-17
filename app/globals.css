@@ -182,6 +182,8 @@ body {
   animation-delay: 600ms;
 }
 
+/* 移除了红岸工程主题的复杂样式，现在使用简洁设计 */
+
 /* Scroll triggered animations */
 .scroll-animate {
   opacity: 0;
@@ -256,5 +258,176 @@ body {
 
 .nav-link:hover::after {
   transform: scaleX(1);
+}
+
+/* === 移动端响应式优化 === */
+@media (max-width: 768px) {
+  /* Hero区域移动端优化 */
+  .hero-section {
+    min-height: calc(100vh - 4rem);
+    padding: 2rem 0;
+  }
+  
+  /* 按钮洞穴移动端优化 */
+  .button-hole {
+    padding: 6px !important;
+    border-radius: 50px !important;
+  }
+  
+  /* 按钮本体移动端优化 */
+  .bouncy-button {
+    padding: 12px 24px !important;
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Hero区域更紧凑 */
+  .hero-section {
+    min-height: calc(100vh - 3rem);
+    padding: 1.5rem 0;
+  }
+  
+  /* 按钮进一步缩小 */
+  .button-hole {
+    padding: 5px !important;
+    border-radius: 45px !important;
+  }
+  
+  .bouncy-button {
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* === 移动端导航菜单动画 === */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 300px;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    max-height: 300px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.mobile-menu-enter {
+  animation: slideDown 0.3s ease-out forwards;
+  overflow: hidden;
+}
+
+.mobile-menu-exit {
+  animation: slideUp 0.2s ease-in forwards;
+  overflow: hidden;
+}
+
+/* 菜单项逐个出现动画 */
+@keyframes fadeInStagger {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu-item {
+  animation: fadeInStagger 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+.mobile-menu-item:nth-child(1) { animation-delay: 0.05s; }
+.mobile-menu-item:nth-child(2) { animation-delay: 0.1s; }
+.mobile-menu-item:nth-child(3) { animation-delay: 0.15s; }
+.mobile-menu-item:nth-child(4) { animation-delay: 0.2s; }
+.mobile-menu-item:nth-child(5) { animation-delay: 0.25s; }
+.mobile-menu-item:nth-child(6) { animation-delay: 0.3s; }
+
+/* === 拟物化弹性按钮样式 === */
+
+/* 洞穴效果外层容器 - 黑白主题 */
+.button-hole {
+  position: relative;
+  display: inline-block;
+  padding: 8px;
+  background: linear-gradient(145deg, #f5f5f5, #e5e5e5);
+  border-radius: 60px;
+  /* 创建凹陷的洞穴效果 */
+  box-shadow: 
+    inset 4px 4px 10px rgba(0, 0, 0, 0.1),
+    inset -4px -4px 10px rgba(255, 255, 255, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 弹性按钮本体 - 黑白主题 */
+.bouncy-button {
+  position: relative;
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  border: none;
+  border-radius: 50px;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 14px 32px;
+  cursor: pointer;
+  /* 弹性动画效果 */
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* 按钮的立体效果 */
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* 默认状态：轻微悬浮在洞中 */
+  transform: translateY(-2px);
+}
+
+.bouncy-button .button-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* 悬浮状态：按钮稍微升起 */
+.bouncy-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.15);
+  /* 稍微提亮颜色 */
+  background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+}
+
+/* 按压状态：按钮完全按入洞中 */
+.bouncy-button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  /* 按压时颜色稍微变暗 */
+  background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
 }
 
