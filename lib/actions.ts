@@ -9,9 +9,17 @@ import { sendNewApplicationNotification } from './email';
 // Submit application server action
 export async function submitApplication(formData: FormData) {
   try {
+    console.log('Debug: Starting submitApplication');
+    
     const { userId } = await auth();
     
+    console.log('Debug: Authentication check', {
+      userId: userId ? `${userId.substring(0, 8)}...` : null,
+      authenticated: !!userId
+    });
+    
     if (!userId) {
+      console.log('Debug: User not authenticated');
       return {
         success: false,
         error: 'Please sign in to submit an application'
@@ -60,12 +68,34 @@ export async function submitApplication(formData: FormData) {
     }
 
     // Check if user already submitted this URL
-    const { data: existingApp } = await supabase
+    console.log('Debug: Checking for existing application', {
+      userId: userId,
+      url: url.trim(),
+      tableName: 'application'
+    });
+    
+    const { data: existingApp, error: checkError } = await supabase
       .from('application')
       .select('id')
       .eq('user_id', userId)
       .eq('url', url.trim())
       .single();
+    
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows found, which is expected
+      console.error('Debug: Error checking existing application', {
+        error: checkError,
+        errorCode: checkError.code,
+        errorMessage: checkError.message,
+        userId: userId,
+        url: url.trim()
+      });
+    } else {
+      console.log('Debug: Existing application check completed', {
+        found: !!existingApp,
+        existingAppId: existingApp?.id,
+        userId: userId
+      });
+    }
 
     if (existingApp) {
       return {
@@ -75,34 +105,75 @@ export async function submitApplication(formData: FormData) {
     }
 
     // Upload thumbnail image
+    console.log('Debug: Starting thumbnail upload', {
+      fileName: thumbnailFile.name,
+      fileSize: thumbnailFile.size,
+      fileType: thumbnailFile.type,
+      userId: userId
+    });
+    
     const uploadResult = await uploadImage(thumbnailFile, userId);
+    
     if (!uploadResult.success) {
+      console.error('Debug: Thumbnail upload failed', {
+        error: uploadResult.error,
+        fileName: thumbnailFile.name,
+        userId: userId
+      });
       return {
         success: false,
         error: uploadResult.error || 'Failed to upload thumbnail'
       };
     }
+    
+    console.log('Debug: Thumbnail upload successful', {
+      url: uploadResult.url,
+      userId: userId
+    });
 
     // Insert new application
+    const applicationData = {
+      user_id: userId,
+      url: url.trim(),
+      name: name.trim(),
+      twitter_id: twitterId?.trim() || null,
+      thumbnail: uploadResult.url
+    };
+    
+    console.log('Debug: Attempting to insert application', {
+      tableName: 'application',
+      data: applicationData,
+      userId: userId
+    });
+    
     const { data, error } = await supabase
       .from('application')
-      .insert({
-        user_id: userId,
-        url: url.trim(),
-        name: name.trim(),
-        twitter_id: twitterId?.trim() || null,
-        thumbnail: uploadResult.url
-      })
+      .insert(applicationData)
       .select()
       .single();
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Debug: Application database insert failed', {
+        error: error,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        errorHint: error.hint,
+        tableName: 'application',
+        attemptedData: applicationData,
+        userId: userId
+      });
       return {
         success: false,
-        error: 'Failed to save application'
+        error: `Failed to save application: ${error.message || error.code || 'Unknown database error'}`
       };
     }
+    
+    console.log('Debug: Application inserted successfully', {
+      applicationId: data?.id,
+      userId: userId,
+      insertedData: data
+    });
 
     // Revalidate the pages that show this data
     revalidatePath('/');
@@ -110,11 +181,21 @@ export async function submitApplication(formData: FormData) {
 
     // Send email notification (don't let email failure affect submission success)
     try {
+      console.log('Debug: Starting email notification process', {
+        userId: userId ? `${userId.substring(0, 8)}...` : null,
+        applicationId: data?.id
+      });
+      
       const client = await clerkClient();
       const user = await client.users.getUser(userId);
       const userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
       
-      await sendNewApplicationNotification({
+      console.log('Debug: User email retrieved', {
+        userEmail: userEmail !== 'Unknown' ? `${userEmail.split('@')[0]}@***` : 'Unknown',
+        hasEmail: userEmail !== 'Unknown'
+      });
+      
+      const emailResult = await sendNewApplicationNotification({
         projectName: name.trim(),
         websiteUrl: url.trim(),
         twitterUsername: twitterId?.trim() || undefined,
@@ -128,9 +209,21 @@ export async function submitApplication(formData: FormData) {
         adminDashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin`
       });
       
-      console.log('Email notification sent successfully');
+      if (emailResult.success) {
+        console.log('Debug: Email notification sent successfully');
+      } else {
+        console.error('Debug: Email notification failed', {
+          error: emailResult.error,
+          applicationId: data?.id
+        });
+      }
     } catch (emailError) {
-      console.error('Failed to send email notification (submission still successful):', emailError);
+      console.error('Debug: Email notification process failed', {
+        error: emailError,
+        errorMessage: emailError instanceof Error ? emailError.message : 'Unknown error',
+        applicationId: data?.id,
+        userId: userId ? `${userId.substring(0, 8)}...` : null
+      });
     }
 
     return {

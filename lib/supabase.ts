@@ -70,8 +70,16 @@ export async function uploadImage(file: File, userId: string): Promise<{ success
       });
 
     if (error) {
-      console.log('Debug: Supabase upload error:', error);
-      return { success: false, error: error.message };
+      console.error('Debug: Supabase storage upload failed', {
+        error: error,
+        errorMessage: error.message,
+        bucketName: 'images',
+        fileName: fileName,
+        fileSize: file.size,
+        fileType: file.type,
+        userId: userId
+      });
+      return { success: false, error: `Storage upload failed: ${error.message}` };
     }
 
     console.log('Debug: Upload successful, data:', data);
@@ -84,7 +92,15 @@ export async function uploadImage(file: File, userId: string): Promise<{ success
     console.log('Debug: Generated public URL:', publicUrl);
 
     return { success: true, url: publicUrl };
-  } catch {
-    return { success: false, error: 'Failed to upload image' };
+  } catch (error) {
+    console.error('Debug: Unexpected error in uploadImage', {
+      error: error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined,
+      fileName: file.name,
+      fileSize: file.size,
+      userId: userId
+    });
+    return { success: false, error: `Unexpected upload error: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }
