@@ -15,6 +15,8 @@ export function SubmissionForm({ }: SubmissionFormProps) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [projectName, setProjectName] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [twitterUsername, setTwitterUsername] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -32,6 +34,7 @@ export function SubmissionForm({ }: SubmissionFormProps) {
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
+    setWebsiteUrl(url);
     if (url && !projectName) {
       const extractedName = extractProjectName(url);
       if (extractedName) {
@@ -72,24 +75,47 @@ export function SubmissionForm({ }: SubmissionFormProps) {
     }
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async () => {
     startTransition(async () => {
       setMessage(null);
       
-      // Manually add the selected image to FormData
+      // Create FormData with controlled component values
+      const submissionData = new FormData();
+      submissionData.set('url', websiteUrl);
+      submissionData.set('name', projectName);
+      submissionData.set('twitter_id', twitterUsername);
+      
+      // Add the selected image to FormData
       if (selectedImage) {
-        formData.set('thumbnail', selectedImage);
+        submissionData.set('thumbnail', selectedImage);
       }
       
-      const result = await submitApplication(formData);
+      const result = await submitApplication(submissionData);
       
       if (result.success) {
         setShowSuccess(true);
         // Don't call onSuccess here - we want user to manually navigate
       } else {
+        // Provide more specific error messages based on error content
+        let errorMessage = result.error || 'Submission failed';
+        
+        if (errorMessage.includes('Storage upload failed') || errorMessage.includes('Failed to upload')) {
+          errorMessage = `Image upload failed: ${errorMessage}. Please try uploading a different image or check your internet connection.`;
+        } else if (errorMessage.includes('row-level security policy')) {
+          errorMessage = 'Database permission error. Please try signing out and signing back in, then try again.';
+        } else if (errorMessage.includes('Invalid URL')) {
+          errorMessage = 'Please enter a valid website URL (e.g., https://your-app.com)';
+        } else if (errorMessage.includes('File size')) {
+          errorMessage = 'Image file is too large. Please upload an image smaller than 2MB.';
+        } else if (errorMessage.includes('File must be an image')) {
+          errorMessage = 'Please upload a valid image file (JPG, PNG, GIF, etc.)';
+        } else if (errorMessage.includes('already submitted')) {
+          errorMessage = 'You have already submitted this application. Each URL can only be submitted once per user.';
+        }
+        
         setMessage({
           type: 'error',
-          text: result.error || 'Submission failed'
+          text: errorMessage
         });
       }
     });
@@ -99,10 +125,10 @@ export function SubmissionForm({ }: SubmissionFormProps) {
     setShowSuccess(false);
     setMessage(null);
     setProjectName('');
+    setWebsiteUrl('');
+    setTwitterUsername('');
     setSelectedImage(null);
     setImagePreview(null);
-    const form = document.getElementById('submission-form') as HTMLFormElement;
-    form?.reset();
   };
 
   if (!user) {
@@ -121,7 +147,14 @@ export function SubmissionForm({ }: SubmissionFormProps) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <form id="submission-form" action={handleSubmit} className="space-y-6">
+      <form 
+        id="submission-form" 
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }} 
+        className="space-y-6"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
@@ -132,6 +165,7 @@ export function SubmissionForm({ }: SubmissionFormProps) {
               id="url"
               name="url"
               required
+              value={websiteUrl}
               placeholder="https://your-ai-app.com"
               onChange={handleUrlChange}
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition-colors"
@@ -168,6 +202,8 @@ export function SubmissionForm({ }: SubmissionFormProps) {
               id="twitter_id"
               name="twitter_id"
               required
+              value={twitterUsername}
+              onChange={(e) => setTwitterUsername(e.target.value)}
               placeholder="username"
               className="w-full rounded-lg border border-gray-300 pl-8 pr-4 py-3 text-gray-900 placeholder-gray-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/5 transition-colors"
             />
