@@ -1,8 +1,10 @@
 'use server';
 
 import { auth } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/nextjs/server';
 import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { sendNewApplicationNotification } from './email';
 
 // Submit application server action
 export async function submitApplication(formData: FormData) {
@@ -105,6 +107,31 @@ export async function submitApplication(formData: FormData) {
     // Revalidate the pages that show this data
     revalidatePath('/');
     revalidatePath('/dashboard');
+
+    // Send email notification (don't let email failure affect submission success)
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      const userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
+      
+      await sendNewApplicationNotification({
+        projectName: name.trim(),
+        websiteUrl: url.trim(),
+        twitterUsername: twitterId?.trim() || undefined,
+        submitterEmail: userEmail,
+        submittedAt: new Date().toLocaleString('en-US', {
+          timeZone: 'UTC',
+          dateStyle: 'full',
+          timeStyle: 'short'
+        }),
+        thumbnailUrl: uploadResult.url,
+        adminDashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin`
+      });
+      
+      console.log('Email notification sent successfully');
+    } catch (emailError) {
+      console.error('Failed to send email notification (submission still successful):', emailError);
+    }
 
     return {
       success: true,
