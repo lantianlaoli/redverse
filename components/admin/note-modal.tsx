@@ -32,22 +32,32 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // 当模态框打开且为创建模式时，重置表单并设置默认日期
+  // 当模态框打开时，根据模式设置表单数据
   useEffect(() => {
-    if (isOpen && mode === 'create') {
-      setFormData({
-        url: '',
-        publish_date: getTodayDate(),
-        likes_count: '0',
-        collects_count: '0',
-        comments_count: '0',
-      });
+    if (isOpen) {
+      if (mode === 'create') {
+        setFormData({
+          url: '',
+          publish_date: getTodayDate(),
+          likes_count: '0',
+          collects_count: '0',
+          comments_count: '0',
+        });
+      } else if (mode === 'edit' && note) {
+        setFormData({
+          url: note.url || '',
+          publish_date: note.publish_date ? new Date(note.publish_date).toISOString().split('T')[0] : getTodayDate(),
+          likes_count: note.likes_count?.toString() || '0',
+          collects_count: note.collects_count?.toString() || '0',
+          comments_count: note.comments_count?.toString() || '0',
+        });
+      }
     }
     if (!isOpen) {
       setShowDeleteConfirm(false);
       setError('');
     }
-  }, [isOpen, mode]);
+  }, [isOpen, mode, note]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
