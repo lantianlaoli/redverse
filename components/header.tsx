@@ -38,7 +38,7 @@ export function Header() {
                   }}
                   priority
                 />
-                <span className="text-base sm:text-lg font-semibold text-gray-900">Redverse</span>
+                <span className="text-base sm:text-lg brand-text">Redverse</span>
               </Link>
             </div>
             

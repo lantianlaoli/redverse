@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-inter-display: var(--font-inter-display);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -429,5 +430,42 @@ body {
     inset 0 2px 4px rgba(0, 0, 0, 0.2);
   /* 按压时颜色稍微变暗 */
   background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+}
+
+/* === 品牌Logo文字样式 === */
+.brand-text {
+  font-family: var(--font-inter-display), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
+  font-size: inherit;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.brand-text:hover {
+  background: linear-gradient(135deg, #2a2a2a 0%, #5a5a5a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transform: translateY(-0.5px);
+}
+
+/* 为不支持背景裁剪的浏览器提供备用样式 */
+@supports not (-webkit-background-clip: text) {
+  .brand-text {
+    background: none;
+    -webkit-text-fill-color: initial;
+    color: #1a1a1a;
+    font-weight: 800;
+  }
+  
+  .brand-text:hover {
+    color: #2a2a2a;
+  }
 }
 

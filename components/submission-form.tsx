@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { submitApplication } from '@/lib/actions';
 import Image from 'next/image';
 import { SubmissionSuccess } from './submission-success';
+import { ContactSupport } from './contact-support';
 
 interface SubmissionFormProps {
   onSuccess?: () => void;
@@ -20,6 +21,7 @@ export function SubmissionForm({ }: SubmissionFormProps) {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showContactSupport, setShowContactSupport] = useState(false);
 
   const extractProjectName = (url: string): string => {
     try {
@@ -297,8 +299,54 @@ export function SubmissionForm({ }: SubmissionFormProps) {
                 Please follow our official Xiaohongshu account - your project will be featured here first once it goes live!
               </p>
             )}
+            {message.type === 'error' && (
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  onClick={() => setShowContactSupport(true)}
+                  className="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors border border-red-300"
+                >
+                  Contact Support
+                </button>
+              </div>
+            )}
           </div>
         )}
+        
+        {/* Contact Support Modal */}
+        {showContactSupport && (
+          <ContactSupport onClose={() => setShowContactSupport(false)} />
+        )}
+        
+        {/* Founder Contact Info */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <p className="text-sm font-medium text-gray-900 mb-2">Need help?</p>
+          <p className="text-xs text-gray-600 mb-3">
+            Contact our founder directly for any questions or issues:
+          </p>
+          <div className="flex items-center gap-4">
+            <a 
+              href="mailto:lantianlaoli@gmail.com"
+              className="inline-flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+              </svg>
+              lantianlaoli@gmail.com
+            </a>
+            <a 
+              href="https://x.com/lantianlaoli"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+              @lantianlaoli
+            </a>
+          </div>
+        </div>
       </form>
     </div>
   );

@@ -4,7 +4,40 @@ import { auth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
-import { sendNewApplicationNotification } from './email';
+import { sendNewApplicationNotification, sendBugReportEmail } from './email';
+
+// Helper function to send bug report email
+async function sendBugReport(error: string, userId: string | null, formData: FormData) {
+  try {
+    // Get user email safely
+    let userEmail = 'Unknown';
+    if (userId) {
+      try {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
+      } catch (e) {
+        console.error('Failed to get user email for bug report:', e);
+      }
+    }
+
+    const submissionData = {
+      projectName: formData.get('name') as string,
+      websiteUrl: formData.get('url') as string,
+      twitterUsername: formData.get('twitter_id') as string,
+    };
+
+    await sendBugReportEmail({
+      error,
+      userEmail,
+      timestamp: new Date().toISOString(),
+      submissionData,
+      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'Server-side'
+    });
+  } catch (emailError) {
+    console.error('Failed to send bug report email:', emailError);
+  }
+}
 
 // Submit application server action
 export async function submitApplication(formData: FormData) {
@@ -120,6 +153,14 @@ export async function submitApplication(formData: FormData) {
         fileName: thumbnailFile.name,
         userId: userId
       });
+      
+      // Send bug report email for upload failure
+      await sendBugReport(
+        `Thumbnail upload failed: ${uploadResult.error}`,
+        userId,
+        formData
+      );
+      
       return {
         success: false,
         error: uploadResult.error || 'Failed to upload thumbnail'
@@ -163,6 +204,14 @@ export async function submitApplication(formData: FormData) {
         attemptedData: applicationData,
         userId: userId
       });
+      
+      // Send bug report email for database error
+      await sendBugReport(
+        `Database insert failed: ${error.message || error.code || 'Unknown database error'}. Details: ${error.details || 'No details'}`,
+        userId,
+        formData
+      );
+      
       return {
         success: false,
         error: `Failed to save application: ${error.message || error.code || 'Unknown database error'}`
@@ -233,6 +282,14 @@ export async function submitApplication(formData: FormData) {
 
   } catch (error) {
     console.error('Submit application error:', error);
+    
+    // Send bug report email for unexpected errors
+    await sendBugReport(
+      `Unexpected error in submitApplication: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      null,
+      formData
+    );
+    
     return {
       success: false,
       error: 'Something went wrong. Please try again.'
