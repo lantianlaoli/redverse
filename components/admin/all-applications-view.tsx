@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { getAllApplications, getNotesForApp, deleteApplication, deleteNote } from '@/lib/actions';
 import { Application, Note } from '@/lib/supabase';
 import { NoteModal } from './note-modal';
+import { AppEditModal } from './app-edit-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Calendar, User, ExternalLink, Plus, FileText, Eye, Trash2 } from 'lucide-react';
+import { Calendar, User, ExternalLink, Plus, FileText, Eye, Trash2, Edit, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export function AllApplicationsView() {
@@ -24,6 +25,13 @@ export function AllApplicationsView() {
     mode: 'create',
     appId: '',
     note: null,
+  });
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    application: Application | null;
+  }>({
+    isOpen: false,
+    application: null,
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
@@ -83,12 +91,42 @@ export function AllApplicationsView() {
     }
   };
 
+  // Helper function to get missing fields
+  const getMissingFields = (app: Application) => {
+    const missing = [];
+    if (!app.twitter_id) missing.push('Twitter ID');
+    if (!app.image) missing.push('Image');
+    if (!app.explain) missing.push('Description');
+    return missing;
+  };
+
+  // Helper function to get completion percentage
+  const getCompletionPercentage = (app: Application) => {
+    const totalFields = 3; // twitter_id, image, explain
+    const missingCount = getMissingFields(app).length;
+    return Math.round(((totalFields - missingCount) / totalFields) * 100);
+  };
+
   const openNoteModal = (mode: 'create' | 'edit', appId: string, note?: Note) => {
     setNoteModal({
       isOpen: true,
       mode,
       appId,
       note,
+    });
+  };
+
+  const openEditModal = (application: Application) => {
+    setEditModal({
+      isOpen: true,
+      application,
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditModal({
+      isOpen: false,
+      application: null,
     });
   };
 
@@ -221,9 +259,9 @@ export function AllApplicationsView() {
               <div className="flex items-start space-x-4">
                 {/* Thumbnail */}
                 <div className="flex-shrink-0">
-                  {app.thumbnail ? (
+                  {app.image ? (
                     <Image
-                      src={app.thumbnail}
+                      src={app.image}
                       alt={app.name || 'Application'}
                       width={60}
                       height={60}
@@ -264,6 +302,33 @@ export function AllApplicationsView() {
                       <span>{new Date(app.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
+
+                  {/* Missing Fields Warning */}
+                  {getMissingFields(app).length > 0 && (
+                    <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md">
+                      <div className="flex items-center">
+                        <AlertCircle className="w-4 h-4 text-amber-500 mr-2 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-amber-700 font-medium">
+                            Missing: {getMissingFields(app).join(', ')}
+                          </p>
+                          <div className="mt-1 bg-amber-200 rounded-full h-1.5">
+                            <div 
+                              className="bg-amber-500 h-1.5 rounded-full transition-all"
+                              style={{ width: `${getCompletionPercentage(app)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Product Description Preview */}
+                  {app.explain && (
+                    <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                      <p className="text-xs text-gray-600 line-clamp-2">{app.explain}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -277,6 +342,15 @@ export function AllApplicationsView() {
                 </div>
                 
                 <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => openEditModal(app)}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Edit application"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit
+                  </button>
+                  
                   <button
                     onClick={() => toggleAppExpansion(app.id)}
                     className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
@@ -364,6 +438,18 @@ export function AllApplicationsView() {
         note={noteModal.note}
         mode={noteModal.mode}
       />
+
+      {editModal.application && (
+        <AppEditModal
+          isOpen={editModal.isOpen}
+          onClose={closeEditModal}
+          onSuccess={() => {
+            fetchApplications();
+            closeEditModal();
+          }}
+          application={editModal.application}
+        />
+      )}
       
       <ConfirmDialog
         isOpen={deleteConfirm.isOpen}

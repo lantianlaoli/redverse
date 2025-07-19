@@ -114,10 +114,10 @@ export default function Dashboard() {
                       
                       {/* Product Thumbnail */}
                       <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
-                        {item.thumbnail ? (
+                        {item.image ? (
                           <Image
-                            src={item.thumbnail}
-                            alt={item.name || 'Product thumbnail'}
+                            src={item.image}
+                            alt={item.name || 'Product image'}
                             width={80}
                             height={80}
                             className="object-cover w-full h-full"

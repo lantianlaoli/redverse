@@ -13,7 +13,8 @@ export interface Application {
   url: string | null;
   twitter_id: string | null;
   user_id: string | null;
-  thumbnail: string | null;
+  image: string | null;
+  explain: string | null;
 }
 
 export interface Note {

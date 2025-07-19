@@ -22,9 +22,7 @@ async function sendBugReport(error: string, userId: string | null, formData: For
     }
 
     const submissionData = {
-      projectName: formData.get('name') as string,
       websiteUrl: formData.get('url') as string,
-      twitterUsername: formData.get('twitter_id') as string,
     };
 
     await sendBugReportEmail({
@@ -60,33 +58,17 @@ export async function submitApplication(formData: FormData) {
     }
 
     const url = formData.get('url') as string;
-    const name = formData.get('name') as string;
-    const twitterId = formData.get('twitter_id') as string;
-    const thumbnailFile = formData.get('thumbnail') as File;
     
     console.log('Debug: Form data received:', {
-      url,
-      name,
-      twitterId,
-      thumbnailFile: thumbnailFile ? {
-        name: thumbnailFile.name,
-        size: thumbnailFile.size,
-        type: thumbnailFile.type
-      } : null
+      url
     });
     
-    // Validate required fields
-    if (!url || !name || !twitterId || !thumbnailFile || thumbnailFile.size === 0) {
-      console.log('Debug: Validation failed', {
-        hasUrl: !!url,
-        hasName: !!name,
-        hasTwitterId: !!twitterId,
-        hasThumbnailFile: !!thumbnailFile,
-        thumbnailFileSize: thumbnailFile?.size
-      });
+    // Validate required fields - only URL is required
+    if (!url) {
+      console.log('Debug: Validation failed - URL is required');
       return {
         success: false,
-        error: 'Website URL, project name, Twitter username, and thumbnail are required'
+        error: 'Website URL is required'
       };
     }
 
@@ -137,48 +119,26 @@ export async function submitApplication(formData: FormData) {
       };
     }
 
-    // Upload thumbnail image
-    console.log('Debug: Starting thumbnail upload', {
-      fileName: thumbnailFile.name,
-      fileSize: thumbnailFile.size,
-      fileType: thumbnailFile.type,
-      userId: userId
-    });
-    
-    const uploadResult = await uploadImage(thumbnailFile, userId);
-    
-    if (!uploadResult.success) {
-      console.error('Debug: Thumbnail upload failed', {
-        error: uploadResult.error,
-        fileName: thumbnailFile.name,
-        userId: userId
-      });
-      
-      // Send bug report email for upload failure
-      await sendBugReport(
-        `Thumbnail upload failed: ${uploadResult.error}`,
-        userId,
-        formData
-      );
-      
-      return {
-        success: false,
-        error: uploadResult.error || 'Failed to upload thumbnail'
-      };
-    }
-    
-    console.log('Debug: Thumbnail upload successful', {
-      url: uploadResult.url,
-      userId: userId
-    });
+    console.log('Debug: Skipping image upload - handled by admin backend');
+
+    // Extract project name from URL if not provided
+    const extractProjectName = (url: string): string => {
+      try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.replace(/^www\./, '');
+        const domain = hostname.split('.')[0];
+        return domain;
+      } catch {
+        return 'Unknown Project';
+      }
+    };
 
     // Insert new application
     const applicationData = {
       user_id: userId,
       url: url.trim(),
-      name: name.trim(),
-      twitter_id: twitterId?.trim() || null,
-      thumbnail: uploadResult.url
+      name: extractProjectName(url)
+      // image, explain, twitter_id will be added by admin backend
     };
     
     console.log('Debug: Attempting to insert application', {
@@ -245,16 +205,14 @@ export async function submitApplication(formData: FormData) {
       });
       
       const emailResult = await sendNewApplicationNotification({
-        projectName: name.trim(),
-        websiteUrl: url.trim(),
-        twitterUsername: twitterId?.trim() || undefined,
+        projectName: applicationData.name,
+        websiteUrl: applicationData.url,
         submitterEmail: userEmail,
         submittedAt: new Date().toLocaleString('en-US', {
           timeZone: 'UTC',
           dateStyle: 'full',
           timeStyle: 'short'
         }),
-        thumbnailUrl: uploadResult.url,
         adminDashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin`
       });
       
@@ -509,39 +467,60 @@ export async function createNote(appId: string, formData: FormData): Promise<{
   error?: string;
 }> {
   try {
+    console.log('Debug: Creating note for appId:', appId);
+    console.log('Debug: FormData keys:', Array.from(formData.keys()));
+    
     const url = formData.get('url') as string;
-    const publishDate = formData.get('publish_date') as string;
     const likesCount = parseInt(formData.get('likes_count') as string) || 0;
     const collectsCount = parseInt(formData.get('collects_count') as string) || 0;
     const commentsCount = parseInt(formData.get('comments_count') as string) || 0;
 
+    console.log('Debug: Extracted form data:', {
+      url,
+      likesCount,
+      collectsCount,
+      commentsCount
+    });
+
     if (!url) {
+      console.log('Debug: URL validation failed');
       return {
         success: false,
         error: 'URL is required'
       };
     }
 
+    const insertData = {
+      app_id: appId,
+      url: url.trim(),
+      likes_count: likesCount,
+      collects_count: collectsCount,
+      comments_count: commentsCount,
+    };
+
+    console.log('Debug: Attempting to insert note:', insertData);
+
     const { data: note, error } = await supabase
       .from('note')
-      .insert({
-        app_id: appId,
-        url: url.trim(),
-        publish_date: publishDate || null,
-        likes_count: likesCount,
-        collects_count: collectsCount,
-        comments_count: commentsCount,
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Debug: Database error creating note:', {
+        error: error,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        insertData
+      });
       return {
         success: false,
-        error: 'Failed to create note'
+        error: `Failed to create note: ${error.message}`
       };
     }
+
+    console.log('Debug: Note created successfully:', note);
 
     revalidatePath('/admin');
     revalidatePath('/');
@@ -552,7 +531,7 @@ export async function createNote(appId: string, formData: FormData): Promise<{
     };
 
   } catch (error) {
-    console.error('Create note error:', error);
+    console.error('Debug: Create note error:', error);
     return {
       success: false,
       error: 'Something went wrong. Please try again.'
@@ -565,37 +544,59 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
   error?: string;
 }> {
   try {
+    console.log('Debug: Updating note with ID:', noteId);
+    console.log('Debug: FormData keys:', Array.from(formData.keys()));
+    
     const url = formData.get('url') as string;
-    const publishDate = formData.get('publish_date') as string;
     const likesCount = parseInt(formData.get('likes_count') as string) || 0;
     const collectsCount = parseInt(formData.get('collects_count') as string) || 0;
     const commentsCount = parseInt(formData.get('comments_count') as string) || 0;
 
+    console.log('Debug: Extracted form data:', {
+      url,
+      likesCount,
+      collectsCount,
+      commentsCount
+    });
+
     if (!url) {
+      console.log('Debug: URL validation failed');
       return {
         success: false,
         error: 'URL is required'
       };
     }
 
+    const updateData = {
+      url: url.trim(),
+      likes_count: likesCount,
+      collects_count: collectsCount,
+      comments_count: commentsCount,
+    };
+
+    console.log('Debug: Attempting to update note:', updateData);
+
     const { error } = await supabase
       .from('note')
-      .update({
-        url: url.trim(),
-        publish_date: publishDate || null,
-        likes_count: likesCount,
-        collects_count: collectsCount,
-        comments_count: commentsCount,
-      })
+      .update(updateData)
       .eq('id', noteId);
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Debug: Database error updating note:', {
+        error: error,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        noteId,
+        updateData
+      });
       return {
         success: false,
-        error: 'Failed to update note'
+        error: `Failed to update note: ${error.message}`
       };
     }
+
+    console.log('Debug: Note updated successfully');
 
     revalidatePath('/admin');
     revalidatePath('/');
@@ -603,7 +604,7 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
     return { success: true };
 
   } catch (error) {
-    console.error('Update note error:', error);
+    console.error('Debug: Update note error:', error);
     return {
       success: false,
       error: 'Something went wrong. Please try again.'
@@ -785,6 +786,85 @@ export async function getApplicationsByTwitter(): Promise<{
 
   } catch (error) {
     console.error('Get applications by Twitter error:', error);
+    return {
+      success: false,
+      error: 'Something went wrong. Please try again.'
+    };
+  }
+}
+
+// Update application server action
+export async function updateApplication(appId: string, formData: FormData): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Please sign in to update applications'
+      };
+    }
+
+    const name = formData.get('name') as string;
+    const twitterId = formData.get('twitter_id') as string;
+    const explain = formData.get('explain') as string;
+    const imageFile = formData.get('image') as File | null;
+    const currentImage = formData.get('current_image') as string;
+
+    if (!name?.trim()) {
+      return {
+        success: false,
+        error: 'Application name is required'
+      };
+    }
+
+    // Handle image upload if a new image is provided
+    let imageUrl = currentImage;
+    if (imageFile && imageFile.size > 0) {
+      const uploadResult = await uploadImage(imageFile, userId);
+      if (!uploadResult.success) {
+        return {
+          success: false,
+          error: uploadResult.error || 'Failed to upload image'
+        };
+      }
+      imageUrl = uploadResult.url || '';
+    }
+
+    // Prepare update data
+    const updateData: Partial<Application> = {
+      name: name.trim(),
+      twitter_id: twitterId.trim() || null,
+      explain: explain.trim() || null,
+      image: imageUrl || null
+    };
+
+    // Update application in database
+    const { error } = await supabase
+      .from('application')
+      .update(updateData)
+      .eq('id', appId);
+
+    if (error) {
+      console.error('Database error:', error);
+      return {
+        success: false,
+        error: 'Failed to update application'
+      };
+    }
+
+    // Revalidate relevant pages
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/dashboard');
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('Update application error:', error);
     return {
       success: false,
       error: 'Something went wrong. Please try again.'

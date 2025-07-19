@@ -45,22 +45,22 @@ export function Header() {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-6">
               <SmoothScrollLink 
-                href="/#leaderboard" 
+                href="/#how-it-works" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Leaderboard
+                How it works
+              </SmoothScrollLink>
+              <SmoothScrollLink 
+                href="/#social-proof" 
+                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+              >
+                Social Proof
               </SmoothScrollLink>
               <SmoothScrollLink 
                 href="/#pricing" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
                 Pricing
-              </SmoothScrollLink>
-              <SmoothScrollLink 
-                href="/#how-it-works" 
-                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
-              >
-                How it works
               </SmoothScrollLink>
               <SmoothScrollLink 
                 href="/#questions" 
@@ -126,11 +126,18 @@ export function Header() {
             <div className="lg:hidden mt-4 pt-4 border-t border-gray-200 mobile-menu-enter">
               <div className="flex flex-col space-y-3">
                 <SmoothScrollLink 
-                  href="/#leaderboard" 
+                  href="/#how-it-works" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Leaderboard
+                  How it works
+                </SmoothScrollLink>
+                <SmoothScrollLink 
+                  href="/#social-proof" 
+                  className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+                  onClick={closeMenu}
+                >
+                  Social Proof
                 </SmoothScrollLink>
                 <SmoothScrollLink 
                   href="/#pricing" 
@@ -138,13 +145,6 @@ export function Header() {
                   onClick={closeMenu}
                 >
                   Pricing
-                </SmoothScrollLink>
-                <SmoothScrollLink 
-                  href="/#how-it-works" 
-                  className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
-                  onClick={closeMenu}
-                >
-                  How it works
                 </SmoothScrollLink>
                 <SmoothScrollLink 
                   href="/#questions" 

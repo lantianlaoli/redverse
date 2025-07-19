@@ -15,15 +15,9 @@ interface NoteModalProps {
 }
 
 export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: NoteModalProps) {
-  // 获取当前日期作为默认发布时间
-  const getTodayDate = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
 
   const [formData, setFormData] = useState({
     url: note?.url || '',
-    publish_date: note?.publish_date ? new Date(note.publish_date).toISOString().split('T')[0] : getTodayDate(),
     likes_count: note?.likes_count?.toString() || '0',
     collects_count: note?.collects_count?.toString() || '0',
     comments_count: note?.comments_count?.toString() || '0',
@@ -38,7 +32,6 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
       if (mode === 'create') {
         setFormData({
           url: '',
-          publish_date: getTodayDate(),
           likes_count: '0',
           collects_count: '0',
           comments_count: '0',
@@ -46,7 +39,6 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
       } else if (mode === 'edit' && note) {
         setFormData({
           url: note.url || '',
-          publish_date: note.publish_date ? new Date(note.publish_date).toISOString().split('T')[0] : getTodayDate(),
           likes_count: note.likes_count?.toString() || '0',
           collects_count: note.collects_count?.toString() || '0',
           comments_count: note.comments_count?.toString() || '0',
@@ -67,7 +59,6 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
     try {
       const formDataObj = new FormData();
       formDataObj.append('url', formData.url);
-      formDataObj.append('publish_date', formData.publish_date);
       formDataObj.append('likes_count', formData.likes_count);
       formDataObj.append('collects_count', formData.collects_count);
       formDataObj.append('comments_count', formData.comments_count);
@@ -137,18 +128,6 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
               />
             </div>
 
-            <div>
-              <label htmlFor="publish_date" className="block text-sm font-medium text-gray-700">
-                Publish Date
-              </label>
-              <input
-                type="date"
-                id="publish_date"
-                value={formData.publish_date}
-                onChange={(e) => setFormData({ ...formData, publish_date: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-              />
-            </div>
 
             <div className="grid grid-cols-3 gap-3">
               <div>
