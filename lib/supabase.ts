@@ -32,6 +32,25 @@ export interface ApplicationWithNotes extends Application {
   note: Note[];
 }
 
+export interface SubscriptionPlan {
+  id: string;
+  plan_name: string;
+  max_applications: number | null;
+  price_monthly: number;
+  features: Record<string, unknown>;
+  enable: boolean;
+  created_at: string;
+}
+
+export interface UserSubscription {
+  id: string;
+  user_id: string;
+  plan_name: string;
+  status: 'active' | 'cancelled' | 'expired';
+  created_at: string;
+  expires_at: string | null;
+}
+
 // Image upload utility functions
 export async function uploadImage(file: File, userId: string): Promise<{ success: boolean; url?: string; error?: string }> {
   try {

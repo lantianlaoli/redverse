@@ -3,6 +3,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
+import { checkApplicationLimit } from '@/lib/subscription';
 import { revalidatePath } from 'next/cache';
 import { sendNewApplicationNotification, sendBugReportEmail } from './email';
 
@@ -81,6 +82,39 @@ export async function submitApplication(formData: FormData) {
         error: 'Invalid URL format'
       };
     }
+
+    // Check subscription limits
+    console.log('Debug: Checking subscription limits for user', { userId });
+    
+    const limitCheck = await checkApplicationLimit(userId);
+    if (!limitCheck.success) {
+      console.error('Debug: Failed to check application limit', { 
+        error: limitCheck.error,
+        userId 
+      });
+      return {
+        success: false,
+        error: limitCheck.error || 'Failed to verify subscription'
+      };
+    }
+
+    if (!limitCheck.canSubmit) {
+      console.log('Debug: User reached application limit', {
+        userId,
+        remainingCount: limitCheck.remainingCount,
+        planName: limitCheck.subscription?.plan_name
+      });
+      return {
+        success: false,
+        error: 'You have reached your application submission limit. Please upgrade to Pro for unlimited submissions.'
+      };
+    }
+
+    console.log('Debug: Subscription check passed', {
+      userId,
+      remainingCount: limitCheck.remainingCount,
+      planName: limitCheck.subscription?.plan_name
+    });
 
     // Check if user already submitted this URL
     console.log('Debug: Checking for existing application', {
