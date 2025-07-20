@@ -97,7 +97,30 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
             Submit Your Product - Free
           </button>
         </div>
-        <p className="text-sm text-gray-500 mt-3 text-center">Sign in to submit your product</p>
+        
+        {/* Prominent sign-in prompt */}
+        <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 text-center shadow-sm">
+          <div className="flex items-center justify-center space-x-3 mb-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Ready to launch your product?</h3>
+          </div>
+          <p className="text-gray-600 mb-4">
+            Sign in to submit your product and reach millions of users on Xiaohongshu
+          </p>
+          <a
+            href="/sign-in"
+            className="inline-flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            <span>Sign in to submit your product</span>
+          </a>
+        </div>
       </div>
     );
   }
