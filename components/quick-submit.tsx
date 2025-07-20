@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, SignInButton } from '@clerk/nextjs';
 import { submitApplication } from '@/lib/actions';
 
 interface QuickSubmitProps {
@@ -86,40 +86,15 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
         <div className="relative bg-white border-2 border-gray-200 rounded-full shadow-lg p-2 flex items-center">
           <input
             type="url"
-            placeholder="https://your-product.com"
+            placeholder="Sign in to submit your product"
             disabled
-            className="flex-1 px-4 py-3 text-gray-400 placeholder-gray-400 bg-transparent border-0 focus:outline-none text-lg"
+            className="flex-1 px-4 py-3 text-gray-500 placeholder-gray-500 bg-transparent border-0 focus:outline-none text-lg"
           />
-          <button
-            disabled
-            className="bg-black text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-          >
-            Submit Your Product - Free
-          </button>
-        </div>
-        
-        {/* Prominent sign-in prompt */}
-        <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 text-center shadow-sm">
-          <div className="flex items-center justify-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Ready to launch your product?</h3>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Sign in to submit your product and reach millions of users on Xiaohongshu
-          </p>
-          <a
-            href="/sign-in"
-            className="inline-flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-            <span>Sign in to submit your product</span>
-          </a>
+          <SignInButton mode="modal">
+            <button className="bg-black text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors whitespace-nowrap">
+              Sign In
+            </button>
+          </SignInButton>
         </div>
       </div>
     );

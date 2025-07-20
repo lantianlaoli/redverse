@@ -111,9 +111,8 @@ export default function Home() {
         <ScrollAnimation>
           <div id="how-it-works" className="py-20 border-t border-gray-200">
             <div className="text-center mb-16">
-              <p className="text-sm text-gray-500 mb-4 uppercase tracking-wide">How it works</p>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 max-w-3xl mx-auto leading-tight">
-                Here&apos;s what working together looks like
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                How it works
               </h2>
             </div>
 
@@ -189,15 +188,9 @@ export default function Home() {
         <ScrollAnimation>
           <div id="social-proof" className="py-16 border-t border-gray-200">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
                 Success Stories
               </h2>
-              <p className="text-lg text-gray-600 mb-2">
-                Real products, real results on Xiaohongshu
-              </p>
-              <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-                <span>Data updated daily at 8:00 China time</span>
-              </p>
             </div>
             
             <Leaderboard />
@@ -215,8 +208,8 @@ export default function Home() {
         <ScrollAnimation animation="fadeInUp">
           <div id="questions" className="py-16 border-t border-gray-200">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Questions
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Q&A
               </h2>
             </div>
             
