@@ -29,12 +29,12 @@ export function Header() {
                 <Image 
                   src="/logo.png" 
                   alt="Redverse" 
-                  width={40} 
-                  height={40}
-                  className="w-8 h-8 sm:w-10 sm:h-10"
+                  width={48} 
+                  height={48}
+                  className="w-10 h-10 sm:w-12 sm:h-12"
                   style={{
-                    width: '32px',
-                    height: '32px'
+                    width: '40px',
+                    height: '40px'
                   }}
                   priority
                 />
