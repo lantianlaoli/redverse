@@ -27,7 +27,7 @@ export default function Dashboard() {
 
   // Check if application is under review (missing admin-filled fields)
   const isApplicationUnderReview = (app: ApplicationItem): boolean => {
-    return !app.twitter_id || !app.image || !app.explain;
+    return !app.founder_url || !app.image || !app.explain;
   };
 
   useEffect(() => {
@@ -294,16 +294,16 @@ export default function Dashboard() {
                             <h3 className="text-xl font-bold text-gray-900 truncate mb-1">
                               {item.name}
                             </h3>
-                            {item.twitter_id && (
+                            {item.founder_url && (
                               <div className="flex items-center space-x-2 mt-1">
                                 <TwitterIcon className="w-4 h-4 text-blue-500" />
                                 <a
-                                  href={`https://x.com/${item.twitter_id}`}
+                                  href={item.founder_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-sm text-blue-600 font-medium hover:text-blue-800 hover:underline transition-colors"
                                 >
-                                  @{item.twitter_id}
+                                  Founder Profile
                                 </a>
                               </div>
                             )}

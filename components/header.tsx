@@ -54,7 +54,7 @@ export function Header() {
                 href="/#social-proof" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Social Proof
+                Success Stories
               </SmoothScrollLink>
               <SmoothScrollLink 
                 href="/#pricing" 
@@ -137,7 +137,7 @@ export function Header() {
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Social Proof
+                  Success Stories
                 </SmoothScrollLink>
                 <SmoothScrollLink 
                   href="/#pricing" 

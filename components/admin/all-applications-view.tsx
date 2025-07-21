@@ -94,7 +94,7 @@ export function AllApplicationsView() {
   // Helper function to get missing fields
   const getMissingFields = (app: Application) => {
     const missing = [];
-    if (!app.twitter_id) missing.push('Twitter ID');
+    if (!app.founder_url) missing.push('Founder URL');
     if (!app.image) missing.push('Image');
     if (!app.explain) missing.push('Description');
     return missing;
@@ -102,7 +102,7 @@ export function AllApplicationsView() {
 
   // Helper function to get completion percentage
   const getCompletionPercentage = (app: Application) => {
-    const totalFields = 3; // twitter_id, image, explain
+    const totalFields = 3; // founder_url, image, explain
     const missingCount = getMissingFields(app).length;
     return Math.round(((totalFields - missingCount) / totalFields) * 100);
   };
@@ -291,10 +291,12 @@ export function AllApplicationsView() {
                   </div>
                   
                   <div className="space-y-1 text-sm text-gray-500">
-                    {app.twitter_id && (
+                    {app.founder_url && (
                       <div className="flex items-center space-x-1">
                         <User className="w-3 h-3" />
-                        <span>@{app.twitter_id}</span>
+                        <a href={app.founder_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">
+                          Founder Profile
+                        </a>
                       </div>
                     )}
                   </div>

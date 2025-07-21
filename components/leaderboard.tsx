@@ -166,7 +166,17 @@ export function Leaderboard() {
                     View on Xiaohongshu
                   </a>
                 )}
-                {!item.url && !item.note?.url && (
+                {item.founder_url && (
+                  <a
+                    href={item.founder_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                  >
+                    View Founder
+                  </a>
+                )}
+                {!item.url && !item.note?.url && !item.founder_url && (
                   <div className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-500 bg-gray-50">
                     Coming Soon
                   </div>

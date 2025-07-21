@@ -21,9 +21,9 @@ export function AdminSidebar({ currentView, onViewChange }: AdminSidebarProps) {
       description: 'Manage all submissions'
     },
     {
-      id: 'twitter',
+      id: 'founder',
       icon: Users,
-      label: 'Twitter Users',
+      label: 'Founder Users',
       description: 'Group by users'
     }
   ];

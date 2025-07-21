@@ -172,7 +172,7 @@ export async function submitApplication(formData: FormData) {
       user_id: userId,
       url: url.trim(),
       name: extractProjectName(url)
-      // image, explain, twitter_id will be added by admin backend
+      // image, explain, founder_url will be added by admin backend
     };
     
     console.log('Debug: Attempting to insert application', {
@@ -764,10 +764,10 @@ export async function deleteApplication(appId: string): Promise<{
 // New Admin Dashboard Functions
 
 
-export async function getApplicationsByTwitter(): Promise<{
+export async function getApplicationsByFounder(): Promise<{
   success: boolean;
-  twitterGroups?: Array<{
-    twitterId: string;
+  founderGroups?: Array<{
+    founderUrl: string;
     applications: Application[];
     totalCount: number;
   }>;
@@ -790,24 +790,24 @@ export async function getApplicationsByTwitter(): Promise<{
     if (!applications || applications.length === 0) {
       return {
         success: true,
-        twitterGroups: []
+        founderGroups: []
       };
     }
 
-    // Group by twitter_id
-    const groupedByTwitter = applications.reduce((groups, app) => {
-      const twitterId = app.twitter_id || 'unknown';
-      if (!groups[twitterId]) {
-        groups[twitterId] = [];
+    // Group by founder_url
+    const groupedByFounder = applications.reduce((groups, app) => {
+      const founderUrl = app.founder_url || 'unknown';
+      if (!groups[founderUrl]) {
+        groups[founderUrl] = [];
       }
-      groups[twitterId].push(app);
+      groups[founderUrl].push(app);
       return groups;
     }, {} as { [key: string]: Application[] });
 
     // Transform to required format
-    const twitterGroups = Object.entries(groupedByTwitter).map(([twitterId, apps]) => {
+    const founderGroups = Object.entries(groupedByFounder).map(([founderUrl, apps]) => {
       return {
-        twitterId,
+        founderUrl,
         applications: apps as Application[],
         totalCount: (apps as Application[]).length,
       };
@@ -815,11 +815,11 @@ export async function getApplicationsByTwitter(): Promise<{
 
     return {
       success: true,
-      twitterGroups
+      founderGroups
     };
 
   } catch (error) {
-    console.error('Get applications by Twitter error:', error);
+    console.error('Get applications by Founder error:', error);
     return {
       success: false,
       error: 'Something went wrong. Please try again.'
@@ -843,7 +843,7 @@ export async function updateApplication(appId: string, formData: FormData): Prom
     }
 
     const name = formData.get('name') as string;
-    const twitterId = formData.get('twitter_id') as string;
+    const founderUrl = formData.get('founder_url') as string;
     const explain = formData.get('explain') as string;
     const imageFile = formData.get('image') as File | null;
     const currentImage = formData.get('current_image') as string;
@@ -871,7 +871,7 @@ export async function updateApplication(appId: string, formData: FormData): Prom
     // Prepare update data
     const updateData: Partial<Application> = {
       name: name.trim(),
-      twitter_id: twitterId.trim() || null,
+      founder_url: founderUrl.trim() || null,
       explain: explain.trim() || null,
       image: imageUrl || null
     };

@@ -11,7 +11,7 @@ export interface Application {
   created_at: string;
   name: string | null;
   url: string | null;
-  twitter_id: string | null;
+  founder_url: string | null;
   user_id: string | null;
   image: string | null;
   explain: string | null;

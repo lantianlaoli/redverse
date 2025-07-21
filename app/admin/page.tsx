@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { AllApplicationsView } from '@/components/admin/all-applications-view';
-import { TwitterUsersView } from '@/components/admin/twitter-users-view';
+import { FounderUsersView } from '@/components/admin/founder-users-view';
 
 export default function AdminDashboard() {
   const { user, isLoaded } = useUser();
@@ -29,8 +29,8 @@ export default function AdminDashboard() {
     switch (currentView) {
       case 'applications':
         return <AllApplicationsView />;
-      case 'twitter':
-        return <TwitterUsersView />;
+      case 'founder':
+        return <FounderUsersView />;
       default:
         return <AllApplicationsView />;
     }

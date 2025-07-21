@@ -16,7 +16,7 @@ interface AppEditModalProps {
 export function AppEditModal({ isOpen, onClose, onSuccess, application }: AppEditModalProps) {
   const [formData, setFormData] = useState({
     name: application.name || '',
-    twitter_id: application.twitter_id || '',
+    founder_url: application.founder_url || '',
     explain: application.explain || '',
     image: null as File | null,
     current_image: application.image || ''
@@ -30,7 +30,7 @@ export function AppEditModal({ isOpen, onClose, onSuccess, application }: AppEdi
     if (isOpen) {
       setFormData({
         name: application.name || '',
-        twitter_id: application.twitter_id || '',
+        founder_url: application.founder_url || '',
         explain: application.explain || '',
         image: null,
         current_image: application.image || ''
@@ -88,7 +88,7 @@ export function AppEditModal({ isOpen, onClose, onSuccess, application }: AppEdi
     try {
       const submitFormData = new FormData();
       submitFormData.append('name', formData.name.trim());
-      submitFormData.append('twitter_id', formData.twitter_id.trim());
+      submitFormData.append('founder_url', formData.founder_url.trim());
       submitFormData.append('explain', formData.explain.trim());
       
       if (formData.image) {
@@ -116,7 +116,7 @@ export function AppEditModal({ isOpen, onClose, onSuccess, application }: AppEdi
   // Get missing fields for display
   const getMissingFields = () => {
     const missing = [];
-    if (!application.twitter_id) missing.push('Twitter ID');
+    if (!application.founder_url) missing.push('Founder URL');
     if (!application.image) missing.push('Image');
     if (!application.explain) missing.push('Description');
     return missing;
@@ -180,19 +180,19 @@ export function AppEditModal({ isOpen, onClose, onSuccess, application }: AppEdi
               />
             </div>
 
-            {/* Twitter ID */}
+            {/* Founder URL */}
             <div>
-              <label htmlFor="twitter_id" className="block text-sm font-medium text-gray-700 mb-1">
-                Twitter ID
-                {!application.twitter_id && <span className="text-amber-500 ml-1">●</span>}
+              <label htmlFor="founder_url" className="block text-sm font-medium text-gray-700 mb-1">
+                Founder Social URL
+                {!application.founder_url && <span className="text-amber-500 ml-1">●</span>}
               </label>
               <input
-                type="text"
-                id="twitter_id"
-                name="twitter_id"
-                value={formData.twitter_id}
+                type="url"
+                id="founder_url"
+                name="founder_url"
+                value={formData.founder_url}
                 onChange={handleInputChange}
-                placeholder="e.g. @username or username"
+                placeholder="https://twitter.com/username or https://linkedin.com/in/username"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

@@ -1,37 +1,37 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getApplicationsByTwitter } from '@/lib/actions';
+import { getApplicationsByFounder } from '@/lib/actions';
 import { Application } from '@/lib/supabase';
 import { Users, Calendar, ExternalLink, FileText, Eye } from 'lucide-react';
 
-interface TwitterGroup {
-  twitterId: string;
+interface FounderGroup {
+  founderUrl: string;
   applications: Application[];
   totalCount: number;
 }
 
-export function TwitterUsersView() {
-  const [twitterGroups, setTwitterGroups] = useState<TwitterGroup[]>([]);
+export function FounderUsersView() {
+  const [founderGroups, setFounderGroups] = useState<FounderGroup[]>([]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchTwitterGroups();
+    fetchFounderGroups();
   }, []);
 
-  const fetchTwitterGroups = async () => {
+  const fetchFounderGroups = async () => {
     try {
       setIsLoading(true);
       setError('');
       
-      const result = await getApplicationsByTwitter();
+      const result = await getApplicationsByFounder();
       
-      if (result.success && result.twitterGroups) {
-        setTwitterGroups(result.twitterGroups);
+      if (result.success && result.founderGroups) {
+        setFounderGroups(result.founderGroups);
       } else {
-        setError(result.error || 'Failed to fetch Twitter groups');
+        setError(result.error || 'Failed to fetch Founder groups');
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -40,12 +40,12 @@ export function TwitterUsersView() {
     }
   };
 
-  const toggleGroup = (twitterId: string) => {
+  const toggleGroup = (founderUrl: string) => {
     const newExpanded = new Set(expandedGroups);
-    if (newExpanded.has(twitterId)) {
-      newExpanded.delete(twitterId);
+    if (newExpanded.has(founderUrl)) {
+      newExpanded.delete(founderUrl);
     } else {
-      newExpanded.add(twitterId);
+      newExpanded.add(founderUrl);
     }
     setExpandedGroups(newExpanded);
   };
@@ -54,7 +54,7 @@ export function TwitterUsersView() {
   if (isLoading) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Loading Twitter accounts...</p>
+        <p className="text-gray-500">Loading Founder accounts...</p>
       </div>
     );
   }
@@ -64,7 +64,7 @@ export function TwitterUsersView() {
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error}</p>
         <button 
-          onClick={fetchTwitterGroups}
+          onClick={fetchFounderGroups}
           className="text-sm text-red-700 hover:text-red-900 underline cursor-pointer"
         >
           Try again
@@ -73,21 +73,21 @@ export function TwitterUsersView() {
     );
   }
 
-  if (twitterGroups.length === 0) {
+  if (founderGroups.length === 0) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Twitter Users</h1>
-          <p className="text-gray-600">Applications grouped by Twitter user</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Founder Users</h1>
+          <p className="text-gray-600">Applications grouped by Founder user</p>
         </div>
         
         <div className="text-center py-20">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Twitter users yet</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Founder users yet</h3>
           <p className="text-gray-500 max-w-sm mx-auto">
-            Twitter users will be grouped here once applications with Twitter accounts are submitted.
+            Founder users will be grouped here once applications with social accounts are submitted.
           </p>
         </div>
       </div>
@@ -98,17 +98,17 @@ export function TwitterUsersView() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Twitter Users</h1>
-        <p className="text-gray-600">Applications grouped by Twitter user</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Founder Users</h1>
+        <p className="text-gray-600">Applications grouped by Founder user</p>
         <div className="mt-4 text-sm text-gray-500">
-          Total users: {twitterGroups.length} • Total applications: {twitterGroups.reduce((sum, group) => sum + group.totalCount, 0)}
+          Total users: {founderGroups.length} • Total applications: {founderGroups.reduce((sum, group) => sum + group.totalCount, 0)}
         </div>
       </div>
 
-      {/* Twitter Users Cards Grid */}
+      {/* Founder Users Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {twitterGroups.map((group) => (
-          <div key={group.twitterId} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        {founderGroups.map((group) => (
+          <div key={group.founderUrl} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             {/* Card Header */}
             <div className="p-6">
               <div className="flex items-center space-x-4 mb-4">
@@ -117,10 +117,12 @@ export function TwitterUsersView() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    @{group.twitterId}
+                    <a href={group.founderUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">
+                      Founder Profile
+                    </a>
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Twitter User
+                    Social Profile
                   </p>
                 </div>
               </div>
@@ -135,17 +137,17 @@ export function TwitterUsersView() {
                 </div>
                 
                 <button
-                  onClick={() => toggleGroup(group.twitterId)}
+                  onClick={() => toggleGroup(group.founderUrl)}
                   className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Eye className="w-4 h-4 mr-1" />
-                  {expandedGroups.has(group.twitterId) ? 'Hide' : 'View'}
+                  {expandedGroups.has(group.founderUrl) ? 'Hide' : 'View'}
                 </button>
               </div>
             </div>
 
             {/* Expanded Applications */}
-            {expandedGroups.has(group.twitterId) && (
+            {expandedGroups.has(group.founderUrl) && (
               <div className="border-t border-gray-200 p-6">
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Applications</h4>
                 <div className="space-y-3 max-h-60 overflow-y-auto">
