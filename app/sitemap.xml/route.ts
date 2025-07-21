@@ -1,21 +1,23 @@
 import { MetadataRoute } from 'next'
 
 export async function GET(): Promise<Response> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.redverse.online'
+  
   const sitemap: MetadataRoute.Sitemap = [
     {
-      url: 'https://www.redverse.online',
+      url: baseUrl,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,
     },
     {
-      url: 'https://www.redverse.online/submit',
+      url: `${baseUrl}/submit`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: 'https://www.redverse.online/dashboard',
+      url: `${baseUrl}/dashboard`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.6,

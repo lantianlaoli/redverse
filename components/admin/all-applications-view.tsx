@@ -6,7 +6,7 @@ import { Application, Note } from '@/lib/supabase';
 import { NoteModal } from './note-modal';
 import { AppEditModal } from './app-edit-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Calendar, User, ExternalLink, Plus, FileText, Eye, Trash2, Edit, AlertCircle } from 'lucide-react';
+import { User, ExternalLink, Plus, FileText, Eye, Trash2, Edit, AlertCircle, Heart, Folder, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export function AllApplicationsView() {
@@ -297,10 +297,6 @@ export function AllApplicationsView() {
                         <span>@{app.twitter_id}</span>
                       </div>
                     )}
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{new Date(app.created_at).toLocaleDateString()}</span>
-                    </div>
                   </div>
 
                   {/* Missing Fields Warning */}
@@ -411,13 +407,10 @@ export function AllApplicationsView() {
                           </button>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500 mb-2">
-                        {note.publish_date ? new Date(note.publish_date).toLocaleDateString() : 'No date'}
-                      </p>
                       <div className="flex justify-between text-xs text-gray-600">
-                        <span>❤️ {note.likes_count || 0}</span>
-                        <span>📁 {note.collects_count || 0}</span>
-                        <span>💬 {note.comments_count || 0}</span>
+                        <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {note.likes_count || 0}</span>
+                        <span className="flex items-center gap-1"><Folder className="w-3 h-3" /> {note.collects_count || 0}</span>
+                        <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {note.comments_count || 0}</span>
                       </div>
                     </div>
                   )) : (
