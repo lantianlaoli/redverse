@@ -6,6 +6,7 @@ import { useUser } from '@clerk/nextjs';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { AllApplicationsView } from '@/components/admin/all-applications-view';
 import { FounderUsersView } from '@/components/admin/founder-users-view';
+import { ToastProvider } from '@/components/ui/toast';
 
 export default function AdminDashboard() {
   const { user, isLoaded } = useUser();
@@ -37,8 +38,10 @@ export default function AdminDashboard() {
   };
 
   return (
-    <AdminLayout currentView={currentView} onViewChange={setCurrentView}>
-      {renderCurrentView()}
-    </AdminLayout>
+    <ToastProvider>
+      <AdminLayout currentView={currentView} onViewChange={setCurrentView}>
+        {renderCurrentView()}
+      </AdminLayout>
+    </ToastProvider>
   );
 }

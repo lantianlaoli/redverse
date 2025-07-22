@@ -5,7 +5,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { checkApplicationLimit } from '@/lib/subscription';
 import { revalidatePath } from 'next/cache';
-import { sendNewApplicationNotification, sendBugReportEmail } from './email';
+import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification } from './email';
 
 // Helper function to send bug report email
 async function sendBugReport(error: string, userId: string | null, formData: FormData) {
@@ -350,11 +350,12 @@ export async function getUserApplications(): Promise<{
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0];
 
-      // Weighted engagement calculation: collects (3x), comments (2x), likes (1x)
+      // Weighted engagement calculation: collects (3x), comments (2x), likes (1x), views (0.1x)
       const totalEngagement = mostRecentNote ? 
         (mostRecentNote.likes_count || 0) * 1 + 
         (mostRecentNote.collects_count || 0) * 3 + 
-        (mostRecentNote.comments_count || 0) * 2 : 0;
+        (mostRecentNote.comments_count || 0) * 2 + 
+        (mostRecentNote.views_count || 0) * 0.1 : 0;
       
       return {
         ...app,
@@ -430,11 +431,12 @@ export async function getLeaderboard(): Promise<{
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )[0];
 
-        // Weighted engagement calculation: collects (3x), comments (2x), likes (1x)
+        // Weighted engagement calculation: collects (3x), comments (2x), likes (1x), views (0.1x)
         const totalEngagement = mostRecentNote ? 
           (mostRecentNote.likes_count || 0) * 1 + 
           (mostRecentNote.collects_count || 0) * 3 + 
-          (mostRecentNote.comments_count || 0) * 2 : 0;
+          (mostRecentNote.comments_count || 0) * 2 + 
+          (mostRecentNote.views_count || 0) * 0.1 : 0;
         
         return {
           ...app,
@@ -508,12 +510,14 @@ export async function createNote(appId: string, formData: FormData): Promise<{
     const likesCount = parseInt(formData.get('likes_count') as string) || 0;
     const collectsCount = parseInt(formData.get('collects_count') as string) || 0;
     const commentsCount = parseInt(formData.get('comments_count') as string) || 0;
+    const viewsCount = parseInt(formData.get('views_count') as string) || 0;
 
     console.log('Debug: Extracted form data:', {
       url,
       likesCount,
       collectsCount,
-      commentsCount
+      commentsCount,
+      viewsCount
     });
 
     if (!url) {
@@ -530,6 +534,7 @@ export async function createNote(appId: string, formData: FormData): Promise<{
       likes_count: likesCount,
       collects_count: collectsCount,
       comments_count: commentsCount,
+      views_count: viewsCount,
     };
 
     console.log('Debug: Attempting to insert note:', insertData);
@@ -555,6 +560,37 @@ export async function createNote(appId: string, formData: FormData): Promise<{
     }
 
     console.log('Debug: Note created successfully:', note);
+
+    // Get application and user information for notification
+    try {
+      const { data: app } = await supabase
+        .from('application')
+        .select('name, user_id')
+        .eq('id', appId)
+        .single();
+
+      if (app && app.user_id) {
+        // Get user email
+        try {
+          const client = await clerkClient();
+          const user = await client.users.getUser(app.user_id);
+          const userEmail = user.emailAddresses?.[0]?.emailAddress;
+
+          if (userEmail) {
+            await sendNoteNotification({
+              userEmail,
+              projectName: app.name || 'Your Project',
+              action: 'created',
+              noteUrl: note.url || undefined
+            });
+          }
+        } catch (userError) {
+          console.error('Failed to send note creation notification:', userError);
+        }
+      }
+    } catch (notificationError) {
+      console.error('Failed to process note creation notification:', notificationError);
+    }
 
     revalidatePath('/admin');
     revalidatePath('/');
@@ -585,12 +621,14 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
     const likesCount = parseInt(formData.get('likes_count') as string) || 0;
     const collectsCount = parseInt(formData.get('collects_count') as string) || 0;
     const commentsCount = parseInt(formData.get('comments_count') as string) || 0;
+    const viewsCount = parseInt(formData.get('views_count') as string) || 0;
 
     console.log('Debug: Extracted form data:', {
       url,
       likesCount,
       collectsCount,
-      commentsCount
+      commentsCount,
+      viewsCount
     });
 
     if (!url) {
@@ -606,9 +644,17 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
       likes_count: likesCount,
       collects_count: collectsCount,
       comments_count: commentsCount,
+      views_count: viewsCount,
     };
 
     console.log('Debug: Attempting to update note:', updateData);
+
+    // Get current note data before update for comparison
+    const { data: oldNote } = await supabase
+      .from('note')
+      .select('likes_count, collects_count, comments_count, views_count, app_id')
+      .eq('id', noteId)
+      .single();
 
     const { error } = await supabase
       .from('note')
@@ -631,6 +677,67 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
     }
 
     console.log('Debug: Note updated successfully');
+
+    // Send notification with data changes
+    if (oldNote) {
+      try {
+        const { data: app } = await supabase
+          .from('application')
+          .select('name, user_id')
+          .eq('id', oldNote.app_id)
+          .single();
+
+        if (app && app.user_id) {
+          // Get user email
+          try {
+            const client = await clerkClient();
+            const user = await client.users.getUser(app.user_id);
+            const userEmail = user.emailAddresses?.[0]?.emailAddress;
+
+            if (userEmail) {
+              const changes = {
+                likes: {
+                  old: oldNote.likes_count || 0,
+                  new: likesCount,
+                  diff: likesCount - (oldNote.likes_count || 0)
+                },
+                collects: {
+                  old: oldNote.collects_count || 0,
+                  new: collectsCount,
+                  diff: collectsCount - (oldNote.collects_count || 0)
+                },
+                comments: {
+                  old: oldNote.comments_count || 0,
+                  new: commentsCount,
+                  diff: commentsCount - (oldNote.comments_count || 0)
+                },
+                views: {
+                  old: oldNote.views_count || 0,
+                  new: viewsCount,
+                  diff: viewsCount - (oldNote.views_count || 0)
+                }
+              };
+
+              // Only send notification if there are actual changes
+              const hasChanges = changes.likes.diff !== 0 || changes.collects.diff !== 0 || changes.comments.diff !== 0 || changes.views.diff !== 0;
+              
+              if (hasChanges) {
+                await sendNoteNotification({
+                  userEmail,
+                  projectName: app.name || 'Your Project',
+                  action: 'updated',
+                  changes
+                });
+              }
+            }
+          } catch (userError) {
+            console.error('Failed to send note update notification:', userError);
+          }
+        }
+      } catch (notificationError) {
+        console.error('Failed to process note update notification:', notificationError);
+      }
+    }
 
     revalidatePath('/admin');
     revalidatePath('/');

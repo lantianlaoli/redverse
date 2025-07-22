@@ -26,6 +26,7 @@ export interface Note {
   likes_count: number | null;
   collects_count: number | null;
   comments_count: number | null;
+  views_count: number | null;
 }
 
 export interface ApplicationWithNotes extends Application {

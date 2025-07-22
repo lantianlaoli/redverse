@@ -25,6 +25,19 @@ interface BugReportData {
   userAgent?: string;
 }
 
+interface NoteNotificationData {
+  userEmail: string;
+  projectName: string;
+  action: 'created' | 'updated';
+  noteUrl?: string;
+  changes?: {
+    likes: { old: number; new: number; diff: number };
+    collects: { old: number; new: number; diff: number };
+    comments: { old: number; new: number; diff: number };
+    views: { old: number; new: number; diff: number };
+  };
+}
+
 export async function sendNewApplicationNotification(data: ApplicationNotificationData): Promise<{
   success: boolean;
   error?: string;
@@ -433,6 +446,233 @@ Redverse Bug Report System
 
   } catch (error) {
     console.error('Failed to send bug report email:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+export async function sendNoteNotification(data: NoteNotificationData): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
+      return {
+        success: false,
+        error: 'Email service not configured'
+      };
+    }
+
+    const isUpdate = data.action === 'updated' && data.changes;
+    const actionText = data.action === 'created' ? 'Your App Featured on Xiaohongshu!' : 'Note Data Updated';
+    const actionEmoji = data.action === 'created' ? '🎉' : '📊';
+
+    let changesHtml = '';
+    let changesText = '';
+    
+    if (isUpdate && data.changes) {
+      const { likes, collects, comments, views } = data.changes;
+      const hasIncrease = likes.diff > 0 || collects.diff > 0 || comments.diff > 0 || views.diff > 0;
+      
+      changesHtml = `
+        <div class="changes-details">
+          <h3 style="margin-top: 0; color: #333;">Data Changes</h3>
+          ${likes.diff !== 0 ? `
+          <div class="change-item">
+            <span class="label">Likes:</span>
+            <span class="value">${likes.old} → ${likes.new} ${likes.diff > 0 ? `(+${likes.diff})` : `(${likes.diff})`}</span>
+          </div>
+          ` : ''}
+          ${views.diff !== 0 ? `
+          <div class="change-item">
+            <span class="label">Views:</span>
+            <span class="value">${views.old} → ${views.new} ${views.diff > 0 ? `(+${views.diff})` : `(${views.diff})`}</span>
+          </div>
+          ` : ''}
+          ${collects.diff !== 0 ? `
+          <div class="change-item">
+            <span class="label">Collects:</span>
+            <span class="value">${collects.old} → ${collects.new} ${collects.diff > 0 ? `(+${collects.diff})` : `(${collects.diff})`}</span>
+          </div>
+          ` : ''}
+          ${comments.diff !== 0 ? `
+          <div class="change-item">
+            <span class="label">Comments:</span>
+            <span class="value">${comments.old} → ${comments.new} ${comments.diff > 0 ? `(+${comments.diff})` : `(${comments.diff})`}</span>
+          </div>
+          ` : ''}
+          ${hasIncrease ? '<p style="color: #28a745; font-weight: 600; margin-top: 15px;">🎉 Congratulations on your growth!</p>' : ''}
+        </div>
+      `;
+      
+      changesText = `
+Data Changes:
+${likes.diff !== 0 ? `• Likes: ${likes.old} → ${likes.new} ${likes.diff > 0 ? `(+${likes.diff})` : `(${likes.diff})`}` : ''}
+${views.diff !== 0 ? `• Views: ${views.old} → ${views.new} ${views.diff > 0 ? `(+${views.diff})` : `(${views.diff})`}` : ''}
+${collects.diff !== 0 ? `• Collects: ${collects.old} → ${collects.new} ${collects.diff > 0 ? `(+${collects.diff})` : `(${collects.diff})`}` : ''}
+${comments.diff !== 0 ? `• Comments: ${comments.old} → ${comments.new} ${comments.diff > 0 ? `(+${comments.diff})` : `(${comments.diff})`}` : ''}
+${hasIncrease ? '🎉 Congratulations on your growth!' : ''}
+      `;
+    }
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${actionText} - ${data.projectName}</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+              color: white;
+              padding: 30px 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+            }
+            .content {
+              background: #ffffff;
+              padding: 30px 20px;
+              border: 1px solid #e1e5e9;
+              border-top: none;
+            }
+            .changes-details {
+              background: #f0f9f4;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+              border: 1px solid #d1fae5;
+            }
+            .change-item {
+              margin: 10px 0;
+              padding: 8px 0;
+              border-bottom: 1px solid #e9ecef;
+            }
+            .change-item:last-child {
+              border-bottom: none;
+            }
+            .label {
+              font-weight: 600;
+              color: #495057;
+              display: inline-block;
+              width: 80px;
+            }
+            .value {
+              color: #333;
+              font-weight: 500;
+            }
+            .cta-button {
+              display: inline-block;
+              background: #10b981;
+              color: white;
+              padding: 12px 24px;
+              text-decoration: none;
+              border-radius: 6px;
+              margin: 10px 10px 10px 0;
+              font-weight: 500;
+            }
+            .footer {
+              text-align: center;
+              padding: 20px;
+              color: #6c757d;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">${actionEmoji} ${actionText}</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">${data.projectName}</p>
+          </div>
+          
+          <div class="content">
+            <p>Hello!</p>
+            <p>${data.action === 'created' 
+              ? `Exciting news! Your app <strong>${data.projectName}</strong> has been featured in a post on Xiaohongshu (Little Red Book), China's leading lifestyle and social commerce platform with over 300 million active users.`
+              : `The engagement data for your app <strong>${data.projectName}</strong> on Xiaohongshu has been updated.`
+            }</p>
+            
+            ${data.action === 'created' ? `
+            <p>This feature gives your app incredible exposure to Chinese consumers who are actively discovering and sharing innovative products and services.</p>
+            ` : ''}
+            
+            ${changesHtml}
+            
+            ${data.noteUrl ? `
+            <div style="margin: 30px 0;">
+              <a href="${data.noteUrl}" class="cta-button" target="_blank">
+                View on Xiaohongshu
+              </a>
+            </div>
+            ` : ''}
+            
+            ${data.action === 'created' ? `
+            <p style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #10b981; border-radius: 4px;">
+              <strong>💡 Pro Tip:</strong> Share this exposure with your network! This feature on Xiaohongshu can significantly boost your app's visibility in the Chinese market.
+            </p>
+            ` : ''}
+          </div>
+          
+          <div class="footer">
+            <p>Best regards,<br>Redverse Team</p>
+            <p style="font-size: 12px; color: #999;">
+              This is an automated notification from Redverse.
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const emailText = `
+${actionText} - ${data.projectName}
+
+Hello!
+
+${data.action === 'created' 
+  ? `Exciting news! Your app ${data.projectName} has been featured in a post on Xiaohongshu (Little Red Book), China's leading lifestyle and social commerce platform with over 300 million active users.
+
+This feature gives your app incredible exposure to Chinese consumers who are actively discovering and sharing innovative products and services.`
+  : `The engagement data for your app ${data.projectName} on Xiaohongshu has been updated.`
+}
+
+${changesText}
+
+${data.noteUrl ? `View on Xiaohongshu: ${data.noteUrl}` : ''}
+
+${data.action === 'created' ? `
+💡 Pro Tip: Share this exposure with your network! This feature on Xiaohongshu can significantly boost your app's visibility in the Chinese market.` : ''}
+
+Best regards,
+Redverse Team
+    `;
+
+    const result = await resend.emails.send({
+      from: 'Redverse <hello@mitesnap.com>',
+      to: data.userEmail,
+      subject: `${actionEmoji} ${actionText} - ${data.projectName}`,
+      html: emailHtml,
+      text: emailText,
+    });
+
+    console.log('Note notification email sent successfully:', result);
+    
+    return {
+      success: true
+    };
+
+  } catch (error) {
+    console.error('Failed to send note notification email:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
