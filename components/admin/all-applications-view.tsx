@@ -1,30 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAllApplications, getNotesForApp, deleteApplication, deleteNote } from '@/lib/actions';
-import { Application, Note } from '@/lib/supabase';
-import { NoteModal } from './note-modal';
+import { getAllApplications, deleteApplication } from '@/lib/actions';
+import { Application } from '@/lib/supabase';
+import { NotesManagementModal } from './notes-management-modal';
 import { AppEditModal } from './app-edit-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { User, ExternalLink, Plus, FileText, Eye, Trash2, Edit, AlertCircle, Heart, Folder, MessageCircle } from 'lucide-react';
+import { User, ExternalLink, FileText, Trash2, Edit, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export function AllApplicationsView() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [expandedApp, setExpandedApp] = useState<string | null>(null);
-  const [appNotes, setAppNotes] = useState<{ [appId: string]: Note[] }>({});
-  const [noteModal, setNoteModal] = useState<{
+  const [notesModal, setNotesModal] = useState<{
     isOpen: boolean;
-    mode: 'create' | 'edit';
-    appId: string;
-    note?: Note | null;
+    application: Application | null;
   }>({
     isOpen: false,
-    mode: 'create',
-    appId: '',
-    note: null,
+    application: null,
   });
   const [editModal, setEditModal] = useState<{
     isOpen: boolean;
@@ -35,12 +29,10 @@ export function AllApplicationsView() {
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
-    type: 'application' | 'note';
     id: string;
     name: string;
   }>({
     isOpen: false,
-    type: 'application',
     id: '',
     name: '',
   });
@@ -69,27 +61,6 @@ export function AllApplicationsView() {
   };
 
 
-  const fetchNotesForApp = async (appId: string) => {
-    try {
-      const result = await getNotesForApp(appId);
-      if (result.success && result.notes) {
-        setAppNotes(prev => ({ ...prev, [appId]: result.notes! }));
-      }
-    } catch {
-      setError('Failed to fetch notes');
-    }
-  };
-
-  const toggleAppExpansion = async (appId: string) => {
-    if (expandedApp === appId) {
-      setExpandedApp(null);
-    } else {
-      setExpandedApp(appId);
-      if (!appNotes[appId]) {
-        await fetchNotesForApp(appId);
-      }
-    }
-  };
 
   // Helper function to get missing fields
   const getMissingFields = (app: Application) => {
@@ -107,12 +78,17 @@ export function AllApplicationsView() {
     return Math.round(((totalFields - missingCount) / totalFields) * 100);
   };
 
-  const openNoteModal = (mode: 'create' | 'edit', appId: string, note?: Note) => {
-    setNoteModal({
+  const openNotesModal = (application: Application) => {
+    setNotesModal({
       isOpen: true,
-      mode,
-      appId,
-      note,
+      application,
+    });
+  };
+
+  const closeNotesModal = () => {
+    setNotesModal({
+      isOpen: false,
+      application: null,
     });
   };
 
@@ -130,25 +106,10 @@ export function AllApplicationsView() {
     });
   };
 
-  const closeNoteModal = () => {
-    setNoteModal({
-      isOpen: false,
-      mode: 'create',
-      appId: '',
-      note: null,
-    });
-  };
-
-  const handleNoteSuccess = async () => {
-    if (expandedApp) {
-      await fetchNotesForApp(expandedApp);
-    }
-  };
 
   const handleDeleteApplication = (appId: string, appName: string) => {
     setDeleteConfirm({
       isOpen: true,
-      type: 'application',
       id: appId,
       name: appName || 'this application',
     });
@@ -156,44 +117,21 @@ export function AllApplicationsView() {
 
   const confirmDelete = async () => {
     try {
-      if (deleteConfirm.type === 'application') {
-        const result = await deleteApplication(deleteConfirm.id);
-        
-        if (result.success) {
-          // Refresh the applications list
-          await fetchApplications();
-          // Close expanded view if it was the deleted app
-          if (expandedApp === deleteConfirm.id) {
-            setExpandedApp(null);
-          }
-        } else {
-          setError(result.error || 'Failed to delete application');
-        }
+      const result = await deleteApplication(deleteConfirm.id);
+      
+      if (result.success) {
+        // Refresh the applications list
+        await fetchApplications();
       } else {
-        const result = await deleteNote(deleteConfirm.id);
-        
-        if (result.success) {
-          // Refresh the notes for the current expanded app
-          if (expandedApp) {
-            await fetchNotesForApp(expandedApp);
-          }
-        } else {
-          setError(result.error || 'Failed to delete note');
-        }
+        setError(result.error || 'Failed to delete application');
       }
     } catch {
       setError('Something went wrong. Please try again.');
+    } finally {
+      setDeleteConfirm({ isOpen: false, id: '', name: '' });
     }
   };
 
-  const handleDeleteNote = (noteId: string) => {
-    setDeleteConfirm({
-      isOpen: true,
-      type: 'note',
-      id: noteId,
-      name: 'this note',
-    });
-  };
 
 
   if (isLoading) {
@@ -253,7 +191,7 @@ export function AllApplicationsView() {
       {/* Applications Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {applications.map((app) => (
-          <div key={app.id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+          <div key={app.id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 cursor-pointer group">
             {/* Card Header */}
             <div className="p-6">
               <div className="flex items-start space-x-4">
@@ -284,7 +222,7 @@ export function AllApplicationsView() {
                       href={app.url || '#'} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 flex-shrink-0"
+                      className="text-gray-600 hover:text-black flex-shrink-0 transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>
@@ -294,7 +232,7 @@ export function AllApplicationsView() {
                     {app.founder_url && (
                       <div className="flex items-center space-x-1">
                         <User className="w-3 h-3" />
-                        <a href={app.founder_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">
+                        <a href={app.founder_url} target="_blank" rel="noopener noreferrer" className="text-black hover:text-gray-700 underline underline-offset-2 decoration-1 hover:decoration-2 transition-all">
                           Founder Profile
                         </a>
                       </div>
@@ -323,26 +261,26 @@ export function AllApplicationsView() {
 
                   {/* Product Description Preview */}
                   {app.explain && (
-                    <div className="mt-2 p-2 bg-gray-50 rounded-md">
-                      <p className="text-xs text-gray-600 line-clamp-2">{app.explain}</p>
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                      <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">{app.explain}</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Notes Count */}
+              {/* Action Buttons */}
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-sm text-gray-500">
                   <span className="flex items-center">
                     <FileText className="w-4 h-4 mr-1" />
-                    {appNotes[app.id]?.length || 0} notes
+                    Manage notes
                   </span>
                 </div>
                 
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => openEditModal(app)}
-                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors"
                     title="Edit application"
                   >
                     <Edit className="w-4 h-4 mr-1" />
@@ -350,11 +288,12 @@ export function AllApplicationsView() {
                   </button>
                   
                   <button
-                    onClick={() => toggleAppExpansion(app.id)}
-                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    onClick={() => openNotesModal(app)}
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-colors"
+                    title="Manage notes"
                   >
-                    <Eye className="w-4 h-4 mr-1" />
-                    {expandedApp === app.id ? 'Hide' : 'View'}
+                    <FileText className="w-4 h-4 mr-1" />
+                    Notes
                   </button>
                   
                   <button
@@ -368,70 +307,14 @@ export function AllApplicationsView() {
               </div>
             </div>
 
-            {/* Expanded Notes Section */}
-            {expandedApp === app.id && (
-              <div className="border-t border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-medium text-gray-900">Associated Notes</h4>
-                  <button 
-                    onClick={() => openNoteModal('create', app.id)}
-                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-colors"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add
-                  </button>
-                </div>
-                
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {appNotes[app.id]?.length > 0 ? appNotes[app.id].map((note) => (
-                    <div key={note.id} className="bg-gray-50 p-3 rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <a 
-                          href={note.url || '#'} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center"
-                        >
-                          Xiaohongshu Post <ExternalLink className="w-3 h-3 ml-1" />
-                        </a>
-                        <div className="flex space-x-2">
-                          <button 
-                            onClick={() => openNoteModal('edit', app.id, note)}
-                            className="text-xs text-blue-600 hover:text-blue-800"
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteNote(note.id)}
-                            className="text-xs text-red-600 hover:text-red-800"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-600">
-                        <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {note.likes_count || 0}</span>
-                        <span className="flex items-center gap-1"><Folder className="w-3 h-3" /> {note.collects_count || 0}</span>
-                        <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {note.comments_count || 0}</span>
-                      </div>
-                    </div>
-                  )) : (
-                    <p className="text-sm text-gray-500 text-center py-4">No notes yet.</p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         ))}
       </div>
 
-      <NoteModal
-        isOpen={noteModal.isOpen}
-        onClose={closeNoteModal}
-        onSuccess={handleNoteSuccess}
-        appId={noteModal.appId}
-        note={noteModal.note}
-        mode={noteModal.mode}
+      <NotesManagementModal
+        isOpen={notesModal.isOpen}
+        onClose={closeNotesModal}
+        application={notesModal.application}
       />
 
       {editModal.application && (
@@ -450,12 +333,8 @@ export function AllApplicationsView() {
         isOpen={deleteConfirm.isOpen}
         onClose={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
         onConfirm={confirmDelete}
-        title={deleteConfirm.type === 'application' ? 'Delete Application' : 'Delete Note'}
-        message={
-          deleteConfirm.type === 'application'
-            ? `Are you sure you want to delete "${deleteConfirm.name}"? This will also delete all associated notes. This action cannot be undone.`
-            : `Are you sure you want to delete ${deleteConfirm.name}? This action cannot be undone.`
-        }
+        title="Delete Application"
+        message={`Are you sure you want to delete "${deleteConfirm.name}"? This will also delete all associated notes. This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
