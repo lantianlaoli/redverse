@@ -25,9 +25,9 @@ export default function Dashboard() {
   const [applicationCount, setApplicationCount] = useState<number>(0);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
 
-  // Check if application is under review (missing admin-filled fields)
+  // Check if application is under review (no note data available yet)
   const isApplicationUnderReview = (app: ApplicationItem): boolean => {
-    return !app.founder_url || !app.image || !app.explain;
+    return !app.note;
   };
 
   useEffect(() => {
@@ -394,7 +394,7 @@ export default function Dashboard() {
                                   href={item.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center space-x-2 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+                                  className="btn-secondary-outline space-x-2"
                                 >
                                   <span>View Project</span>
                                   <span>→</span>
@@ -405,7 +405,7 @@ export default function Dashboard() {
                                   href={item.note?.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                                  className="btn-primary-black space-x-2"
                                 >
                                   <span>View Post</span>
                                   <span>→</span>

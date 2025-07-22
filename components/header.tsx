@@ -69,13 +69,8 @@ export function Header() {
                 Questions
               </SmoothScrollLink>
               {user && (
-                <Link href="/dashboard" className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1">
-                  My Applications
-                </Link>
-              )}
-              {user?.emailAddresses?.[0]?.emailAddress === 'lantianlaoli@gmail.com' && (
-                <Link href="/admin" className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1">
-                  Admin
+                <Link href="/dashboard" className="dashboard-highlight-btn">
+                  Dashboard
                 </Link>
               )}
               
@@ -156,19 +151,10 @@ export function Header() {
                 {user && (
                   <Link 
                     href="/dashboard" 
-                    className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+                    className="mobile-menu-item dashboard-highlight-btn-mobile"
                     onClick={closeMenu}
                   >
-                    My Applications
-                  </Link>
-                )}
-                {user?.emailAddresses?.[0]?.emailAddress === 'lantianlaoli@gmail.com' && (
-                  <Link 
-                    href="/admin" 
-                    className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
-                    onClick={closeMenu}
-                  >
-                    Admin
+                    Dashboard
                   </Link>
                 )}
               </div>
