@@ -37,12 +37,12 @@ export default function Home() {
               </div>
 
               {/* Main Heading */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight animate-fadeInUp animate-delay-300">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold font-mono text-gray-900 leading-tight animate-fadeInUp animate-delay-300">
               🚀Launch your indie product to China&apos;s visual discovery engine
               </h1>
               
               {/* Subtitle */}
-              <p className="text-lg lg:text-xl text-gray-600 leading-relaxed animate-fadeInUp animate-delay-400 max-w-lg mx-auto lg:mx-0">
+              <p className="text-lg lg:text-xl font-serif text-gray-600 leading-relaxed animate-fadeInUp animate-delay-400 max-w-lg mx-auto lg:mx-0">
                 Beam your project into{" "}
                 <a 
                   href="https://www.xiaohongshu.com/explore" 

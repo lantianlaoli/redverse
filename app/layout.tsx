@@ -17,6 +17,7 @@ const interDisplay = Inter({
   display: "swap",
 });
 
+
 export const metadata: Metadata = {
   title: "Redverse - Make Your AI App Go Viral in China",
   description: "Bridge global AI innovation with the Chinese market. Transform your AI app into viral Xiaohongshu posts and reach millions of Chinese users.",
@@ -74,6 +75,9 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One:wght@400&display=swap" rel="stylesheet" />
           <meta name="google-site-verification" content="5VLUKXmW8gT248m1IKBZFLgD4DD8pmU1TzqAAb1zASo" />
           <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
           <meta name="theme-color" content="#000000" />

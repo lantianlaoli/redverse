@@ -31,7 +31,7 @@ export function Header() {
                   alt="Redverse" 
                   width={48} 
                   height={48}
-                  className="w-10 h-10 sm:w-12 sm:h-12"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg"
                   style={{
                     width: '40px',
                     height: '40px'
