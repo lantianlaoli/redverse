@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useUser, SignInButton } from '@clerk/nextjs';
-import { submitApplication } from '@/lib/actions';
+import { submitApplication, submitFeedback } from '@/lib/actions';
 
 interface QuickSubmitProps {
   onSuccess?: () => void;
@@ -12,8 +12,14 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
   const { user } = useUser();
   const [isPending, startTransition] = useTransition();
   const [websiteUrl, setWebsiteUrl] = useState('');
-  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'success' | 'error' | 'feedback' | 'feedback-success'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [feedbackText, setFeedbackText] = useState('');
+  const [submittedApplication, setSubmittedApplication] = useState<{
+    id: string;
+    name: string;
+    url: string;
+  } | null>(null);
 
   // URL validation function
   const isValidUrl = (url: string): boolean => {
@@ -46,13 +52,13 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
       
       if (result.success) {
         setSubmissionStatus('success');
+        setSubmittedApplication(result.application);
         onSuccess?.();
         
-        // Auto-reset after 5 seconds
+        // Switch to feedback mode after 3 seconds
         setTimeout(() => {
-          setSubmissionStatus('idle');
-          setWebsiteUrl('');
-        }, 5000);
+          setSubmissionStatus('feedback');
+        }, 3000);
       } else {
         let errorMsg = result.error || 'Submission failed';
         
@@ -77,7 +83,63 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     setSubmissionStatus('idle');
     setWebsiteUrl('');
     setErrorMessage('');
+    setFeedbackText('');
+    setSubmittedApplication(null);
   };
+
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackText.trim()) return;
+    
+    try {
+      const result = await submitFeedback(feedbackText.trim(), submittedApplication);
+      
+      if (result.success) {
+        setSubmissionStatus('feedback-success');
+        
+        // Auto-reset after 2 seconds
+        setTimeout(() => {
+          handleReset();
+        }, 2000);
+      } else {
+        console.error('Feedback submission failed:', result.error);
+        // Still show success to user even if email fails
+        setSubmissionStatus('feedback-success');
+        setTimeout(() => {
+          handleReset();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Feedback submission error:', error);
+      // Still show success to user even if there's an error
+      setSubmissionStatus('feedback-success');
+      setTimeout(() => {
+        handleReset();
+      }, 2000);
+    }
+  };
+
+  // Handle ESC key and auto-timeout for feedback mode
+  useEffect(() => {
+    if (submissionStatus === 'feedback') {
+      const handleEscKey = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          handleReset();
+        }
+      };
+
+      // Auto-reset after 30 seconds if no action
+      const timeout = setTimeout(() => {
+        handleReset();
+      }, 30000);
+
+      document.addEventListener('keydown', handleEscKey);
+      
+      return () => {
+        document.removeEventListener('keydown', handleEscKey);
+        clearTimeout(timeout);
+      };
+    }
+  }, [submissionStatus]);
 
   if (!user) {
     return (
@@ -103,9 +165,15 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
   return (
     <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Adaptive container that transforms based on status */}
-        <div className={`relative rounded-full shadow-lg p-2 transition-all duration-500 ease-in-out ${
-          submissionStatus === 'success' 
+        {/* Fixed-size container to prevent layout jumping */}
+        <div className={`relative shadow-lg p-2 transition-all duration-500 ease-in-out ${
+          submissionStatus === 'feedback' || submissionStatus === 'feedback-success'
+            ? 'rounded-2xl min-h-[200px] bg-white border-2 border-gray-200'
+            : 'rounded-full min-h-[60px]'
+        } ${
+          submissionStatus === 'feedback' || submissionStatus === 'feedback-success'
+            ? ''
+            : submissionStatus === 'success' 
             ? 'bg-gradient-to-r from-green-400 to-green-500 border-2 border-green-400' 
             : submissionStatus === 'submitting'
             ? 'bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 border-2 border-blue-300 shadow-blue-100'
@@ -120,33 +188,67 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
           
           {/* Success State */}
           {submissionStatus === 'success' && (
-            <div className="flex items-center justify-center py-4 px-6">
-              <div className="flex items-center space-x-3">
-                {/* Animated checkmark */}
-                <div className="relative">
-                  <svg 
-                    className="w-8 h-8 text-white" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
+            <>
+              {/* Celebration ribbons - left side */}
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={`left-${i}`}
+                    className="absolute w-3 h-12 rounded-sm"
                     style={{
-                      animation: 'checkmarkScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                      backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'][i],
+                      animation: `ribbonLeft${i} 1.5s ease-out`,
+                      animationDelay: `${i * 0.15}s`,
+                      transformOrigin: 'center top'
                     }}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div className="text-white">
-                  <p className="text-lg font-semibold">Product Submitted!</p>
-                  <p className="text-sm opacity-90">We&apos;ll review it and create your Xiaohongshu post</p>
+                  />
+                ))}
+              </div>
+              
+              {/* Celebration ribbons - right side */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={`right-${i}`}
+                    className="absolute w-3 h-12 rounded-sm"
+                    style={{
+                      backgroundColor: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'][i],
+                      animation: `ribbonRight${i} 1.5s ease-out`,
+                      animationDelay: `${i * 0.15}s`,
+                      transformOrigin: 'center top'
+                    }}
+                  />
+                ))}
+              </div>
+              
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex items-center space-x-3">
+                  {/* Animated checkmark */}
+                  <div className="relative">
+                    <svg 
+                      className="w-8 h-8 text-white" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                      style={{
+                        animation: 'checkmarkScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                      }}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div className="text-white">
+                    <p className="text-lg font-semibold">Product Submitted!</p>
+                    <p className="text-sm opacity-90">We&apos;ll review it and create your Xiaohongshu post</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Loading State */}
           {submissionStatus === 'submitting' && (
-            <div className="flex items-center justify-center py-4 px-6">
+            <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex items-center space-x-3">
                 {/* Three bouncing dots */}
                 <div className="flex space-x-1">
@@ -169,8 +271,8 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
 
           {/* Error State */}
           {submissionStatus === 'error' && (
-            <div className="flex items-center justify-center py-4 px-6">
-              <div className="flex items-center space-x-3">
+            <div className="absolute inset-0 flex items-center justify-center px-6">
+              <div className="flex items-center space-x-3 w-full">
                 {/* Animated error icon */}
                 <div className="relative">
                   <svg 
@@ -202,10 +304,81 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
               </div>
             </div>
           )}
+
+          {/* Feedback State */}
+          {submissionStatus === 'feedback' && (
+            <div 
+              className="absolute inset-0 p-4 cursor-default"
+              onClick={(e) => {
+                // Only close if clicking the background, not the content
+                if (e.target === e.currentTarget) {
+                  handleReset();
+                }
+              }}
+            >
+              <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+                <div className="text-left">
+                  <h3 className="text-base font-medium text-gray-800 mb-1">
+                    Help us improve your experience
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    What additional data insights would you find valuable beyond likes, saves, and comments?
+                  </p>
+                </div>
+                
+                <div className="relative bg-white border border-gray-200 rounded-lg shadow-sm hover:border-gray-300 transition-colors focus-within:border-gray-400 focus-within:shadow-md">
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    placeholder="e.g., conversion analytics, user demographics, competitor insights, growth recommendations..."
+                    className="w-full h-20 px-3 py-3 text-gray-900 placeholder-gray-400 bg-transparent border-0 focus:outline-none resize-none text-sm leading-relaxed"
+                  />
+                  
+                  <div className="flex justify-end p-2 border-t border-gray-100 bg-gray-50/50">
+                    <button
+                      type="button"
+                      onClick={() => handleFeedbackSubmit()}
+                      disabled={!feedbackText.trim()}
+                      className="bg-gray-900 text-white px-4 py-1.5 rounded-md text-xs font-medium hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
+                    >
+                      Submit feedback
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-xs text-gray-400">Press ESC to skip</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Feedback Success State */}
+          {submissionStatus === 'feedback-success' && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="mb-3">
+                  <svg 
+                    className="w-8 h-8 text-green-500 mx-auto" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                    style={{
+                      animation: 'checkmarkScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                    }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-medium text-gray-800 mb-1">Thanks for your feedback!</h3>
+                <p className="text-sm text-gray-500">We&apos;ll use your insights to improve our service</p>
+              </div>
+            </div>
+          )}
           
           {/* Default Input State */}
           {submissionStatus === 'idle' && (
-            <div className="flex items-center">
+            <div className="flex items-center min-h-[56px]">
               <div className="relative flex-1 flex items-center">
                 <input
                   type="url"
@@ -285,6 +458,243 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
           40% {
             transform: scale(1.2);
             opacity: 1;
+          }
+        }
+
+        /* Ribbon animations - Left side */
+        @keyframes ribbonLeft0 {
+          0% { 
+            transform: translate(0, -50px) rotate(-10deg) scaleY(0); 
+            opacity: 1; 
+          }
+          30% { 
+            transform: translate(-30px, 0) rotate(-15deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(-120px, 100px) rotate(-25deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonLeft1 {
+          0% { 
+            transform: translate(0, -40px) rotate(5deg) scaleY(0); 
+            opacity: 1; 
+          }
+          35% { 
+            transform: translate(-25px, 10px) rotate(0deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(-100px, 120px) rotate(20deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonLeft2 {
+          0% { 
+            transform: translate(0, -60px) rotate(-20deg) scaleY(0); 
+            opacity: 1; 
+          }
+          25% { 
+            transform: translate(-40px, -10px) rotate(-25deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(-140px, 90px) rotate(-35deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonLeft3 {
+          0% { 
+            transform: translate(0, -30px) rotate(15deg) scaleY(0); 
+            opacity: 1; 
+          }
+          40% { 
+            transform: translate(-20px, 20px) rotate(10deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(-80px, 110px) rotate(30deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonLeft4 {
+          0% { 
+            transform: translate(0, -45px) rotate(-5deg) scaleY(0); 
+            opacity: 1; 
+          }
+          32% { 
+            transform: translate(-35px, 5px) rotate(-10deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(-110px, 115px) rotate(-15deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonLeft5 {
+          0% { 
+            transform: translate(0, -55px) rotate(25deg) scaleY(0); 
+            opacity: 1; 
+          }
+          28% { 
+            transform: translate(-45px, -5px) rotate(20deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(-90px, 105px) rotate(40deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+
+        /* Ribbon animations - Right side */
+        @keyframes ribbonRight0 {
+          0% { 
+            transform: translate(0, -50px) rotate(10deg) scaleY(0); 
+            opacity: 1; 
+          }
+          30% { 
+            transform: translate(30px, 0) rotate(15deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(120px, 100px) rotate(25deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonRight1 {
+          0% { 
+            transform: translate(0, -40px) rotate(-5deg) scaleY(0); 
+            opacity: 1; 
+          }
+          35% { 
+            transform: translate(25px, 10px) rotate(0deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(100px, 120px) rotate(-20deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonRight2 {
+          0% { 
+            transform: translate(0, -60px) rotate(20deg) scaleY(0); 
+            opacity: 1; 
+          }
+          25% { 
+            transform: translate(40px, -10px) rotate(25deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(140px, 90px) rotate(35deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonRight3 {
+          0% { 
+            transform: translate(0, -30px) rotate(-15deg) scaleY(0); 
+            opacity: 1; 
+          }
+          40% { 
+            transform: translate(20px, 20px) rotate(-10deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(80px, 110px) rotate(-30deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonRight4 {
+          0% { 
+            transform: translate(0, -45px) rotate(5deg) scaleY(0); 
+            opacity: 1; 
+          }
+          32% { 
+            transform: translate(35px, 5px) rotate(10deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(110px, 115px) rotate(15deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+        @keyframes ribbonRight5 {
+          0% { 
+            transform: translate(0, -55px) rotate(-25deg) scaleY(0); 
+            opacity: 1; 
+          }
+          28% { 
+            transform: translate(45px, -5px) rotate(-20deg) scaleY(1); 
+            opacity: 1; 
+          }
+          100% { 
+            transform: translate(90px, 105px) rotate(-40deg) scaleY(1); 
+            opacity: 0; 
+          }
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 640px) {
+          @keyframes ribbonLeft0 {
+            0% { transform: translate(0, -30px) rotate(-10deg) scaleY(0); opacity: 1; }
+            30% { transform: translate(-20px, 0) rotate(-15deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(-80px, 60px) rotate(-25deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonLeft1 {
+            0% { transform: translate(0, -25px) rotate(5deg) scaleY(0); opacity: 1; }
+            35% { transform: translate(-15px, 5px) rotate(0deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(-60px, 70px) rotate(20deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonLeft2 {
+            0% { transform: translate(0, -35px) rotate(-20deg) scaleY(0); opacity: 1; }
+            25% { transform: translate(-25px, -5px) rotate(-25deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(-90px, 55px) rotate(-35deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonLeft3 {
+            0% { transform: translate(0, -20px) rotate(15deg) scaleY(0); opacity: 1; }
+            40% { transform: translate(-12px, 10px) rotate(10deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(-50px, 65px) rotate(30deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonLeft4 {
+            0% { transform: translate(0, -28px) rotate(-5deg) scaleY(0); opacity: 1; }
+            32% { transform: translate(-22px, 2px) rotate(-10deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(-70px, 68px) rotate(-15deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonLeft5 {
+            0% { transform: translate(0, -32px) rotate(25deg) scaleY(0); opacity: 1; }
+            28% { transform: translate(-28px, -2px) rotate(20deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(-60px, 62px) rotate(40deg) scaleY(1); opacity: 0; }
+          }
+          
+          @keyframes ribbonRight0 {
+            0% { transform: translate(0, -30px) rotate(10deg) scaleY(0); opacity: 1; }
+            30% { transform: translate(20px, 0) rotate(15deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(80px, 60px) rotate(25deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonRight1 {
+            0% { transform: translate(0, -25px) rotate(-5deg) scaleY(0); opacity: 1; }
+            35% { transform: translate(15px, 5px) rotate(0deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(60px, 70px) rotate(-20deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonRight2 {
+            0% { transform: translate(0, -35px) rotate(20deg) scaleY(0); opacity: 1; }
+            25% { transform: translate(25px, -5px) rotate(25deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(90px, 55px) rotate(35deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonRight3 {
+            0% { transform: translate(0, -20px) rotate(-15deg) scaleY(0); opacity: 1; }
+            40% { transform: translate(12px, 10px) rotate(-10deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(50px, 65px) rotate(-30deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonRight4 {
+            0% { transform: translate(0, -28px) rotate(5deg) scaleY(0); opacity: 1; }
+            32% { transform: translate(22px, 2px) rotate(10deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(70px, 68px) rotate(15deg) scaleY(1); opacity: 0; }
+          }
+          @keyframes ribbonRight5 {
+            0% { transform: translate(0, -32px) rotate(-25deg) scaleY(0); opacity: 1; }
+            28% { transform: translate(28px, -2px) rotate(-20deg) scaleY(1); opacity: 1; }
+            100% { transform: translate(60px, 62px) rotate(-40deg) scaleY(1); opacity: 0; }
           }
         }
       `}</style>

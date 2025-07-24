@@ -38,6 +38,18 @@ interface NoteNotificationData {
   };
 }
 
+interface FeedbackData {
+  feedbackText: string;
+  userEmail: string;
+  userName: string;
+  submittedAt: string;
+  applicationData?: {
+    name: string;
+    url: string;
+    id: string;
+  } | null;
+}
+
 export async function sendNewApplicationNotification(data: ApplicationNotificationData): Promise<{
   success: boolean;
   error?: string;
@@ -822,6 +834,197 @@ Redverse Team
 
   } catch (error) {
     console.error('Failed to send note notification email:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
+export async function sendFeedbackEmail(data: FeedbackData): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    // Validate environment variables
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
+      return {
+        success: false,
+        error: 'Email service not configured'
+      };
+    }
+
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>User Feedback - Redverse</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+              color: white;
+              padding: 30px 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+            }
+            .content {
+              background: #ffffff;
+              padding: 30px 20px;
+              border: 1px solid #e1e5e9;
+              border-top: none;
+            }
+            .feedback-content {
+              background: #f8f9fa;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+              border-left: 4px solid #4f46e5;
+            }
+            .user-details {
+              background: #f8f9fa;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+            }
+            .detail-item {
+              margin: 10px 0;
+              padding: 8px 0;
+              border-bottom: 1px solid #e9ecef;
+            }
+            .detail-item:last-child {
+              border-bottom: none;
+            }
+            .label {
+              font-weight: 600;
+              color: #495057;
+              display: inline-block;
+              width: 120px;
+            }
+            .value {
+              color: #333;
+            }
+            .feedback-text {
+              font-size: 16px;
+              line-height: 1.6;
+              color: #333;
+              white-space: pre-wrap;
+            }
+            .footer {
+              text-align: center;
+              padding: 20px;
+              color: #6c757d;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">💬 New User Feedback</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Redverse Platform</p>
+          </div>
+          
+          <div class="content">
+            <p>A user has provided feedback about our services. Here are the details:</p>
+            
+            <div class="feedback-content">
+              <h3 style="margin-top: 0; color: #4f46e5;">Feedback Content</h3>
+              <div class="feedback-text">${data.feedbackText}</div>
+            </div>
+            
+            <div class="user-details">
+              <h3 style="margin-top: 0; color: #333;">User Information</h3>
+              
+              <div class="detail-item">
+                <span class="label">Name:</span>
+                <span class="value">${data.userName}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="label">Email:</span>
+                <span class="value">${data.userEmail}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="label">Submitted:</span>
+                <span class="value">${data.submittedAt}</span>
+              </div>
+              
+              ${data.applicationData ? `
+              <div class="detail-item">
+                <span class="label">Project:</span>
+                <span class="value">${data.applicationData.name}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="label">Project URL:</span>
+                <span class="value"><a href="${data.applicationData.url}" target="_blank">${data.applicationData.url}</a></span>
+              </div>
+              ` : ''}
+            </div>
+            
+            <p style="margin-top: 30px;">
+              <strong>Action Required:</strong> Please review this feedback and consider implementing requested improvements or reaching out to the user for follow-up.
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p>Best regards,<br>Redverse Feedback System</p>
+            <p style="font-size: 12px; color: #999;">
+              This is an automated feedback notification from Redverse.
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const emailText = `
+New User Feedback - Redverse
+
+A user has provided feedback about our services:
+
+Feedback Content:
+${data.feedbackText}
+
+User Information:
+• Name: ${data.userName}
+• Email: ${data.userEmail}
+• Submitted: ${data.submittedAt}
+${data.applicationData ? `• Project: ${data.applicationData.name}` : ''}
+${data.applicationData ? `• Project URL: ${data.applicationData.url}` : ''}
+
+Action Required: Please review this feedback and consider implementing requested improvements or reaching out to the user for follow-up.
+
+Best regards,
+Redverse Feedback System
+    `;
+
+    const result = await resend.emails.send({
+      from: 'Redverse <hello@redverse.online>',
+      to: process.env.ADMIN_EMAIL || 'lantianlaoli@gmail.com',
+      subject: `💬 New User Feedback - ${data.userName}`,
+      html: emailHtml,
+      text: emailText,
+    });
+
+    console.log('Feedback email sent successfully:', result);
+    
+    return {
+      success: true
+    };
+
+  } catch (error) {
+    console.error('Failed to send feedback email:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -5,7 +5,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { checkApplicationLimit } from '@/lib/subscription';
 import { revalidatePath } from 'next/cache';
-import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification } from './email';
+import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification, sendFeedbackEmail } from './email';
 
 // Helper function to send bug report email
 async function sendBugReport(error: string, userId: string | null, formData: FormData) {
@@ -1006,6 +1006,73 @@ export async function updateApplication(appId: string, formData: FormData): Prom
 
   } catch (error) {
     console.error('Update application error:', error);
+    return {
+      success: false,
+      error: 'Something went wrong. Please try again.'
+    };
+  }
+}
+
+// Submit feedback server action
+export async function submitFeedback(feedbackText: string, applicationData?: {
+  id: string;
+  name: string;
+  url: string;
+} | null): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Please sign in to submit feedback'
+      };
+    }
+
+    if (!feedbackText.trim()) {
+      return {
+        success: false,
+        error: 'Feedback text is required'
+      };
+    }
+
+    // Get user information
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
+
+    // Send feedback email to admin
+    const emailResult = await sendFeedbackEmail({
+      feedbackText: feedbackText.trim(),
+      userEmail,
+      userName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : userEmail,
+      submittedAt: new Date().toLocaleString('en-US', {
+        timeZone: 'UTC',
+        dateStyle: 'full',
+        timeStyle: 'short'
+      }),
+      applicationData: applicationData ? {
+        name: applicationData.name,
+        url: applicationData.url,
+        id: applicationData.id
+      } : null
+    });
+
+    if (!emailResult.success) {
+      console.error('Failed to send feedback email:', emailResult.error);
+      return {
+        success: false,
+        error: 'Failed to send feedback. Please try again.'
+      };
+    }
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('Submit feedback error:', error);
     return {
       success: false,
       error: 'Something went wrong. Please try again.'
