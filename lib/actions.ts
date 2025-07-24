@@ -5,7 +5,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { checkApplicationLimit } from '@/lib/subscription';
 import { revalidatePath } from 'next/cache';
-import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification, sendFeedbackEmail } from './email';
+import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification } from './email';
 
 // Helper function to send bug report email
 async function sendBugReport(error: string, userId: string | null, formData: FormData) {
@@ -222,50 +222,10 @@ export async function submitApplication(formData: FormData) {
     revalidatePath('/');
     revalidatePath('/dashboard');
 
-    // Send email notification (don't let email failure affect submission success)
-    try {
-      console.log('Debug: Starting email notification process', {
-        userId: userId ? `${userId.substring(0, 8)}...` : null,
-        applicationId: data?.id
-      });
-      
-      const client = await clerkClient();
-      const user = await client.users.getUser(userId);
-      const userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
-      
-      console.log('Debug: User email retrieved', {
-        userEmail: userEmail !== 'Unknown' ? `${userEmail.split('@')[0]}@***` : 'Unknown',
-        hasEmail: userEmail !== 'Unknown'
-      });
-      
-      const emailResult = await sendNewApplicationNotification({
-        projectName: applicationData.name,
-        websiteUrl: applicationData.url,
-        submitterEmail: userEmail,
-        submittedAt: new Date().toLocaleString('en-US', {
-          timeZone: 'UTC',
-          dateStyle: 'full',
-          timeStyle: 'short'
-        }),
-        adminDashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin`
-      });
-      
-      if (emailResult.success) {
-        console.log('Debug: Email notification sent successfully');
-      } else {
-        console.error('Debug: Email notification failed', {
-          error: emailResult.error,
-          applicationId: data?.id
-        });
-      }
-    } catch (emailError) {
-      console.error('Debug: Email notification process failed', {
-        error: emailError,
-        errorMessage: emailError instanceof Error ? emailError.message : 'Unknown error',
-        applicationId: data?.id,
-        userId: userId ? `${userId.substring(0, 8)}...` : null
-      });
-    }
+    console.log('Debug: Application submitted successfully, email will be sent after feedback collection', {
+      applicationId: data?.id,
+      userId: userId ? `${userId.substring(0, 8)}...` : null
+    });
 
     return {
       success: true,
@@ -1032,42 +992,85 @@ export async function submitFeedback(feedbackText: string, applicationData?: {
       };
     }
 
-    if (!feedbackText.trim()) {
-      return {
-        success: false,
-        error: 'Feedback text is required'
-      };
-    }
+    // Allow empty feedback for cases where user skips feedback
+    console.log('Debug: Processing feedback submission', {
+      feedbackLength: feedbackText.trim().length,
+      hasApplicationData: !!applicationData
+    });
 
     // Get user information
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
+    console.log('Debug: Getting user information for feedback submission', { userId });
+    
+    let userEmail = 'Unknown';
+    let userName = 'Unknown User';
+    
+    try {
+      const client = await clerkClient();
+      console.log('Debug: Clerk client initialized successfully');
+      
+      const user = await client.users.getUser(userId);
+      console.log('Debug: User retrieved from Clerk', { 
+        userId: user.id,
+        hasEmailAddresses: !!user.emailAddresses?.length,
+        hasFirstName: !!user.firstName,
+        hasLastName: !!user.lastName
+      });
+      
+      userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
+      userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : userEmail;
+      
+      console.log('Debug: User info extracted', { userEmail: userEmail !== 'Unknown' ? 'extracted' : 'fallback', userName });
+    } catch (clerkError) {
+      console.error('Debug: Failed to get user from Clerk', {
+        error: clerkError,
+        errorMessage: clerkError instanceof Error ? clerkError.message : 'Unknown error',
+        userId
+      });
+      
+      // Continue with fallback values
+      userEmail = 'clerk-error@unknown.com';
+      userName = `User ${userId.substring(0, 8)}`;
+    }
 
-    // Send feedback email to admin
-    const emailResult = await sendFeedbackEmail({
-      feedbackText: feedbackText.trim(),
-      userEmail,
-      userName: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : userEmail,
+    // Send application notification with feedback
+    console.log('Debug: Preparing to send application notification with feedback', {
+      hasUserEmail: userEmail !== 'Unknown',
+      hasUserName: userName !== 'Unknown User',
+      hasApplicationData: !!applicationData,
+      feedbackLength: feedbackText.trim().length
+    });
+    
+    const emailResult = await sendNewApplicationNotification({
+      projectName: applicationData?.name || 'Unknown Project',
+      websiteUrl: applicationData?.url || 'Unknown URL',
+      submitterEmail: userEmail,
       submittedAt: new Date().toLocaleString('en-US', {
         timeZone: 'UTC',
         dateStyle: 'full',
         timeStyle: 'short'
       }),
-      applicationData: applicationData ? {
-        name: applicationData.name,
-        url: applicationData.url,
-        id: applicationData.id
-      } : null
+      adminDashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin`,
+      userFeedback: feedbackText.trim() || undefined
     });
 
     if (!emailResult.success) {
-      console.error('Failed to send feedback email:', emailResult.error);
+      console.error('Debug: Failed to send feedback email', {
+        error: emailResult.error,
+        userEmail,
+        userName,
+        feedbackLength: feedbackText.trim().length
+      });
       return {
         success: false,
         error: 'Failed to send feedback. Please try again.'
       };
     }
+
+    console.log('Debug: Feedback email sent successfully', {
+      userEmail: userEmail !== 'Unknown' ? 'sent' : 'fallback',
+      userName,
+      feedbackLength: feedbackText.trim().length
+    });
 
     return { success: true };
 

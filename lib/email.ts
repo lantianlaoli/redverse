@@ -11,6 +11,7 @@ interface ApplicationNotificationData {
   submittedAt: string;
   thumbnailUrl?: string;
   adminDashboardUrl: string;
+  userFeedback?: string;
 }
 
 interface BugReportData {
@@ -192,6 +193,16 @@ export async function sendNewApplicationNotification(data: ApplicationNotificati
               ` : ''}
             </div>
             
+            ${data.userFeedback ? `
+            <div class="project-details" style="border-left: 4px solid #4f46e5;">
+              <h3 style="margin-top: 0; color: #4f46e5;">User Feedback</h3>
+              <div style="font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap;">${data.userFeedback}</div>
+              <p style="margin: 15px 0 0 0; font-size: 14px; color: #666; font-style: italic;">
+                User provided additional insights about desired data analytics beyond standard metrics.
+              </p>
+            </div>
+            ` : ''}
+            
             <div style="margin: 30px 0;">
               <h3>Quick Actions</h3>
               <a href="${data.adminDashboardUrl}" class="cta-button" target="_blank">
@@ -225,6 +236,12 @@ ${data.twitterUsername ? `• Twitter: @${data.twitterUsername}` : ''}
 • Submitter: ${data.submitterEmail}
 • Submitted: ${data.submittedAt}
 ${data.thumbnailUrl ? `• Thumbnail: ${data.thumbnailUrl}` : ''}
+
+${data.userFeedback ? `User Feedback:
+${data.userFeedback}
+
+Note: User provided additional insights about desired data analytics beyond standard metrics.
+` : ''}
 
 Quick Actions:
 • View Admin Dashboard: ${data.adminDashboardUrl}
@@ -846,6 +863,14 @@ export async function sendFeedbackEmail(data: FeedbackData): Promise<{
   error?: string;
 }> {
   try {
+    console.log('Debug: Starting feedback email send', {
+      userName: data.userName,
+      userEmail: data.userEmail,
+      feedbackLength: data.feedbackText.length,
+      hasApplicationData: !!data.applicationData,
+      submittedAt: data.submittedAt
+    });
+
     // Validate environment variables
     if (!process.env.RESEND_API_KEY) {
       console.error('RESEND_API_KEY is not configured');
@@ -854,6 +879,12 @@ export async function sendFeedbackEmail(data: FeedbackData): Promise<{
         error: 'Email service not configured'
       };
     }
+
+    const adminEmail = process.env.ADMIN_EMAIL || 'lantianlaoli@gmail.com';
+    console.log('Debug: Email configuration', {
+      hasApiKey: !!process.env.RESEND_API_KEY,
+      adminEmail: adminEmail
+    });
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -1009,22 +1040,40 @@ Best regards,
 Redverse Feedback System
     `;
 
+    console.log('Debug: Sending email with Resend API', {
+      from: 'Redverse <hello@redverse.online>',
+      to: adminEmail,
+      subject: `💬 New User Feedback - ${data.userName}`,
+      htmlLength: emailHtml.length,
+      textLength: emailText.length
+    });
+
     const result = await resend.emails.send({
       from: 'Redverse <hello@redverse.online>',
-      to: process.env.ADMIN_EMAIL || 'lantianlaoli@gmail.com',
+      to: adminEmail,
       subject: `💬 New User Feedback - ${data.userName}`,
       html: emailHtml,
       text: emailText,
     });
 
-    console.log('Feedback email sent successfully:', result);
+    console.log('Debug: Feedback email sent successfully', { 
+      result,
+      messageId: result.data?.id,
+      userName: data.userName 
+    });
     
     return {
       success: true
     };
 
   } catch (error) {
-    console.error('Failed to send feedback email:', error);
+    console.error('Debug: Failed to send feedback email', {
+      error,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      userName: data?.userName,
+      userEmail: data?.userEmail,
+      feedbackLength: data?.feedbackText?.length
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
