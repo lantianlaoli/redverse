@@ -10,18 +10,8 @@ export async function GET(): Promise<Response> {
       changeFrequency: 'daily',
       priority: 1,
     },
-    {
-      url: `${baseUrl}/submit`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/dashboard`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
+    // Note: Dashboard and admin pages are intentionally excluded from sitemap 
+    // as they require authentication and should not be indexed
   ]
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

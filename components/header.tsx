@@ -19,7 +19,7 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md py-2 sm:py-4 z-50 border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 py-2 sm:py-4 z-50">
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <div className="bg-white/90 backdrop-blur border border-gray-200 rounded-2xl px-4 sm:px-6 py-2 sm:py-3 animate-fadeIn shadow-sm">
           <div className="flex items-center justify-between">
@@ -28,7 +28,7 @@ export function Header() {
               <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
                 <Image 
                   src="/logo.png" 
-                  alt="Redverse" 
+                  alt="Redverse logo - AI app marketing platform for China market" 
                   width={48} 
                   height={48}
                   className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg"
