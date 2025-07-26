@@ -16,10 +16,11 @@ export function Pricing() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get all plans
+        // Get enabled plans only
         const { data: plansData, error: plansError } = await supabase
           .from('subscription_plans')
           .select('*')
+          .eq('enable', true)
           .order('price_monthly', { ascending: true });
 
         if (!plansError && plansData) {
@@ -125,10 +126,18 @@ export function Pricing() {
           </p>
 
           <ul className="space-y-3 mb-8 text-gray-700 flex-grow">
-            <li>• {basicPlan?.max_applications || 1} project submission</li>
-            <li>• Professional content creation</li>
-            <li>• Xiaohongshu publication</li>
-            <li>• Community support</li>
+            {basicPlan?.features && basicPlan.features.length > 0 ? (
+              basicPlan.features.map((feature, index) => (
+                <li key={index}>• {feature}</li>
+              ))
+            ) : (
+              <>
+                <li>• {basicPlan?.max_applications || 1} project submission</li>
+                <li>• Professional content creation</li>
+                <li>• Xiaohongshu publication</li>
+                <li>• Community support</li>
+              </>
+            )}
           </ul>
 
           {/* Only show current plan status if user is on basic plan */}
@@ -167,11 +176,19 @@ export function Pricing() {
           </p>
 
           <ul className="space-y-3 mb-8 text-gray-700 text-lg flex-grow">
-            <li>• {proPlan?.max_applications ? `Up to ${proPlan.max_applications} project submissions per month` : 'Unlimited project submissions'}</li>
-            <li>• Priority review and publishing</li>
-            <li>• Enhanced content optimization</li>
-            <li>• Direct communication with curator</li>
-            <li>• Performance analytics</li>
+            {proPlan?.features && proPlan.features.length > 0 ? (
+              proPlan.features.map((feature, index) => (
+                <li key={index}>• {feature}</li>
+              ))
+            ) : (
+              <>
+                <li>• {proPlan?.max_applications ? `Up to ${proPlan.max_applications} project submissions per month` : 'Unlimited project submissions'}</li>
+                <li>• Priority review and publishing</li>
+                <li>• Enhanced content optimization</li>
+                <li>• Direct communication with curator</li>
+                <li>• Performance analytics</li>
+              </>
+            )}
           </ul>
 
           {/* Different button states based on plan availability and user subscription */}
