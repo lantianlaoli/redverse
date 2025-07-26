@@ -12,6 +12,8 @@ export function SubscriptionsView() {
   const [loading, setLoading] = useState(true);
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const [deletingPlan, setDeletingPlan] = useState<SubscriptionPlan | null>(null);
+  const [togglingPlan, setTogglingPlan] = useState<SubscriptionPlan | null>(null);
+  const [toggleLoading, setToggleLoading] = useState<string | null>(null);
   const [isCreateMode, setIsCreateMode] = useState(false);
   const { addToast } = useToast();
 
@@ -71,6 +73,45 @@ export function SubscriptionsView() {
     setIsCreateMode(false);
   };
 
+  const handleToggleEnable = (plan: SubscriptionPlan) => {
+    setTogglingPlan(plan);
+  };
+
+  const confirmToggleEnable = async () => {
+    if (!togglingPlan) return;
+    
+    try {
+      setToggleLoading(togglingPlan.id);
+      const response = await fetch(`/api/admin/subscriptions/${togglingPlan.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plan_name: togglingPlan.plan_name,
+          price_monthly: togglingPlan.price_monthly,
+          max_applications: togglingPlan.max_applications,
+          features: togglingPlan.features,
+          enable: !togglingPlan.enable
+        }),
+      });
+
+      if (response.ok) {
+        addToast(`Plan ${!togglingPlan.enable ? 'enabled' : 'disabled'} successfully`, 'success');
+        fetchPlans();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        addToast(errorData.error || 'Failed to update plan status', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to toggle plan status:', error);
+      addToast('Failed to update plan status', 'error');
+    } finally {
+      setToggleLoading(null);
+      setTogglingPlan(null);
+    }
+  };
+
   const formatFeatures = (features: unknown) => {
     if (!features) return [];
     if (Array.isArray(features)) return features;
@@ -106,21 +147,51 @@ export function SubscriptionsView() {
       {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {plans.map((plan) => (
-          <div key={plan.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+          <div key={plan.id} className={`bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow ${!plan.enable ? 'opacity-60' : ''}`}>
             {/* Plan Header */}
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 capitalize">
                   {plan.plan_name}
                 </h3>
-                {plan.plan_name === 'pro' && (
-                  <div className="flex items-center mt-1">
-                    <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                    <span className="text-xs text-yellow-600">Popular</span>
+                <div className="flex items-center space-x-2 mt-1">
+                  {plan.plan_name === 'pro' && (
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                      <span className="text-xs text-yellow-600">Popular</span>
+                    </div>
+                  )}
+                  <div className="flex items-center">
+                    <div className={`w-2 h-2 rounded-full mr-1 ${plan.enable ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <span className={`text-xs font-medium ${plan.enable ? 'text-green-600' : 'text-red-600'}`}>
+                      {plan.enable ? 'Enabled' : 'Disabled'}
+                    </span>
                   </div>
-                )}
+                </div>
               </div>
               <div className="flex space-x-2">
+                <button
+                  onClick={() => handleToggleEnable(plan)}
+                  disabled={toggleLoading === plan.id}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    plan.enable 
+                      ? 'bg-green-600 focus:ring-green-500' 
+                      : 'bg-gray-200 focus:ring-gray-300'
+                  } ${toggleLoading === plan.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={plan.enable ? 'Click to disable plan' : 'Click to enable plan'}
+                >
+                  {toggleLoading === plan.id ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : (
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                        plan.enable ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  )}
+                </button>
                 <button
                   onClick={() => handleEdit(plan)}
                   className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -150,7 +221,7 @@ export function SubscriptionsView() {
             </div>
 
             {/* Max Applications */}
-            {plan.max_applications && (
+            {(plan.max_applications !== null && plan.max_applications !== undefined) && (
               <div className="mb-4 flex items-center space-x-2 text-gray-600">
                 <Users className="w-4 h-4" />
                 <span className="text-sm">
@@ -227,6 +298,23 @@ export function SubscriptionsView() {
           onConfirm={() => handleDelete(deletingPlan)}
           onClose={() => setDeletingPlan(null)}
           variant="danger"
+        />
+      )}
+
+      {/* Toggle Enable/Disable Confirmation */}
+      {togglingPlan && (
+        <ConfirmDialog
+          isOpen={true}
+          title={`${togglingPlan.enable ? 'Disable' : 'Enable'} Subscription Plan`}
+          message={`Are you sure you want to ${togglingPlan.enable ? 'disable' : 'enable'} the "${togglingPlan.plan_name}" plan? ${
+            togglingPlan.enable 
+              ? 'Users will no longer be able to subscribe to this plan, and it will show as "Coming Soon" on the pricing page.' 
+              : 'This plan will become available for new subscriptions and visible on the pricing page.'
+          }`}
+          confirmText={togglingPlan.enable ? 'Disable Plan' : 'Enable Plan'}
+          onConfirm={confirmToggleEnable}
+          onClose={() => setTogglingPlan(null)}
+          variant={togglingPlan.enable ? 'warning' : undefined}
         />
       )}
     </div>

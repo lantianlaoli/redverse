@@ -6,6 +6,17 @@ import { ScrollAnimation } from './scroll-animation';
 import { getUserSubscription } from '@/lib/subscription';
 import { supabase, SubscriptionPlan, UserSubscription } from '@/lib/supabase';
 
+// Helper function to format features from database
+const formatFeatures = (features: Record<string, unknown> | string[] | null): string[] => {
+  if (!features) return [];
+  if (Array.isArray(features)) return features;
+  if (typeof features === 'object') {
+    // Handle jsonb object format - extract values or convert to array
+    return Object.values(features).filter(v => typeof v === 'string') as string[];
+  }
+  return [];
+};
+
 export function Pricing() {
   const { user } = useUser();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -16,11 +27,10 @@ export function Pricing() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get enabled plans only
+        // Get all plans to check their enable status
         const { data: plansData, error: plansError } = await supabase
           .from('subscription_plans')
           .select('*')
-          .eq('enable', true)
           .order('price_monthly', { ascending: true });
 
         if (!plansError && plansData) {
@@ -100,8 +110,9 @@ export function Pricing() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center">
-        {/* Basic Plan */}
-        <ScrollAnimation animation="fadeInLeft" delay={100}>
+        {/* Basic Plan - Only show if enabled */}
+        {basicPlan?.enable && (
+          <ScrollAnimation animation="fadeInLeft" delay={100}>
           <div className="relative bg-white border border-gray-200 rounded-xl p-8 h-full flex flex-col hover-lift transition-all duration-300">
           <div className="flex justify-between items-start mb-8">
             <h3 className="text-lg font-medium text-gray-900">Basic</h3>
@@ -126,18 +137,12 @@ export function Pricing() {
           </p>
 
           <ul className="space-y-3 mb-8 text-gray-700 flex-grow">
-            {basicPlan?.features && basicPlan.features.length > 0 ? (
-              basicPlan.features.map((feature, index) => (
+            {(() => {
+              const features = formatFeatures(basicPlan?.features || null);
+              return features.map((feature, index) => (
                 <li key={index}>• {feature}</li>
-              ))
-            ) : (
-              <>
-                <li>• {basicPlan?.max_applications || 1} project submission</li>
-                <li>• Professional content creation</li>
-                <li>• Xiaohongshu publication</li>
-                <li>• Community support</li>
-              </>
-            )}
+              ));
+            })()}
           </ul>
 
           {/* Only show current plan status if user is on basic plan */}
@@ -150,6 +155,7 @@ export function Pricing() {
           )}
           </div>
         </ScrollAnimation>
+        )}
 
         {/* Pro Plan - Larger with emphasis */}
         <ScrollAnimation animation="fadeInRight" delay={200}>
@@ -176,19 +182,12 @@ export function Pricing() {
           </p>
 
           <ul className="space-y-3 mb-8 text-gray-700 text-lg flex-grow">
-            {proPlan?.features && proPlan.features.length > 0 ? (
-              proPlan.features.map((feature, index) => (
+            {(() => {
+              const features = formatFeatures(proPlan?.features || null);
+              return features.map((feature, index) => (
                 <li key={index}>• {feature}</li>
-              ))
-            ) : (
-              <>
-                <li>• {proPlan?.max_applications ? `Up to ${proPlan.max_applications} project submissions per month` : 'Unlimited project submissions'}</li>
-                <li>• Priority review and publishing</li>
-                <li>• Enhanced content optimization</li>
-                <li>• Direct communication with curator</li>
-                <li>• Performance analytics</li>
-              </>
-            )}
+              ));
+            })()}
           </ul>
 
           {/* Different button states based on plan availability and user subscription */}
@@ -199,6 +198,10 @@ export function Pricing() {
           ) : userSubscription?.plan_name === 'pro' ? (
             <button className="w-full bg-green-600 text-white py-4 px-6 rounded-full font-medium text-lg cursor-default">
               ✓ Current Plan
+            </button>
+          ) : proPlan?.enable === false ? (
+            <button className="w-full bg-gray-400 text-white py-4 px-6 rounded-full font-medium text-lg cursor-default">
+              Coming Soon
             </button>
           ) : (
             <button 

@@ -39,7 +39,7 @@ export interface SubscriptionPlan {
   plan_name: string;
   max_applications: number | null;
   price_monthly: number;
-  features: string[];
+  features: Record<string, unknown> | string[] | null;
   enable: boolean;
   created_at: string;
 }
