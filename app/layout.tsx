@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs';
 import { AdminFloatingButton } from '@/components/admin-floating-button';
-import { Header } from '@/components/header';
+import { UserInitializer } from '@/components/user-initializer';
+import { ConditionalHeader } from '@/components/conditional-header';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -72,7 +73,7 @@ export const metadata: Metadata = {
     siteName: 'Redverse',
     images: [
       {
-        url: '/logo.png',
+        url: '/twitter.png',
         width: 1200,
         height: 630,
         alt: 'Redverse - AI App Marketing Platform',
@@ -161,7 +162,8 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${interDisplay.variable} antialiased`}
         >
-          <Header />
+          <UserInitializer />
+          <ConditionalHeader />
           {children}
           <AdminFloatingButton />
         </body>

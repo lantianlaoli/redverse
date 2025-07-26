@@ -17,7 +17,8 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
     plan_name: '',
     price_monthly: 0,
     max_applications: 1,
-    features: [] as string[]
+    features: [] as string[],
+    enable: true
   });
   const [saving, setSaving] = useState(false);
   const { addToast } = useToast();
@@ -28,14 +29,16 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
         plan_name: plan.plan_name || '',
         price_monthly: Number(plan.price_monthly) || 0,
         max_applications: plan.max_applications || 1,
-        features: formatFeatures(plan.features)
+        features: formatFeatures(plan.features),
+        enable: plan.enable !== undefined ? plan.enable : true
       });
     } else {
       setFormData({
         plan_name: '',
         price_monthly: 0,
         max_applications: 1,
-        features: []
+        features: [],
+        enable: true
       });
     }
   }, [plan]);
@@ -51,7 +54,7 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
     return [];
   };
 
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -196,7 +199,10 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
               type="number"
               min="-1"
               value={formData.max_applications}
-              onChange={(e) => handleInputChange('max_applications', parseInt(e.target.value) || 1)}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                handleInputChange('max_applications', isNaN(value) ? 1 : value);
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             />
             <p className="text-xs text-gray-600 mt-1">Set to -1 for unlimited applications</p>
@@ -251,6 +257,24 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Enable Status */}
+          <div>
+            <label className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={formData.enable}
+                onChange={(e) => handleInputChange('enable', e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm font-medium text-gray-900">
+                Enable this plan
+              </span>
+            </label>
+            <p className="text-xs text-gray-600 mt-1 ml-7">
+              Disabled plans won&apos;t be visible to users on the pricing page
+            </p>
           </div>
 
           {/* Actions */}

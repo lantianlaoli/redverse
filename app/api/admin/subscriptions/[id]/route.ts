@@ -7,7 +7,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { plan_name, price_monthly, max_applications, features } = await request.json();
+    const { plan_name, price_monthly, max_applications, features, enable } = await request.json();
     const { id: planId } = await params;
 
     // 验证必填字段
@@ -56,7 +56,8 @@ export async function PUT(
         plan_name: plan_name.trim(),
         price_monthly: price_monthly || 0,
         max_applications: max_applications || 1,
-        features: features || []
+        features: features || [],
+        enable: enable !== undefined ? enable : true
       })
       .eq('id', planId)
       .select()

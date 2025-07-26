@@ -153,26 +153,13 @@ export async function checkApplicationLimit(userId: string): Promise<{
       };
     }
 
-    // If no subscription, create basic subscription
-    let subscription = subResult.subscription;
+    // Get subscription (should exist due to UserInitializer)
+    const subscription = subResult.subscription;
     if (!subscription) {
-      const createResult = await createBasicSubscription(userId);
-      if (!createResult.success) {
-        return {
-          success: false,
-          error: createResult.error
-        };
-      }
-
-      // Get the newly created subscription with plan details
-      const newSubResult = await getUserSubscription(userId);
-      if (!newSubResult.success || !newSubResult.subscription) {
-        return {
-          success: false,
-          error: 'Failed to fetch new subscription'
-        };
-      }
-      subscription = newSubResult.subscription;
+      return {
+        success: false,
+        error: 'User subscription not found'
+      };
     }
 
     // Get user's current application count
@@ -187,8 +174,8 @@ export async function checkApplicationLimit(userId: string): Promise<{
     const currentCount = countResult.count || 0;
     const maxApplications = subscription.plan?.max_applications;
 
-    // If max_applications is null or undefined (unlimited), user can always submit
-    if (maxApplications === null || maxApplications === undefined) {
+    // If max_applications is null, undefined, or -1 (unlimited), user can always submit
+    if (maxApplications === null || maxApplications === undefined || maxApplications === -1) {
       return {
         success: true,
         canSubmit: true,

@@ -8,7 +8,7 @@ import { Header } from '@/components/header';
 import { ScrollAnimation } from '@/components/scroll-animation';
 import { getUserApplications } from '@/lib/actions';
 import { Application, Note, UserSubscription, SubscriptionPlan } from '@/lib/supabase';
-import { getUserSubscription, getUserApplicationCount, createBasicSubscription } from '@/lib/subscription';
+import { getUserSubscription, getUserApplicationCount } from '@/lib/subscription';
 import { TrendingUpIcon, HeartIcon, BookmarkIcon, MessageCircleIcon, TwitterIcon, EyeIcon } from '@/components/icons';
 
 interface ApplicationItem extends Application {
@@ -62,30 +62,15 @@ export default function Dashboard() {
     try {
       setSubscriptionLoading(true);
       
-      // First try to get existing subscription
+      // Get user subscription (should exist due to UserInitializer)
       const subResult = await getUserSubscription(user.id);
-      let subscription = subResult.subscription;
-      
-      // If no subscription exists, create a basic one
-      if (subResult.success && !subscription) {
-        console.log('No subscription found for user, creating basic subscription');
-        const createResult = await createBasicSubscription(user.id);
-        
-        if (createResult.success) {
-          // Fetch the newly created subscription with plan details
-          const newSubResult = await getUserSubscription(user.id);
-          if (newSubResult.success) {
-            subscription = newSubResult.subscription;
-          }
-        }
-      }
       
       // Get application count
       const countResult = await getUserApplicationCount(user.id);
       
       // Update state
-      if (subResult.success || subscription) {
-        setSubscription(subscription || null);
+      if (subResult.success) {
+        setSubscription(subResult.subscription || null);
       }
       
       if (countResult.success) {
@@ -135,7 +120,7 @@ export default function Dashboard() {
                   {subscription?.plan_name === 'pro' ? '🚀 Pro Plan' : '🆓 Basic Plan'}
                 </h3>
                 <p className="text-sm text-gray-700">
-                  Applications: {subscription?.plan?.max_applications === null ? 'Unlimited submissions' : `${applicationCount}/${subscription?.plan?.max_applications || 1} used`}
+                  Applications: {(subscription?.plan?.max_applications === null || subscription?.plan?.max_applications === -1) ? 'Unlimited submissions' : `${applicationCount}/${subscription?.plan?.max_applications || 1} used`}
                 </p>
               </div>
             </div>
