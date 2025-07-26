@@ -202,6 +202,28 @@ export function UserIcon({ className = "w-4 h-4", size }: IconProps) {
   );
 }
 
+export function ShareIcon({ className = "w-4 h-4", size }: IconProps) {
+  return (
+    <svg 
+      className={className} 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M8.59 13.51l6.83 3.98" />
+      <path d="M15.41 6.51l-6.82 3.98" />
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+    </svg>
+  );
+}
+
 export function XiaohongshuIcon({ className = "w-4 h-4", size }: IconProps) {
   return (
     <svg 

@@ -9,7 +9,7 @@ import { ScrollAnimation } from '@/components/scroll-animation';
 import { getUserApplications } from '@/lib/actions';
 import { Application, Note, UserSubscription, SubscriptionPlan } from '@/lib/supabase';
 import { getUserSubscription, getUserApplicationCount } from '@/lib/subscription';
-import { TrendingUpIcon, HeartIcon, BookmarkIcon, MessageCircleIcon, TwitterIcon, EyeIcon } from '@/components/icons';
+import { TrendingUpIcon, HeartIcon, BookmarkIcon, MessageCircleIcon, ShareIcon, TwitterIcon, EyeIcon } from '@/components/icons';
 
 interface ApplicationItem extends Application {
   note?: Note; // Single note object, not array
@@ -266,7 +266,7 @@ export default function Dashboard() {
                               </div>
                               
                               {/* Individual Metrics */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
                                 <div className="bg-red-50 rounded-lg p-2 border border-red-100">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2">
@@ -297,6 +297,17 @@ export default function Dashboard() {
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
                                       {(item.note.collects_count || 0).toLocaleString()}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <ShareIcon className="w-4 h-4 text-orange-600" />
+                                      <span className="text-xs font-medium text-gray-700">Shares</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-gray-900">
+                                      {(item.note.shares_count || 0).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>

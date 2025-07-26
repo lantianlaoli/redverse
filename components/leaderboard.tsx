@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getLeaderboard } from '@/lib/actions';
 import { Application, Note } from '@/lib/supabase';
 import { ScrollAnimation } from './scroll-animation';
-import { TrendingUpIcon, HeartIcon, EyeIcon, BookmarkIcon, MessageCircleIcon, TrophyIcon, ExternalLinkIcon, UserIcon, XiaohongshuIcon } from '@/components/icons';
+import { TrendingUpIcon, HeartIcon, EyeIcon, BookmarkIcon, MessageCircleIcon, ShareIcon, TrophyIcon, ExternalLinkIcon, UserIcon, XiaohongshuIcon } from '@/components/icons';
 import Image from 'next/image';
 
 interface LeaderboardItem extends Application {
@@ -151,6 +151,10 @@ export function Leaderboard() {
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
                     <BookmarkIcon className="w-3 h-3 mr-1" />
                     {(item.note.collects_count || 0).toLocaleString()} saves
+                  </span>
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                    <ShareIcon className="w-3 h-3 mr-1" />
+                    {(item.note.shares_count || 0).toLocaleString()} shares
                   </span>
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                     <MessageCircleIcon className="w-3 h-3 mr-1" />
