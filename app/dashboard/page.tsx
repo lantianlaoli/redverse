@@ -117,78 +117,30 @@ export default function Dashboard() {
       <Header />
       
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pt-24">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
-          <p className="text-gray-600 mt-2">Manage your submitted AI applications</p>
-        </div>
-
-        {/* Subscription Status Card */}
-        {subscriptionLoading ? (
-          <div className="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-200">
-            <p className="text-gray-500">Loading subscription info...</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
+            <p className="text-gray-600 mt-2">Manage your submitted AI applications</p>
           </div>
-        ) : (
-          <div className={`rounded-xl p-6 mb-8 border ${
-            subscription?.plan_name === 'pro' 
-              ? 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200' 
-              : 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
+          
+          {/* Simple Plan Card */}
+          {!subscriptionLoading && (
+            <div className={`rounded-lg px-4 py-3 border ${
+              subscription?.plan_name === 'pro' 
+                ? 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200' 
+                : 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200'
+            }`}>
+              <div className="text-center">
+                <h3 className="font-bold text-gray-900 mb-1">
                   {subscription?.plan_name === 'pro' ? '🚀 Pro Plan' : '🆓 Basic Plan'}
-                </h2>
-                <div className="space-y-1">
-                  {subscription?.plan?.max_applications === null ? (
-                    <p className="text-gray-700">
-                      <span className="font-medium">Applications:</span> Unlimited submissions
-                    </p>
-                  ) : (
-                    <p className="text-gray-700">
-                      <span className="font-medium">Applications:</span> {applicationCount} / {subscription?.plan?.max_applications || 1} used
-                    </p>
-                  )}
-                  <p className="text-sm text-gray-600">
-                    Status: <span className="font-medium capitalize">{subscription?.status || 'Active'}</span>
-                  </p>
-                </div>
+                </h3>
+                <p className="text-sm text-gray-700">
+                  Applications: {subscription?.plan?.max_applications === null ? 'Unlimited submissions' : `${applicationCount}/${subscription?.plan?.max_applications || 1} used`}
+                </p>
               </div>
-              
-              {subscription?.plan_name !== 'pro' && (
-                <div className="text-right">
-                  {/* Check if pro plan is enabled */}
-                  <button 
-                    className="inline-flex items-center px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed"
-                    disabled
-                  >
-                    🚧 Pro Coming Soon
-                  </button>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Unlimited submissions
-                  </p>
-                </div>
-              )}
             </div>
-            
-            {/* Progress bar for basic plan */}
-            {subscription?.plan?.max_applications !== null && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                  <span>Usage</span>
-                  <span>{applicationCount} / {subscription?.plan?.max_applications || 1}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${Math.min(100, (applicationCount / (subscription?.plan?.max_applications || 1)) * 100)}%` 
-                    }}
-                  ></div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
         {isLoading ? (
           <div className="text-center py-12">

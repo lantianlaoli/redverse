@@ -1,13 +1,20 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export function AdminFloatingButton() {
   const { user } = useUser();
+  const pathname = usePathname();
 
   // Only show for admin user
   if (user?.emailAddresses?.[0]?.emailAddress !== 'lantianlaoli@gmail.com') {
+    return null;
+  }
+
+  // Hide on admin pages
+  if (pathname?.startsWith('/admin')) {
     return null;
   }
 

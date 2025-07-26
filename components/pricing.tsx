@@ -11,6 +11,7 @@ export function Pricing() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [userSubscription, setUserSubscription] = useState<(UserSubscription & { plan?: SubscriptionPlan }) | null>(null);
   const [loading, setLoading] = useState(true);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,6 +53,43 @@ export function Pricing() {
 
   const basicPlan = plans.find(p => p.plan_name === 'basic');
   const proPlan = plans.find(p => p.plan_name === 'pro');
+
+  const handleUpgradeClick = async () => {
+    if (paymentLoading || !user?.id) return;
+    
+    const userEmail = user.emailAddresses?.[0]?.emailAddress;
+    if (!userEmail) {
+      alert('Unable to get user email. Please try again.');
+      return;
+    }
+    
+    setPaymentLoading(true);
+    try {
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          userEmail: userEmail
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.checkout_url) {
+        window.open(data.checkout_url, '_blank');
+      } else {
+        alert('Failed to create payment session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
   return (
     <div>
       <div className="text-center mb-12">
@@ -93,19 +131,13 @@ export function Pricing() {
             <li>• Community support</li>
           </ul>
 
-          {/* Different button states based on user subscription */}
-          {!user ? (
-            <button className="w-full bg-gray-300 text-gray-500 py-3 px-6 rounded-full font-medium cursor-not-allowed">
-              Sign in to get started
-            </button>
-          ) : userSubscription?.plan_name === 'basic' ? (
+          {/* Only show current plan status if user is on basic plan */}
+          {user && userSubscription?.plan_name === 'basic' ? (
             <button className="w-full bg-green-600 text-white py-3 px-6 rounded-full font-medium cursor-default">
               ✓ Current Plan
             </button>
           ) : (
-            <button className="w-full bg-black text-white py-3 px-6 rounded-full font-medium hover:bg-gray-800 transition-all duration-300 hover:scale-105 button-hover">
-              Get Started
-            </button>
+            <div className="py-3"></div>
           )}
           </div>
         </ScrollAnimation>
@@ -119,9 +151,6 @@ export function Pricing() {
           
           <div className="flex justify-between items-start mb-8">
             <h3 className="text-xl font-medium text-gray-900">Pro</h3>
-            <span className="bg-gray-500 text-white text-xs font-medium px-3 py-1 rounded-full">
-              {proPlan?.enable ? 'Available' : 'Coming Soon'}
-            </span>
           </div>
 
           <div className="mb-6">
@@ -154,13 +183,13 @@ export function Pricing() {
             <button className="w-full bg-green-600 text-white py-4 px-6 rounded-full font-medium text-lg cursor-default">
               ✓ Current Plan
             </button>
-          ) : !proPlan?.enable ? (
-            <button className="w-full bg-gray-400 text-white py-4 px-6 rounded-full font-medium text-lg cursor-not-allowed" disabled>
-              🚧 Coming Soon
-            </button>
           ) : (
-            <button className="w-full bg-black text-white py-4 px-6 rounded-full font-medium text-lg hover:bg-gray-800 transition-all duration-300 hover:scale-105">
-              Upgrade to Pro
+            <button 
+              className="w-full bg-black text-white py-4 px-6 rounded-full font-medium text-lg hover:bg-gray-800 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleUpgradeClick}
+              disabled={paymentLoading}
+            >
+              {paymentLoading ? 'Processing...' : 'Upgrade to Pro'}
             </button>
           )}
           </div>

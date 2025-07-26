@@ -310,12 +310,12 @@ export async function getUserApplications(): Promise<{
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       )[0];
 
-      // Weighted engagement calculation: collects (3x), comments (2x), likes (1x), views (0.1x)
+      // CES (Community Engagement Score) calculation based on Xiaohongshu algorithm: likes (1x), saves (1x), comments (4x), shares (4x)
       const totalEngagement = mostRecentNote ? 
         (mostRecentNote.likes_count || 0) * 1 + 
-        (mostRecentNote.collects_count || 0) * 3 + 
-        (mostRecentNote.comments_count || 0) * 2 + 
-        (mostRecentNote.views_count || 0) * 0.1 : 0;
+        (mostRecentNote.collects_count || 0) * 1 + 
+        (mostRecentNote.comments_count || 0) * 4 + 
+        (mostRecentNote.shares_count || 0) * 4 : 0;
       
       return {
         ...app,
@@ -391,12 +391,12 @@ export async function getLeaderboard(): Promise<{
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )[0];
 
-        // Weighted engagement calculation: collects (3x), comments (2x), likes (1x), views (0.1x)
+        // CES (Community Engagement Score) calculation based on Xiaohongshu algorithm: likes (1x), saves (1x), comments (4x), shares (4x)
         const totalEngagement = mostRecentNote ? 
           (mostRecentNote.likes_count || 0) * 1 + 
-          (mostRecentNote.collects_count || 0) * 3 + 
-          (mostRecentNote.comments_count || 0) * 2 + 
-          (mostRecentNote.views_count || 0) * 0.1 : 0;
+          (mostRecentNote.collects_count || 0) * 1 + 
+          (mostRecentNote.comments_count || 0) * 4 + 
+          (mostRecentNote.shares_count || 0) * 4 : 0;
         
         return {
           ...app,
@@ -471,13 +471,15 @@ export async function createNote(appId: string, formData: FormData): Promise<{
     const collectsCount = parseInt(formData.get('collects_count') as string) || 0;
     const commentsCount = parseInt(formData.get('comments_count') as string) || 0;
     const viewsCount = parseInt(formData.get('views_count') as string) || 0;
+    const sharesCount = parseInt(formData.get('shares_count') as string) || 0;
 
     console.log('Debug: Extracted form data:', {
       url,
       likesCount,
       collectsCount,
       commentsCount,
-      viewsCount
+      viewsCount,
+      sharesCount
     });
 
     if (!url) {
@@ -495,6 +497,7 @@ export async function createNote(appId: string, formData: FormData): Promise<{
       collects_count: collectsCount,
       comments_count: commentsCount,
       views_count: viewsCount,
+      shares_count: sharesCount,
     };
 
     console.log('Debug: Attempting to insert note:', insertData);
@@ -582,13 +585,15 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
     const collectsCount = parseInt(formData.get('collects_count') as string) || 0;
     const commentsCount = parseInt(formData.get('comments_count') as string) || 0;
     const viewsCount = parseInt(formData.get('views_count') as string) || 0;
+    const sharesCount = parseInt(formData.get('shares_count') as string) || 0;
 
     console.log('Debug: Extracted form data:', {
       url,
       likesCount,
       collectsCount,
       commentsCount,
-      viewsCount
+      viewsCount,
+      sharesCount
     });
 
     if (!url) {
@@ -605,6 +610,7 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
       collects_count: collectsCount,
       comments_count: commentsCount,
       views_count: viewsCount,
+      shares_count: sharesCount,
     };
 
     console.log('Debug: Attempting to update note:', updateData);
@@ -612,7 +618,7 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
     // Get current note data before update for comparison
     const { data: oldNote } = await supabase
       .from('note')
-      .select('likes_count, collects_count, comments_count, views_count, app_id')
+      .select('likes_count, collects_count, comments_count, views_count, shares_count, app_id')
       .eq('id', noteId)
       .single();
 
@@ -675,11 +681,16 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
                   old: oldNote.views_count || 0,
                   new: viewsCount,
                   diff: viewsCount - (oldNote.views_count || 0)
+                },
+                shares: {
+                  old: oldNote.shares_count || 0,
+                  new: sharesCount,
+                  diff: sharesCount - (oldNote.shares_count || 0)
                 }
               };
 
               // Only send notification if there are actual changes
-              const hasChanges = changes.likes.diff !== 0 || changes.collects.diff !== 0 || changes.comments.diff !== 0 || changes.views.diff !== 0;
+              const hasChanges = changes.likes.diff !== 0 || changes.collects.diff !== 0 || changes.comments.diff !== 0 || changes.views.diff !== 0 || changes.shares.diff !== 0;
               
               if (hasChanges) {
                 await sendNoteNotification({

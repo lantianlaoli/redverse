@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -16,6 +16,10 @@
     "next": "15.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "recharts": "^3.1.0",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
     "resend": "^4.6.0"
   },
   "devDependencies": {

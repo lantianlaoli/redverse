@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useUser, SignInButton } from '@clerk/nextjs';
 import { submitApplication, submitFeedback } from '@/lib/actions';
+import { checkApplicationLimit } from '@/lib/subscription';
 
 interface QuickSubmitProps {
   onSuccess?: () => void;
@@ -20,6 +21,17 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     name: string;
     url: string;
   } | null>(null);
+  const [userSubscriptionInfo, setUserSubscriptionInfo] = useState<{
+    canSubmit: boolean;
+    remainingCount: number;
+    planName: string;
+    isLoading: boolean;
+  }>({
+    canSubmit: true,
+    remainingCount: -1,
+    planName: 'basic',
+    isLoading: true
+  });
 
   // URL validation function
   const isValidUrl = (url: string): boolean => {
@@ -34,6 +46,47 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
 
   const urlIsValid = isValidUrl(websiteUrl);
   const showValidation = websiteUrl.length > 0;
+
+  // Fetch user subscription info when user is available
+  useEffect(() => {
+    if (user?.id) {
+      checkApplicationLimit(user.id).then((result) => {
+        if (result.success) {
+          setUserSubscriptionInfo({
+            canSubmit: result.canSubmit || false,
+            remainingCount: result.remainingCount || 0,
+            planName: result.subscription?.plan?.plan_name || 'basic',
+            isLoading: false
+          });
+        } else {
+          setUserSubscriptionInfo(prev => ({ ...prev, isLoading: false }));
+        }
+      });
+    }
+  }, [user?.id]);
+
+  // Generate dynamic button text based on subscription status
+  const getButtonText = () => {
+    if (userSubscriptionInfo.isLoading) {
+      return "Loading...";
+    }
+    
+    if (!userSubscriptionInfo.canSubmit) {
+      // User has reached their limit
+      if (userSubscriptionInfo.planName === 'basic') {
+        return "Submit Your Product - Upgrade to Pro";
+      } else {
+        return "Limit Reached - Contact Support";
+      }
+    }
+    
+    // User can still submit
+    if (userSubscriptionInfo.planName === 'pro') {
+      return "Submit Your Product - Pro";
+    } else {
+      return "Submit Your Product - Free";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -403,10 +456,10 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
               </div>
               <button
                 type="submit"
-                disabled={isPending || !urlIsValid}
+                disabled={isPending || !urlIsValid || userSubscriptionInfo.isLoading}
                 className="bg-black text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ml-2"
               >
-                Submit Your Product - Free
+                {getButtonText()}
               </button>
             </div>
           )}

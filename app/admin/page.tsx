@@ -6,6 +6,7 @@ import { useUser } from '@clerk/nextjs';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { AllApplicationsView } from '@/components/admin/all-applications-view';
 import { FounderUsersView } from '@/components/admin/founder-users-view';
+import { SubscriptionsView } from '@/components/admin/subscriptions-view';
 import { ToastProvider } from '@/components/ui/toast';
 
 export default function AdminDashboard() {
@@ -32,6 +33,8 @@ export default function AdminDashboard() {
         return <AllApplicationsView />;
       case 'founder':
         return <FounderUsersView />;
+      case 'subscriptions':
+        return <SubscriptionsView />;
       default:
         return <AllApplicationsView />;
     }

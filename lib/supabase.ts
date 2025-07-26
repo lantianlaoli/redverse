@@ -27,6 +27,7 @@ export interface Note {
   collects_count: number | null;
   comments_count: number | null;
   views_count: number | null;
+  shares_count: number | null;
 }
 
 export interface ApplicationWithNotes extends Application {
@@ -47,9 +48,8 @@ export interface UserSubscription {
   id: string;
   user_id: string;
   plan_name: string;
-  status: 'active' | 'cancelled' | 'expired';
   created_at: string;
-  expires_at: string | null;
+  creem_id: string | null;
 }
 
 // Image upload utility functions

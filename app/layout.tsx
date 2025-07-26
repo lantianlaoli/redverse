@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs';
 import { AdminFloatingButton } from '@/components/admin-floating-button';
+import { Header } from '@/components/header';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -160,6 +161,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${interDisplay.variable} antialiased`}
         >
+          <Header />
           {children}
           <AdminFloatingButton />
         </body>

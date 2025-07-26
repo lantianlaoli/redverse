@@ -14,7 +14,6 @@ export async function getUserSubscription(userId: string): Promise<{
       .from('user_subscriptions')
       .select('*')
       .eq('user_id', userId)
-      .eq('status', 'active')
       .single();
 
     if (subError && subError.code !== 'PGRST116') {
@@ -75,8 +74,7 @@ export async function createBasicSubscription(userId: string): Promise<{
       .from('user_subscriptions')
       .insert({
         user_id: userId,
-        plan_name: 'basic',
-        status: 'active'
+        plan_name: 'basic'
       })
       .select()
       .single();
@@ -264,8 +262,7 @@ export async function upgradeSubscription(userId: string): Promise<{
     const { data: subscription, error } = await supabase
       .from('user_subscriptions')
       .update({
-        plan_name: 'pro',
-        status: 'active'
+        plan_name: 'pro'
       })
       .eq('user_id', userId)
       .select()

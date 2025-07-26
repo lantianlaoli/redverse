@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import { Header } from "@/components/header";
 import { Leaderboard } from "@/components/leaderboard";
 import { FAQ } from "@/components/faq";
 import { Footer } from "@/components/footer";
@@ -7,6 +6,7 @@ import { Pricing } from "@/components/pricing";
 import { ScrollAnimation } from "@/components/scroll-animation";
 import { QuickSubmit } from "@/components/quick-submit";
 import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Redverse - Make Your AI App Go Viral in China | Home",
@@ -74,7 +74,6 @@ export default function Home() {
           __html: JSON.stringify(structuredData),
         }}
       />
-      <Header />
       
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 md:pt-24">
         {/* Hero Section */}
@@ -117,8 +116,21 @@ export default function Home() {
               </p>
               
               {/* Action Button */}
-              <div className="animate-fadeInUp animate-delay-500">
+              <div className="animate-fadeInUp animate-delay-500 space-y-4">
                 <QuickSubmit />
+                
+                {/* Learn Button */}
+                <div className="flex justify-center lg:justify-start">
+                  <Link 
+                    href="/guides"
+                    className="inline-flex items-center px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md group"
+                  >
+                    <svg className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Learn Algorithm Secrets
+                  </Link>
+                </div>
               </div>
             </div>
 

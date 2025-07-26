@@ -183,6 +183,39 @@ body {
   animation-delay: 600ms;
 }
 
+/* === Guide文章prose样式强化 === */
+.prose {
+  color: #111827 !important;
+}
+
+.prose p {
+  color: #111827 !important;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: #000000 !important;
+}
+
+.prose strong, .prose b {
+  color: #000000 !important;
+}
+
+.prose ul, .prose ol {
+  color: #111827 !important;
+}
+
+.prose li {
+  color: #111827 !important;
+}
+
+.prose blockquote {
+  color: #374151 !important;
+}
+
+.prose code {
+  color: #000000 !important;
+}
+
 /* 移除了红岸工程主题的复杂样式，现在使用简洁设计 */
 
 /* Scroll triggered animations */

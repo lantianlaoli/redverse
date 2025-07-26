@@ -56,6 +56,12 @@ export function Header() {
               >
                 Success Stories
               </SmoothScrollLink>
+              <Link 
+                href="/guides" 
+                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+              >
+                Guides
+              </Link>
               <SmoothScrollLink 
                 href="/#pricing" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
@@ -134,6 +140,13 @@ export function Header() {
                 >
                   Success Stories
                 </SmoothScrollLink>
+                <Link 
+                  href="/guides" 
+                  className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
+                  onClick={closeMenu}
+                >
+                  Guides
+                </Link>
                 <SmoothScrollLink 
                   href="/#pricing" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
