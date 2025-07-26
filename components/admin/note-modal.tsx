@@ -24,12 +24,14 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
     collects_count: note?.collects_count?.toString() || '0',
     comments_count: note?.comments_count?.toString() || '0',
     views_count: note?.views_count?.toString() || '0',
+    shares_count: note?.shares_count?.toString() || '0',
   });
   const [originalData, setOriginalData] = useState({
     likes_count: 0,
     collects_count: 0,
     comments_count: 0,
     views_count: 0,
+    shares_count: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -45,12 +47,14 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
           collects_count: '0',
           comments_count: '0',
           views_count: '0',
+          shares_count: '0',
         });
         setOriginalData({
           likes_count: 0,
           collects_count: 0,
           comments_count: 0,
           views_count: 0,
+          shares_count: 0,
         });
       } else if (mode === 'edit' && note) {
         setFormData({
@@ -59,12 +63,14 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
           collects_count: note.collects_count?.toString() || '0',
           comments_count: note.comments_count?.toString() || '0',
           views_count: note.views_count?.toString() || '0',
+          shares_count: note.shares_count?.toString() || '0',
         });
         setOriginalData({
           likes_count: note.likes_count || 0,
           collects_count: note.collects_count || 0,
           comments_count: note.comments_count || 0,
           views_count: note.views_count || 0,
+          shares_count: note.shares_count || 0,
         });
       }
     }
@@ -86,6 +92,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
       formDataObj.append('collects_count', formData.collects_count);
       formDataObj.append('comments_count', formData.comments_count);
       formDataObj.append('views_count', formData.views_count);
+      formDataObj.append('shares_count', formData.shares_count);
 
       let result;
       if (mode === 'create') {
@@ -104,17 +111,20 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
           const newCollects = parseInt(formData.collects_count) || 0;
           const newComments = parseInt(formData.comments_count) || 0;
           const newViews = parseInt(formData.views_count) || 0;
+          const newShares = parseInt(formData.shares_count) || 0;
 
           const likesDiff = newLikes - originalData.likes_count;
           const collectsDiff = newCollects - originalData.collects_count;
           const commentsDiff = newComments - originalData.comments_count;
           const viewsDiff = newViews - originalData.views_count;
+          const sharesDiff = newShares - originalData.shares_count;
 
           const changes = [];
           if (likesDiff !== 0) changes.push(`Likes ${likesDiff > 0 ? '+' : ''}${likesDiff}`);
           if (collectsDiff !== 0) changes.push(`Collects ${collectsDiff > 0 ? '+' : ''}${collectsDiff}`);
           if (commentsDiff !== 0) changes.push(`Comments ${commentsDiff > 0 ? '+' : ''}${commentsDiff}`);
           if (viewsDiff !== 0) changes.push(`Views ${viewsDiff > 0 ? '+' : ''}${viewsDiff}`);
+          if (sharesDiff !== 0) changes.push(`Shares ${sharesDiff > 0 ? '+' : ''}${sharesDiff}`);
 
           if (changes.length > 0) {
             addToast(`Note updated: ${changes.join(', ')}`, 'success');
@@ -181,7 +191,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
             </div>
 
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label htmlFor="likes_count" className="block text-sm font-medium text-gray-700">
                   Likes
@@ -234,6 +244,20 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
                   min="0"
                   value={formData.comments_count}
                   onChange={(e) => setFormData({ ...formData, comments_count: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="shares_count" className="block text-sm font-medium text-gray-700">
+                  Shares
+                </label>
+                <input
+                  type="number"
+                  id="shares_count"
+                  min="0"
+                  value={formData.shares_count}
+                  onChange={(e) => setFormData({ ...formData, shares_count: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
                 />
               </div>

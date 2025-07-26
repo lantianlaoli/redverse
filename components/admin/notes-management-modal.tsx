@@ -6,7 +6,7 @@ import { Application, Note } from '@/lib/supabase';
 import { NoteModal } from './note-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useToast } from '@/components/ui/toast';
-import { Plus, ExternalLink, Edit, Trash2, X, Heart, Folder, MessageCircle, FileText } from 'lucide-react';
+import { Plus, ExternalLink, Edit, Trash2, X, Heart, Folder, MessageCircle, FileText, Share2 } from 'lucide-react';
 
 interface NotesManagementModalProps {
   isOpen: boolean;
@@ -233,7 +233,7 @@ export function NotesManagementModal({ isOpen, onClose, application }: NotesMana
                     </div>
                     
                     {/* Statistics */}
-                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div className="grid grid-cols-3 gap-3 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <Heart className="w-4 h-4 text-red-500" />
                         <span>{note.likes_count || 0} Likes</span>
@@ -249,6 +249,10 @@ export function NotesManagementModal({ isOpen, onClose, application }: NotesMana
                       <div className="flex items-center gap-2">
                         <span className="w-4 h-4 text-green-500 text-center text-xs font-bold">V</span>
                         <span>{note.views_count || 0} Views</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Share2 className="w-4 h-4 text-purple-500" />
+                        <span>{note.shares_count || 0} Shares</span>
                       </div>
                     </div>
                   </div>
