@@ -193,15 +193,15 @@ export async function sendNewApplicationNotification(data: ApplicationNotificati
               ` : ''}
             </div>
             
-            ${data.userFeedback ? `
             <div class="project-details" style="border-left: 4px solid #4f46e5;">
               <h3 style="margin-top: 0; color: #4f46e5;">User Feedback</h3>
-              <div style="font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap;">${data.userFeedback}</div>
+              <div style="font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap;">${data.userFeedback || "No feedback provided"}</div>
               <p style="margin: 15px 0 0 0; font-size: 14px; color: #666; font-style: italic;">
-                User provided additional insights about desired data analytics beyond standard metrics.
+                ${data.userFeedback && data.userFeedback !== "No feedback provided" 
+                  ? "User provided additional insights about desired data analytics beyond standard metrics."
+                  : "User completed the feedback flow without providing additional comments."}
               </p>
             </div>
-            ` : ''}
             
             <div style="margin: 30px 0;">
               <h3>Quick Actions</h3>
@@ -237,11 +237,12 @@ ${data.twitterUsername ? `• Twitter: @${data.twitterUsername}` : ''}
 • Submitted: ${data.submittedAt}
 ${data.thumbnailUrl ? `• Thumbnail: ${data.thumbnailUrl}` : ''}
 
-${data.userFeedback ? `User Feedback:
-${data.userFeedback}
+User Feedback:
+${data.userFeedback || "No feedback provided"}
 
-Note: User provided additional insights about desired data analytics beyond standard metrics.
-` : ''}
+Note: ${data.userFeedback && data.userFeedback !== "No feedback provided" 
+  ? "User provided additional insights about desired data analytics beyond standard metrics."
+  : "User completed the feedback flow without providing additional comments."}
 
 Quick Actions:
 • View Admin Dashboard: ${data.adminDashboardUrl}

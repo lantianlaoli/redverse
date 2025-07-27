@@ -21,6 +21,9 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     name: string;
     url: string;
   } | null>(null);
+  const [countdown, setCountdown] = useState<number>(6);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [hasUnloadListenerAdded, setHasUnloadListenerAdded] = useState<boolean>(false);
   const [userSubscriptionInfo, setUserSubscriptionInfo] = useState<{
     canSubmit: boolean;
     remainingCount: number;
@@ -133,14 +136,13 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
   };
 
   const handleReset = useCallback(async () => {
-    // If we're resetting from feedback state and there's a submitted application,
-    // send the notification without feedback
+    // Always send feedback email when feedback flow ends, regardless of content
     if (submissionStatus === 'feedback' && submittedApplication) {
       try {
-        await submitFeedback('', submittedApplication);
-        console.log('Notification sent without feedback');
+        await submitFeedback(feedbackText.trim(), submittedApplication);
+        console.log('Feedback submitted with content:', feedbackText.trim() || 'No feedback provided');
       } catch (error) {
-        console.error('Failed to send notification without feedback:', error);
+        console.error('Failed to send feedback:', error);
       }
     }
     
@@ -149,40 +151,49 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     setErrorMessage('');
     setFeedbackText('');
     setSubmittedApplication(null);
-  }, [submissionStatus, submittedApplication]);
+  }, [submissionStatus, submittedApplication, feedbackText]);
 
-  const handleFeedbackSubmit = async () => {
-    if (!feedbackText.trim()) return;
-    
-    try {
-      const result = await submitFeedback(feedbackText.trim(), submittedApplication);
-      
-      if (result.success) {
-        setSubmissionStatus('feedback-success');
-        
-        // Auto-reset after 2 seconds
-        setTimeout(() => {
-          handleReset();
-        }, 2000);
-      } else {
-        console.error('Feedback submission failed:', result.error);
-        // Still show success to user even if email fails
-        setSubmissionStatus('feedback-success');
-        setTimeout(() => {
-          handleReset();
-        }, 2000);
+  // Handle page unload (close tab/browser)
+  const handlePageUnload = useCallback(() => {
+    if (submissionStatus === 'feedback' && submittedApplication) {
+      // Try navigator.sendBeacon first (most reliable for page unload)
+      if (navigator.sendBeacon) {
+        try {
+          const formData = new FormData();
+          formData.append('feedbackText', feedbackText.trim());
+          formData.append('applicationData', JSON.stringify(submittedApplication));
+          
+          // Send to feedback endpoint
+          navigator.sendBeacon('/api/submit-feedback-beacon', formData);
+          console.log('Feedback sent via sendBeacon on page unload');
+        } catch (error) {
+          console.error('SendBeacon failed:', error);
+        }
       }
-    } catch (error) {
-      console.error('Feedback submission error:', error);
-      // Still show success to user even if there's an error
-      setSubmissionStatus('feedback-success');
-      setTimeout(() => {
-        handleReset();
-      }, 2000);
+      
+      // Fallback: synchronous fetch with keepalive
+      try {
+        fetch('/api/submit-feedback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            feedbackText: feedbackText.trim(),
+            applicationData: submittedApplication
+          }),
+          keepalive: true
+        }).catch(error => {
+          console.error('Fallback fetch failed:', error);
+        });
+      } catch (error) {
+        console.error('Unload fetch failed:', error);
+      }
     }
-  };
+  }, [submissionStatus, submittedApplication, feedbackText]);
 
-  // Handle ESC key and auto-timeout for feedback mode
+
+  // Handle ESC key and smart countdown for feedback mode
   useEffect(() => {
     if (submissionStatus === 'feedback') {
       const handleEscKey = (event: KeyboardEvent) => {
@@ -191,19 +202,86 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
         }
       };
 
-      // Auto-reset after 30 seconds if no action
-      const timeout = setTimeout(() => {
-        handleReset();
-      }, 30000);
-
       document.addEventListener('keydown', handleEscKey);
       
       return () => {
         document.removeEventListener('keydown', handleEscKey);
-        clearTimeout(timeout);
       };
     }
   }, [submissionStatus, handleReset]);
+
+  // Smart countdown logic with typing detection
+  useEffect(() => {
+    let countdownInterval: NodeJS.Timeout;
+    let typingTimeout: NodeJS.Timeout;
+
+    if (submissionStatus === 'feedback') {
+      setCountdown(6);
+      
+      const startCountdown = () => {
+        countdownInterval = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              handleReset();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      };
+
+      // Start countdown only if not typing
+      if (!isTyping) {
+        typingTimeout = setTimeout(() => {
+          startCountdown();
+        }, 0);
+      }
+    }
+
+    return () => {
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (typingTimeout) clearTimeout(typingTimeout);
+    };
+  }, [submissionStatus, isTyping, handleReset]);
+
+  // Add page unload protection when in feedback mode
+  useEffect(() => {
+    if (submissionStatus === 'feedback' && !hasUnloadListenerAdded) {
+      const handleBeforeUnload = () => {
+        handlePageUnload();
+        // Don't show browser dialog, just handle the unload
+        return undefined;
+      };
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden' && submissionStatus === 'feedback') {
+          handlePageUnload();
+        }
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      setHasUnloadListenerAdded(true);
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        setHasUnloadListenerAdded(false);
+      };
+    }
+  }, [submissionStatus, hasUnloadListenerAdded, handlePageUnload]);
+
+  // Handle typing detection with debounce
+  const handleFeedbackChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFeedbackText(e.target.value);
+    setIsTyping(true);
+    setCountdown(6); // Reset countdown when typing
+    
+    // Stop typing detection after 3 seconds of no input
+    setTimeout(() => {
+      setIsTyping(false);
+    }, 3000);
+  };
 
   if (!user) {
     return (
@@ -359,7 +437,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
                   <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md focus-within:shadow-md focus-within:ring-1 focus-within:ring-gray-200 transition-all duration-200">
                     <textarea
                       value={feedbackText}
-                      onChange={(e) => setFeedbackText(e.target.value)}
+                      onChange={handleFeedbackChange}
                       placeholder="Share your thoughts... e.g., conversion analytics, user demographics, competitor insights, growth recommendations"
                       className="w-full h-24 sm:h-28 px-4 py-4 text-gray-900 placeholder-gray-400 bg-transparent border-0 rounded-t-xl focus:outline-none resize-none text-sm leading-relaxed"
                       style={{ 
@@ -367,7 +445,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
                       }}
                     />
                     
-                    {/* Bottom Bar */}
+                    {/* Bottom Bar with Circular Progress */}
                     <div className="flex items-center justify-between px-4 py-3 bg-gray-50/80 border-t border-gray-100 rounded-b-xl">
                       <div className="flex items-center text-xs text-gray-500 hidden sm:flex">
                         <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,17 +462,41 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
                         Thank you!
                       </div>
                       
-                      <button
-                        type="button"
-                        onClick={() => handleFeedbackSubmit()}
-                        disabled={!feedbackText.trim()}
-                        className="inline-flex items-center px-4 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-900 transition-all duration-150 shadow-sm"
-                      >
-                        <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                        Submit
-                      </button>
+                      {/* Circular Progress Timer */}
+                      {!isTyping && countdown > 0 && (
+                        <div className="flex items-center space-x-2">
+                          <div className="relative w-8 h-8">
+                            <svg className="w-8 h-8 transform -rotate-90" viewBox="0 0 32 32">
+                              {/* Background circle */}
+                              <circle
+                                cx="16"
+                                cy="16"
+                                r="14"
+                                fill="none"
+                                stroke="#e5e7eb"
+                                strokeWidth="2"
+                              />
+                              {/* Progress circle */}
+                              <circle
+                                cx="16"
+                                cy="16"
+                                r="14"
+                                fill="none"
+                                stroke="#6b7280"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeDasharray={`${2 * Math.PI * 14}`}
+                                strokeDashoffset={`${2 * Math.PI * 14 * (1 - (countdown / 6))}`}
+                                style={{ transition: 'stroke-dashoffset 1s linear' }}
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xs font-medium text-gray-600">{countdown}</span>
+                            </div>
+                          </div>
+                          <span className="text-xs text-gray-500">Auto-submit</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

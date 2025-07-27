@@ -1061,7 +1061,7 @@ export async function submitFeedback(feedbackText: string, applicationData?: {
         timeStyle: 'short'
       }),
       adminDashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin`,
-      userFeedback: feedbackText.trim() || undefined
+      userFeedback: feedbackText.trim() || "No feedback provided"
     });
 
     if (!emailResult.success) {
