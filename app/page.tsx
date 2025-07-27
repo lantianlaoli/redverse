@@ -6,6 +6,7 @@ import { Pricing } from "@/components/pricing";
 import { ScrollAnimation } from "@/components/scroll-animation";
 import { QuickSubmit } from "@/components/quick-submit";
 import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Redverse - Make Your AI App Go Viral in China | Home",
@@ -173,6 +174,12 @@ export default function Home() {
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
                 How it works
               </h2>
+              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+                Want to understand the full strategy behind Xiaohongshu marketing? 
+                <Link href="/guides" className="text-gray-900 underline hover:text-gray-700 ml-1">
+                  Read our complete guide
+                </Link>
+              </p>
             </div>
 
             {/* Steps with curved arrows */}

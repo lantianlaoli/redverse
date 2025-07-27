@@ -8,6 +8,8 @@ import remarkGfm from 'remark-gfm';
 import { CESCalculator } from '@/components/ces-calculator';
 import { TrafficSourcesChart } from '@/components/traffic-sources-chart';
 import { AlgorithmFlowchart } from '@/components/algorithm-flowchart';
+import { Breadcrumb } from '@/components/breadcrumb';
+import { Metadata } from 'next';
 
 const guidesConfig = {
   'algorithm-deep-dive': {
@@ -16,7 +18,9 @@ const guidesConfig = {
     category: 'Core Algorithm',
     estimatedTime: '8 min read',
     order: 1,
-    markdownFile: 'part1.md'
+    markdownFile: 'part1.md',
+    description: 'Understand Xiaohongshu\'s CES algorithm scoring system. Learn how engagement, shares, and comments affect your AI app\'s reach in China.',
+    keywords: ['xiaohongshu algorithm', 'CES scoring system', 'AI app China marketing', 'xiaohongshu engagement', 'redbook algorithm', 'china social media algorithm']
   },
   'traffic-sources-analysis': {
     title: 'Traffic Sources Analysis',
@@ -24,7 +28,9 @@ const guidesConfig = {
     category: 'Traffic Strategy',
     estimatedTime: '6 min read',
     order: 2,
-    markdownFile: 'part2.md'
+    markdownFile: 'part2.md',
+    description: 'Discover the three main traffic sources on Xiaohongshu: discovery, search, and recommendations. Optimize your AI app content for each channel.',
+    keywords: ['xiaohongshu traffic sources', 'redbook discovery', 'china app marketing channels', 'xiaohongshu search optimization', 'AI app viral marketing']
   },
   'push-mechanisms-explained': {
     title: 'Push Mechanisms Explained',
@@ -32,7 +38,9 @@ const guidesConfig = {
     category: 'Distribution Logic',
     estimatedTime: '7 min read',
     order: 3,
-    markdownFile: 'part3.md'
+    markdownFile: 'part3.md',
+    description: 'Master Xiaohongshu\'s five push mechanisms: immediate, delayed, hot content, search, and recommendation systems for AI app promotion.',
+    keywords: ['xiaohongshu push mechanisms', 'content distribution china', 'AI app promotion strategy', 'redbook content optimization', 'viral content china']
   },
   'advanced-strategies': {
     title: 'Advanced Strategies',
@@ -40,7 +48,9 @@ const guidesConfig = {
     category: 'Growth Tactics',
     estimatedTime: '5 min read',
     order: 4,
-    markdownFile: 'part4.md'
+    markdownFile: 'part4.md',
+    description: 'Advanced AI app marketing strategies for Xiaohongshu: decentralized promotion, paid campaigns, and scaling viral content in China.',
+    keywords: ['advanced xiaohongshu marketing', 'AI app scaling china', 'decentralized promotion', 'xiaohongshu paid promotion', 'viral AI app strategies']
   }
 };
 
@@ -86,15 +96,14 @@ export default async function GuidePage({ params }: GuidePageProps) {
   return (
     <div className="min-h-screen bg-white">
       <div className="w-full px-4 sm:px-6 lg:px-12 xl:px-16 pt-24 pb-16">
-        {/* Back Navigation */}
-        <div className="mb-8 max-w-5xl mx-auto">
-          <Link 
-            href="/guides"
-            className="inline-flex items-center text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Guides
-          </Link>
+        {/* Breadcrumb Navigation */}
+        <div className="max-w-5xl mx-auto">
+          <Breadcrumb 
+            items={[
+              { label: 'Guides', href: '/guides' },
+              { label: guide.title }
+            ]} 
+          />
         </div>
 
         {/* Guide Header */}
@@ -180,6 +189,64 @@ export default async function GuidePage({ params }: GuidePageProps) {
       </div>
     </div>
   );
+}
+
+export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const guide = guidesConfig[slug as keyof typeof guidesConfig];
+  
+  if (!guide) {
+    return {
+      title: 'Guide Not Found | Redverse',
+      description: 'The requested guide could not be found.'
+    };
+  }
+
+  const baseUrl = 'https://www.redverse.online';
+  
+  return {
+    title: `${guide.title} | Redverse - AI App Marketing in China`,
+    description: guide.description,
+    keywords: guide.keywords,
+    authors: [{ name: 'lantianlaoli' }],
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    openGraph: {
+      title: `${guide.title} | Redverse`,
+      description: guide.description,
+      url: `${baseUrl}/guides/${slug}`,
+      siteName: 'Redverse',
+      images: [
+        {
+          url: '/twitter.png',
+          width: 1200,
+          height: 630,
+          alt: `${guide.title} - Redverse Guide`,
+        },
+      ],
+      locale: 'en_US',
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${guide.title} | Redverse`,
+      description: guide.description,
+      images: ['/twitter.png'],
+      creator: '@redverse',
+    },
+    alternates: {
+      canonical: `/guides/${slug}`,
+    },
+  };
 }
 
 export function generateStaticParams() {

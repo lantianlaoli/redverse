@@ -1,5 +1,51 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { Breadcrumb } from '@/components/breadcrumb';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'AI App Marketing Guides | Redverse - Complete Xiaohongshu Strategy',
+  description: 'Complete guide to marketing AI apps in China through Xiaohongshu. Learn algorithm insights, traffic optimization, and viral content strategies from experts.',
+  keywords: ['AI app marketing China', 'Xiaohongshu marketing guide', 'AI app China launch', 'redbook marketing strategy', 'China app promotion', 'viral marketing China', 'AI startup China'],
+  authors: [{ name: 'lantianlaoli' }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    title: 'AI App Marketing Guides | Redverse',
+    description: 'Complete guide to marketing AI apps in China through Xiaohongshu. Learn algorithm insights, traffic optimization, and viral content strategies.',
+    url: 'https://www.redverse.online/guides',
+    siteName: 'Redverse',
+    images: [
+      {
+        url: '/twitter.png',
+        width: 1200,
+        height: 630,
+        alt: 'AI App Marketing Guides - Redverse',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI App Marketing Guides | Redverse',
+    description: 'Complete guide to marketing AI apps in China through Xiaohongshu.',
+    images: ['/twitter.png'],
+    creator: '@redverse',
+  },
+  alternates: {
+    canonical: '/guides',
+  },
+};
 
 export default function GuidesPage() {
   const guides = [
@@ -52,6 +98,10 @@ export default function GuidesPage() {
       
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 relative z-10">
+        {/* Breadcrumb Navigation */}
+        <div className="mb-8">
+          <Breadcrumb items={[{ label: 'Guides' }]} />
+        </div>
         <div className="min-h-[60vh] flex flex-col justify-center items-center text-center mb-16">
           <div className="mb-6">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-gray-900 to-gray-700 rounded-2xl mb-4 shadow-lg">
