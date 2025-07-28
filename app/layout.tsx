@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs';
+import { Analytics } from "@vercel/analytics/next";
 import { AdminFloatingButton } from '@/components/admin-floating-button';
 import { UserInitializer } from '@/components/user-initializer';
 import { ConditionalHeader } from '@/components/conditional-header';
@@ -168,6 +169,7 @@ export default function RootLayout({
           <ConditionalHeader />
           {children}
           <AdminFloatingButton />
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
