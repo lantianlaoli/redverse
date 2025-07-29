@@ -1,18 +1,4 @@
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: "Admin Login - Redverse | Secure Access",
-  description: "Secure admin login for Redverse platform management. Access restricted to authorized administrators only.",
-  robots: {
-    index: false, // Login pages should never be indexed
-    follow: false,
-    noarchive: true,
-    nosnippet: true,
-  },
-  alternates: {
-    canonical: '/admin/login',
-  },
-};
+// Admin login layout - metadata handled by individual pages
 
 export default function AdminLoginLayout({
   children,

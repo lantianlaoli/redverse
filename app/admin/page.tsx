@@ -7,6 +7,7 @@ import { AdminLayout } from '@/components/admin/admin-layout';
 import { AllApplicationsView } from '@/components/admin/all-applications-view';
 import { FounderUsersView } from '@/components/admin/founder-users-view';
 import { SubscriptionsView } from '@/components/admin/subscriptions-view';
+import { CrawlerManagement } from '@/components/admin/crawler-management';
 import { ToastProvider } from '@/components/ui/toast';
 
 export default function AdminDashboard() {
@@ -35,6 +36,8 @@ export default function AdminDashboard() {
         return <FounderUsersView />;
       case 'subscriptions':
         return <SubscriptionsView />;
+      case 'crawler':
+        return <CrawlerManagement />;
       default:
         return <AllApplicationsView />;
     }

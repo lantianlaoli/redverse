@@ -313,6 +313,13 @@ body {
     padding: 12px 24px !important;
     font-size: 15px !important;
   }
+  
+  /* Guide按钮移动端优化 */
+  .guide-button {
+    padding: 12px 24px !important;
+    min-height: 56px !important;
+    font-size: 16px !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -331,6 +338,13 @@ body {
   .bouncy-button {
     padding: 10px 20px !important;
     font-size: 14px !important;
+  }
+  
+  /* Guide按钮小屏幕进一步优化 */
+  .guide-button {
+    padding: 10px 20px !important;
+    min-height: 52px !important;
+    font-size: 15px !important;
   }
 }
 
