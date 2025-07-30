@@ -1,56 +1,81 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Bot, PlayCircle, RefreshCw, AlertCircle, CheckCircle, Clock, LogIn } from 'lucide-react';
-import Image from 'next/image';
-
-interface CrawlerStats {
-  total: number;
-  withUrl: number;
-  crawled: number;
-  uncrawled: number;
-}
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Bot, RefreshCw, AlertCircle, CheckCircle, Clock, LogIn, Smartphone, BarChart3, Activity, TrendingUp, Trash2 } from 'lucide-react';
 
 interface LoginStatus {
-  isLoggedIn: boolean;
-  lastChecked: string;
-  cookiesExpireAt?: string;
+  loginStatus: 'idle' | 'logging_in' | 'waiting_sms_code' | 'logged_in' | 'failed';
+  updateStatus: 'idle' | 'updating' | 'completed' | 'failed';
+  progress: {
+    total: number;
+    processed: number;
+    failed: number;
+  };
+  lastUpdate?: string;
   error?: string;
 }
 
-interface CrawlResult {
-  total: number;
-  success: number;
-  failed: number;
-}
-
 export function CrawlerManagement() {
-  const [stats, setStats] = useState<CrawlerStats | null>(null);
   const [loginStatus, setLoginStatus] = useState<LoginStatus | null>(null);
-  const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);
+  const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE || '13800138000';
+  const [phoneNumber, setPhoneNumber] = useState(adminPhone);
+  const [smsCode, setSmsCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [crawlResult, setCrawlResult] = useState<CrawlResult | null>(null);
+  const [loginStep, setLoginStep] = useState<'phone' | 'sms'>('phone');
+  const [isPolling, setIsPolling] = useState(false);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const smsInProgressRef = useRef<boolean>(false);
 
-  const CRAWLER_API_BASE = process.env.NEXT_PUBLIC_CRAWLER_API_URL || 'http://localhost:3001/api/v1';
+  const CRAWLER_API_BASE = process.env.NEXT_PUBLIC_CRAWLER_API_URL || 'http://localhost:3000';
 
-  const loadStats = useCallback(async () => {
-    try {
-      const response = await fetch(`${CRAWLER_API_BASE}/data/statistics`);
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.data);
-      }
-    } catch (error) {
-      console.error('Failed to load stats:', error);
+  // 手机号脱敏显示
+  const maskPhoneNumber = (phone: string) => {
+    if (phone.length >= 11) {
+      return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
     }
-  }, [CRAWLER_API_BASE]);
+    return phone;
+  };
 
   const loadLoginStatus = useCallback(async () => {
     try {
-      const response = await fetch(`${CRAWLER_API_BASE}/auth/status`);
+      const response = await fetch(`${CRAWLER_API_BASE}/progress`);
       const data = await response.json();
+      
+      // 添加手动刷新时的调试日志
+      console.log('🔄 [Debug] Manual progress refresh at:', new Date().toLocaleTimeString());
+      console.log('🔄 [Debug] Manual refresh response:', data);
+      console.log('🔄 [Debug] Manual refresh progress:', {
+        total: data.data?.progress?.total,
+        processed: data.data?.progress?.processed,
+        failed: data.data?.progress?.failed
+      });
+      
       if (data.success) {
         setLoginStatus(data.data);
+        
+        // 添加手动刷新的进度更新日志
+        console.log('🔄 [Debug] Manual refresh - Progress updated in UI:', {
+          updateStatus: data.data?.updateStatus,
+          progress: data.data?.progress,
+          timestamp: new Date().toLocaleTimeString()
+        });
+        
+        // 根据状态调整UI，但不覆盖用户手动设置的loginStep
+        if (data.data.loginStatus === 'waiting_sms_code' && loginStep !== 'sms') {
+          console.log('🔄 [Debug] Server status is waiting_sms_code, switching to sms step');
+          setLoginStep('sms');
+        } else if (data.data.loginStatus === 'logged_in') {
+          console.log('🔄 [Debug] Server status is logged_in, switching to phone step');
+          smsInProgressRef.current = false; // 重置SMS进程标志
+          setLoginStep('phone');
+        } else if (data.data.loginStatus === 'idle' && loginStep === 'sms' && !smsInProgressRef.current) {
+          // 只有当当前是sms步骤、服务器状态为idle且没有SMS进程进行时，才切换回phone
+          console.log('🔄 [Debug] Server status is idle and current step is sms (no SMS in progress), switching to phone step');
+          setLoginStep('phone');
+        } else if (data.data.loginStatus === 'idle' && smsInProgressRef.current) {
+          console.log('🔄 [Debug] Server status is idle but SMS in progress, keeping current step');
+        }
       }
     } catch (error) {
       console.error('Failed to load login status:', error);
@@ -58,128 +83,190 @@ export function CrawlerManagement() {
   }, [CRAWLER_API_BASE]);
 
   useEffect(() => {
-    loadStats();
     loadLoginStatus();
-  }, [loadStats, loadLoginStatus]);
+  }, [loadLoginStatus]);
 
-  const startLogin = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${CRAWLER_API_BASE}/auth/login`, {
-        method: 'POST',
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        setQrCodeImage(data.data.qrCodeBase64);
-        // 开始轮询登录状态
-        pollLoginStatus();
-      } else {
-        alert('Failed to start login: ' + data.message);
-      }
-    } catch (error) {
-      console.error('Failed to start login:', error);
-      alert('Failed to start login process');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const pollLoginStatus = () => {
-    const interval = setInterval(async () => {
+  // 开始轮询状态更新
+  const startProgressPolling = useCallback(() => {
+    if (isPolling || pollIntervalRef.current) return; // 防止重复轮询
+    
+    setIsPolling(true);
+    pollIntervalRef.current = setInterval(async () => {
       try {
-        const response = await fetch(`${CRAWLER_API_BASE}/auth/check`, {
-          method: 'POST',
-        });
+        const response = await fetch(`${CRAWLER_API_BASE}/progress`);
         const data = await response.json();
         
-        if (data.success && data.data.isLoggedIn) {
-          setQrCodeImage(null);
-          setLoginStatus({ isLoggedIn: true, lastChecked: new Date().toISOString() });
-          clearInterval(interval);
-          alert('Login successful!');
+        // 添加详细调试日志
+        console.log('🔍 [Debug] Status API called at:', new Date().toLocaleTimeString());
+        console.log('🔍 [Debug] Full API response:', data);
+        console.log('🔍 [Debug] Login Status:', data.data?.loginStatus);
+        console.log('🔍 [Debug] Update Status:', data.data?.updateStatus);
+        console.log('🔍 [Debug] Progress Data:', {
+          total: data.data?.progress?.total,
+          processed: data.data?.progress?.processed,
+          failed: data.data?.progress?.failed
+        });
+        
+        if (data.success) {
+          setLoginStatus(data.data);
+          
+          // 添加进度更新调试日志
+          console.log('🔄 [Debug] Progress updated in UI:', {
+            updateStatus: data.data?.updateStatus,
+            progress: data.data?.progress,
+            timestamp: new Date().toLocaleTimeString()
+          });
+          
+          // 如果更新完成或失败，停止轮询
+          if (data.data.updateStatus === 'completed' || data.data.updateStatus === 'failed') {
+            console.log('🛑 [Debug] Stopping polling due to status:', data.data.updateStatus);
+            stopProgressPolling();
+          }
         }
       } catch (error) {
-        console.error('Failed to check login status:', error);
+        console.error('Error polling status:', error);
       }
-    }, 3000);
+    }, 10000); // 每10秒轮询一次
 
-    // 清理定时器
-    setTimeout(() => clearInterval(interval), 60000);
-  };
+    // 设置最大轮询时间（10分钟）
+    pollTimeoutRef.current = setTimeout(() => {
+      stopProgressPolling();
+    }, 600000);
+  }, [CRAWLER_API_BASE]);
 
-  const startCrawling = async (limit: number = 5) => {
-    setIsLoading(true);
-    setCrawlResult(null);
+  // 停止轮询
+  const stopProgressPolling = useCallback(() => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (pollTimeoutRef.current) {
+      clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
+    setIsPolling(false);
+  }, []);
+
+  // 监听登录状态变化，自动开始轮询
+  useEffect(() => {
+    if (loginStatus?.loginStatus === 'logged_in' && loginStatus?.updateStatus === 'updating') {
+      startProgressPolling();
+    }
     
-    try {
-      const response = await fetch(`${CRAWLER_API_BASE}/data/crawl-batch?limit=${limit}`, {
-        method: 'POST',
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        setCrawlResult(data.data);
-        loadStats(); // 刷新统计
-      } else {
-        alert('Failed to start crawling: ' + data.message);
-      }
-    } catch (error) {
-      console.error('Failed to start crawling:', error);
-      alert('Failed to start crawling process');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    return stopProgressPolling;
+  }, [loginStatus?.loginStatus, loginStatus?.updateStatus]);
 
-  const resetNotesForRecrawl = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${CRAWLER_API_BASE}/data/reset-for-recrawl`, {
-        method: 'POST',
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        alert(data.message);
-        loadStats();
-      } else {
-        alert('Failed to reset: ' + data.message);
-      }
-    } catch (error) {
-      console.error('Failed to reset:', error);
-      alert('Failed to reset notes for recrawl');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return stopProgressPolling;
+  }, []);
 
-  const forceRelogin = async () => {
-    if (!confirm('Are you sure you want to clear the login status? You will need to scan QR code again.')) {
+  const startPhoneLogin = async () => {
+    if (!phoneNumber) {
+      alert('Please enter phone number');
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${CRAWLER_API_BASE}/auth/force-relogin`, {
+      const response = await fetch(`${CRAWLER_API_BASE}/auth/phone-login`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber }),
       });
       const data = await response.json();
       
       if (data.success) {
-        alert(data.message);
-        setQrCodeImage(null);
-        loadLoginStatus();
+        smsInProgressRef.current = true;
+        setLoginStep('sms');
+        console.log('🔄 [Debug] SMS sent successfully, switching to SMS input step');
+        // 延迟加载状态，避免立即覆盖loginStep
+        setTimeout(() => loadLoginStatus(), 2000);
       } else {
-        alert('Failed to force relogin: ' + data.message);
+        smsInProgressRef.current = false; // 发送失败时重置标志
+        console.error('Failed to send SMS:', data.message);
       }
     } catch (error) {
-      console.error('Failed to force relogin:', error);
-      alert('Failed to force relogin');
+      smsInProgressRef.current = false; // 异常时重置标志
+      console.error('Failed to start phone login:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const submitSmsCode = async () => {
+    if (!smsCode) {
+      alert('Please enter SMS code');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${CRAWLER_API_BASE}/auth/submit-sms-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ smsCode }),
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('SMS code submitted successfully, waiting for verification...');
+        smsInProgressRef.current = false; // 重置SMS进程标志
+        loadLoginStatus();
+        // 轮询检查登录状态
+        const checkLogin = setInterval(() => {
+          loadLoginStatus();
+          if (loginStatus?.loginStatus === 'logged_in') {
+            clearInterval(checkLogin);
+            setLoginStep('phone');
+            setPhoneNumber('');
+            setSmsCode('');
+          }
+        }, 2000);
+        setTimeout(() => clearInterval(checkLogin), 30000); // 30秒后停止轮询
+      } else {
+        smsInProgressRef.current = false; // 提交失败时也重置标志
+        console.error('Failed to submit SMS code:', data.message);
+      }
+    } catch (error) {
+      smsInProgressRef.current = false; // 异常时也重置标志
+      console.error('Failed to submit SMS code:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearProgress = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${CRAWLER_API_BASE}/progress/clear`);
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('Progress data cleared successfully');
+        // 重置所有本地状态
+        setLoginStatus(null);
+        setLoginStep('phone');
+        setSmsCode('');
+        smsInProgressRef.current = false;
+        stopProgressPolling();
+        
+        // 重新加载状态
+        setTimeout(() => loadLoginStatus(), 500);
+      } else {
+        console.error('Failed to clear progress data:', data.message);
+      }
+    } catch (error) {
+      console.error('Failed to clear progress data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   return (
     <div className="p-6 space-y-6">
@@ -195,10 +282,20 @@ export function CrawlerManagement() {
         {loginStatus && (
           <div className="space-y-2 mb-4">
             <div className="flex items-center space-x-3">
-              {loginStatus.isLoggedIn ? (
+              {loginStatus.loginStatus === 'logged_in' ? (
                 <>
                   <CheckCircle className="w-5 h-5 text-green-500" />
                   <span className="text-green-700 font-medium">Logged in to Xiaohongshu</span>
+                </>
+              ) : loginStatus.loginStatus === 'waiting_sms_code' ? (
+                <>
+                  <Clock className="w-5 h-5 text-yellow-500" />
+                  <span className="text-yellow-700 font-medium">Waiting for SMS code</span>
+                </>
+              ) : loginStatus.loginStatus === 'logging_in' ? (
+                <>
+                  <RefreshCw className="w-5 h-5 text-blue-500 animate-spin" />
+                  <span className="text-blue-700 font-medium">Logging in...</span>
                 </>
               ) : (
                 <>
@@ -208,12 +305,8 @@ export function CrawlerManagement() {
               )}
             </div>
             <div className="text-sm text-gray-600 space-y-1">
-              <div>Last checked: {new Date(loginStatus.lastChecked).toLocaleString()}</div>
-              {loginStatus.isLoggedIn && loginStatus.cookiesExpireAt && (
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4" />
-                  <span>Cookies expire: {new Date(loginStatus.cookiesExpireAt).toLocaleString()}</span>
-                </div>
+              {loginStatus.lastUpdate && (
+                <div>Last update: {new Date(loginStatus.lastUpdate).toLocaleString()}</div>
               )}
               {loginStatus.error && (
                 <div className="text-red-600">Error: {loginStatus.error}</div>
@@ -222,140 +315,187 @@ export function CrawlerManagement() {
           </div>
         )}
 
-        {qrCodeImage && (
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <p className="text-sm text-gray-600 mb-3">Scan QR code with Xiaohongshu app to login:</p>
-            <Image 
-              src={`data:image/png;base64,${qrCodeImage}`} 
-              alt="QR Code" 
-              width={200}
-              height={200}
-              className="mx-auto border"
-            />
-            <p className="text-xs text-gray-500 mt-2">QR code will expire in 60 seconds</p>
+        {/* Phone Login Form */}
+        {loginStep === 'phone' && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center space-x-2 mb-3">
+              <Smartphone className="w-4 h-4 text-gray-600" />
+              <p className="text-sm text-gray-600">Admin phone login:</p>
+            </div>
+            <div className="space-y-3">
+              <div className="bg-white p-3 rounded-md border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700">
+                    Admin phone: <span className="font-mono">{maskPhoneNumber(adminPhone)}</span>
+                  </span>
+                  <Smartphone className="w-4 h-4 text-blue-600" />
+                </div>
+              </div>
+              <button
+                onClick={startPhoneLogin}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Smartphone className="w-4 h-4" />
+                <span>{isLoading ? 'Sending SMS...' : 'Send SMS Code to Admin Phone'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* SMS Code Form */}
+        {loginStep === 'sms' && (
+          <div className="bg-yellow-50 p-4 rounded-lg">
+            <div className="flex items-center space-x-2 mb-3">
+              <Clock className="w-4 h-4 text-yellow-600" />
+              <p className="text-sm text-yellow-700">Enter the SMS verification code:</p>
+            </div>
+            <div className="space-y-3">
+              <input
+                type="text"
+                value={smsCode}
+                onChange={(e) => setSmsCode(e.target.value)}
+                placeholder="Enter 4-6 digit SMS code"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 placeholder-gray-500"
+                disabled={isLoading}
+                maxLength={6}
+              />
+              <div className="flex space-x-2">
+                <button
+                  onClick={submitSmsCode}
+                  disabled={isLoading || !smsCode}
+                  className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 disabled:opacity-50"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>{isLoading ? 'Verifying...' : 'Login'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setLoginStep('phone');
+                    setSmsCode('');
+                  }}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+                >
+                  Back
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
         <div className="flex space-x-3">
           <button
-            onClick={startLogin}
+            onClick={clearProgress}
             disabled={isLoading}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
           >
-            <LogIn className="w-4 h-4" />
-            <span>{isLoading ? 'Starting...' : 'Start Login Process'}</span>
+            <Trash2 className="w-4 h-4" />
+            <span>Clear Progress</span>
           </button>
-          
-          <button
-            onClick={loadLoginStatus}
-            disabled={isLoading}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span>Refresh Status</span>
-          </button>
-          
-          {loginStatus?.isLoggedIn && (
-            <button
-              onClick={forceRelogin}
-              disabled={isLoading}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>Force Re-login</span>
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Statistics Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Crawling Statistics</h2>
-        
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-              <div className="text-sm text-gray-600">Total Notes</div>
+      {/* Data Update Progress Section */}
+      {loginStatus?.loginStatus === 'logged_in' && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <BarChart3 className="w-6 h-6 text-blue-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Data Update Progress</h2>
             </div>
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{stats.withUrl}</div>
-              <div className="text-sm text-gray-600">With URL</div>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{stats.crawled}</div>
-              <div className="text-sm text-gray-600">Crawled</div>
-            </div>
-            <div className="text-center p-3 bg-yellow-50 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600">{stats.uncrawled}</div>
-              <div className="text-sm text-gray-600">Uncrawled</div>
-            </div>
+            {isPolling && (
+              <div className="flex items-center space-x-2 text-sm text-blue-600">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Auto-refreshing...</span>
+              </div>
+            )}
           </div>
-        )}
-
-        <button
-          onClick={loadStats}
-          disabled={isLoading}
-          className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>Refresh Statistics</span>
-        </button>
-      </div>
-
-      {/* Crawling Controls */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Crawling Controls</h2>
-        
-        {crawlResult && (
-          <div className="bg-blue-50 p-4 rounded-lg mb-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Last Crawl Result:</h3>
-            <div className="grid grid-cols-3 gap-3 text-sm">
-              <div>Total: {crawlResult.total}</div>
-              <div className="text-green-600">Success: {crawlResult.success}</div>
-              <div className="text-red-600">Failed: {crawlResult.failed}</div>
+          
+          <div className="space-y-4">
+            {/* Update Status */}
+            <div className="flex items-center space-x-3">
+              {loginStatus.updateStatus === 'updating' ? (
+                <>
+                  <Activity className="w-5 h-5 text-blue-500 animate-pulse" />
+                  <span className="text-blue-700 font-medium">Updating notes data...</span>
+                </>
+              ) : loginStatus.updateStatus === 'completed' ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                  <span className="text-green-700 font-medium">Update completed</span>
+                </>
+              ) : loginStatus.updateStatus === 'failed' ? (
+                <>
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                  <span className="text-red-700 font-medium">Update failed</span>
+                </>
+              ) : (
+                <>
+                  <Clock className="w-5 h-5 text-gray-500" />
+                  <span className="text-gray-700 font-medium">Ready to update</span>
+                </>
+              )}
             </div>
-          </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <h3 className="font-medium text-gray-900">Start Crawling</h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => startCrawling(5)}
-                disabled={isLoading}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-              >
-                <PlayCircle className="w-4 h-4" />
-                <span>Crawl 5 Notes</span>
-              </button>
-              <button
-                onClick={() => startCrawling(10)}
-                disabled={isLoading}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-              >
-                <PlayCircle className="w-4 h-4" />
-                <span>Crawl 10 Notes</span>
-              </button>
-            </div>
-          </div>
+            {/* Progress Bar */}
+            {loginStatus.progress && loginStatus.progress.total > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Progress</span>
+                  <span>{loginStatus.progress.processed} / {loginStatus.progress.total}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ 
+                      width: `${Math.round((loginStatus.progress.processed / loginStatus.progress.total) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>
+                    {Math.round((loginStatus.progress.processed / loginStatus.progress.total) * 100)}% completed
+                  </span>
+                  <span className="text-red-600">
+                    {loginStatus.progress.failed > 0 && `${loginStatus.progress.failed} failed`}
+                  </span>
+                </div>
+              </div>
+            )}
 
-          <div className="space-y-3">
-            <h3 className="font-medium text-gray-900">Reset Tasks</h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={resetNotesForRecrawl}
-                disabled={isLoading}
-                className="flex items-center space-x-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Reset for Re-crawl</span>
-              </button>
+            {/* Statistics */}
+            <div className="grid grid-cols-3 gap-4 pt-2">
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {loginStatus.progress?.total || 0}
+                </div>
+                <div className="text-sm text-gray-600">Total Notes</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {loginStatus.progress?.processed || 0}
+                </div>
+                <div className="text-sm text-gray-600">Processed</div>
+              </div>
+              <div className="text-center p-3 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">
+                  {loginStatus.progress?.failed || 0}
+                </div>
+                <div className="text-sm text-gray-600">Failed</div>
+              </div>
             </div>
+
+            {/* Last Update Time */}
+            {loginStatus.lastUpdate && (
+              <div className="text-sm text-gray-500 pt-2 border-t">
+                <TrendingUp className="w-4 h-4 inline mr-2" />
+                Last updated: {new Date(loginStatus.lastUpdate).toLocaleString()}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
       {isLoading && (
         <div className="flex items-center justify-center p-4">
