@@ -9,7 +9,7 @@ import { ScrollAnimation } from '@/components/scroll-animation';
 import { getUserApplications } from '@/lib/actions';
 import { Application, Note, UserSubscription, SubscriptionPlan } from '@/lib/supabase';
 import { getUserSubscription, getUserApplicationCount } from '@/lib/subscription';
-import { TrendingUpIcon, HeartIcon, BookmarkIcon, MessageCircleIcon, ShareIcon, TwitterIcon, EyeIcon } from '@/components/icons';
+import { TrendingUpIcon, HeartIcon, BookmarkIcon, MessageCircleIcon, ShareIcon, TwitterIcon, EyeIcon, SubmissionIcon, SubscriptionIcon, EngagementIcon } from '@/components/icons';
 
 interface ApplicationItem extends Application {
   note?: Note; // Single note object, not array
@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [subscription, setSubscription] = useState<(UserSubscription & { plan?: SubscriptionPlan }) | null>(null);
   const [applicationCount, setApplicationCount] = useState<number>(0);
   const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [totalEngagement, setTotalEngagement] = useState<number>(0);
 
   // Check if application is under review (no note data available yet)
   const isApplicationUnderReview = (app: ApplicationItem): boolean => {
@@ -46,6 +47,14 @@ export default function Dashboard() {
       
       if (result.success && result.applications) {
         setApplications(result.applications);
+        // Calculate total engagement (only for apps with published notes)
+        const total = result.applications.reduce((sum, app) => {
+          if (app.note && app.total_engagement) {
+            return sum + app.total_engagement;
+          }
+          return sum;
+        }, 0);
+        setTotalEngagement(total);
       } else {
         setError(result.error || 'Failed to fetch applications');
       }
@@ -102,26 +111,55 @@ export default function Dashboard() {
       <Header />
       
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pt-24">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
-            <p className="text-gray-600 mt-2">Manage your submitted AI applications</p>
+        <div className="mb-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-2">Welcome back, {user?.emailAddresses[0]?.emailAddress?.split('@')[0]}. Here&apos;s your account overview.</p>
           </div>
           
-          {/* Simple Plan Card */}
+          {/* Dashboard Cards */}
           {!subscriptionLoading && (
-            <div className={`rounded-lg px-4 py-3 border ${
-              subscription?.plan_name === 'pro' 
-                ? 'bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200' 
-                : 'bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200'
-            }`}>
-              <div className="text-center">
-                <h3 className="font-bold text-gray-900 mb-1">
-                  {subscription?.plan_name === 'pro' ? '🚀 Pro Plan' : '🆓 Basic Plan'}
-                </h3>
-                <p className="text-sm text-gray-700">
-                  Applications: {(subscription?.plan?.max_applications === null || subscription?.plan?.max_applications === -1) ? 'Unlimited submissions' : `${applicationCount}/${subscription?.plan?.max_applications || 1} used`}
-                </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Available Submissions Card */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-gray-600">Available Submissions</h3>
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <SubmissionIcon className="w-5 h-5 text-gray-600" />
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  {(subscription?.plan?.max_applications === null || subscription?.plan?.max_applications === -1) 
+                    ? '∞' 
+                    : Math.max(0, (subscription?.plan?.max_applications || 1) - applicationCount)
+                  }
+                </div>
+              </div>
+
+              {/* Subscription Card */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-gray-600">Subscription</h3>
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <SubscriptionIcon className="w-5 h-5 text-gray-600" />
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-gray-900 mb-1">
+                  {subscription?.plan_name === 'pro' ? 'Pro Plan' : 'Free Tier'}
+                </div>
+              </div>
+
+              {/* Total Engagement Card */}
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-gray-600">Total Engagement</h3>
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <EngagementIcon className="w-5 h-5 text-gray-600" />
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  {totalEngagement.toLocaleString()}
+                </div>
               </div>
             </div>
           )}
@@ -168,23 +206,20 @@ export default function Dashboard() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           {/* Simple icon instead of ranking */}
-                          <div className="w-12 h-12 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center">
-                            <span className="text-orange-600 text-lg">📋</span>
+                          <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <SubmissionIcon className="w-6 h-6 text-gray-600" />
                           </div>
                           
                           <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-1">
                               {item.name}
                             </h3>
-                            <div className="text-sm text-gray-500">
-                              Submitted: {new Date(item.created_at).toLocaleDateString('en-US')}
-                            </div>
                           </div>
                         </div>
                         
                         <div className="text-right">
-                          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 border border-orange-200">
-                            📋 Under Review
+                          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                            Under Review
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
                             We&apos;re processing your submission
@@ -194,18 +229,8 @@ export default function Dashboard() {
                     ) : (
                       // Full UI for published applications
                       <div className="flex items-start space-x-6">
-                        {/* Ranking and Thumbnail */}
-                        <div className="flex-shrink-0 flex items-center space-x-4">
-                          {/* Ranking Number */}
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shadow-sm ${
-                            index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' :
-                            index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-600 text-white' :
-                            index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600 text-white' :
-                            'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-700'
-                          }`}>
-                            {index + 1}
-                          </div>
-                          
+                        {/* Product Thumbnail */}
+                        <div className="flex-shrink-0">
                           {/* Product Thumbnail */}
                           <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
                             {item.image ? (
@@ -244,9 +269,6 @@ export default function Dashboard() {
                                 </a>
                               </div>
                             )}
-                            <div className="text-sm text-gray-500 mt-1">
-                              Submitted: {new Date(item.created_at).toLocaleDateString('en-US')}
-                            </div>
                           </div>
 
                           {/* Progress Bars */}
@@ -267,10 +289,10 @@ export default function Dashboard() {
                               
                               {/* Individual Metrics */}
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-                                <div className="bg-red-50 rounded-lg p-2 border border-red-100">
+                                <div className="bg-gray-50 rounded-lg p-2 border border-gray-100">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2">
-                                      <HeartIcon className="w-4 h-4 text-red-500" />
+                                      <HeartIcon className="w-4 h-4 text-gray-600" />
                                       <span className="text-xs font-medium text-gray-700">Likes</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
@@ -278,10 +300,10 @@ export default function Dashboard() {
                                     </span>
                                   </div>
                                 </div>
-                                <div className="bg-green-50 rounded-lg p-2 border border-green-100">
+                                <div className="bg-gray-50 rounded-lg p-2 border border-gray-100">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2">
-                                      <EyeIcon className="w-4 h-4 text-green-600" />
+                                      <EyeIcon className="w-4 h-4 text-gray-600" />
                                       <span className="text-xs font-medium text-gray-700">Views</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
@@ -289,10 +311,10 @@ export default function Dashboard() {
                                     </span>
                                   </div>
                                 </div>
-                                <div className="bg-yellow-50 rounded-lg p-2 border border-yellow-100">
+                                <div className="bg-gray-50 rounded-lg p-2 border border-gray-100">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2">
-                                      <BookmarkIcon className="w-4 h-4 text-yellow-600" />
+                                      <BookmarkIcon className="w-4 h-4 text-gray-600" />
                                       <span className="text-xs font-medium text-gray-700">Saves</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
@@ -300,10 +322,10 @@ export default function Dashboard() {
                                     </span>
                                   </div>
                                 </div>
-                                <div className="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                                <div className="bg-gray-50 rounded-lg p-2 border border-gray-100">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2">
-                                      <ShareIcon className="w-4 h-4 text-orange-600" />
+                                      <ShareIcon className="w-4 h-4 text-gray-600" />
                                       <span className="text-xs font-medium text-gray-700">Shares</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
@@ -311,10 +333,10 @@ export default function Dashboard() {
                                     </span>
                                   </div>
                                 </div>
-                                <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                                <div className="bg-gray-50 rounded-lg p-2 border border-gray-100">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2">
-                                      <MessageCircleIcon className="w-4 h-4 text-blue-500" />
+                                      <MessageCircleIcon className="w-4 h-4 text-gray-600" />
                                       <span className="text-xs font-medium text-gray-700">Comments</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
