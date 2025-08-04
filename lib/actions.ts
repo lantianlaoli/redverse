@@ -7,6 +7,36 @@ import { checkApplicationLimit } from '@/lib/subscription';
 import { revalidatePath } from 'next/cache';
 import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification, sendFeedbackEmail } from './email';
 
+// Network diagnostic function
+async function diagnoseNetworkConnectivity(): Promise<{
+  supabaseReachable: boolean;
+  dnsResolution: boolean;
+  error?: string;
+}> {
+  try {
+    // Test basic fetch to Supabase
+    const response = await fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/', {
+      method: 'HEAD',
+      headers: {
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      },
+      signal: AbortSignal.timeout(10000), // 10 second timeout
+    });
+    
+    return {
+      supabaseReachable: response.status === 401, // 401 is expected without proper auth
+      dnsResolution: true
+    };
+  } catch (error) {
+    console.error('Network diagnostic failed:', error);
+    return {
+      supabaseReachable: false,
+      dnsResolution: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
 // Helper function to send bug report email
 async function sendBugReport(error: string, userId: string | null, formData: FormData) {
   try {
@@ -181,11 +211,66 @@ export async function submitApplication(formData: FormData) {
       userId: userId
     });
     
-    const { data, error } = await supabase
-      .from('application')
-      .insert(applicationData)
-      .select()
-      .single();
+    let data, error;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        console.log(`Debug: Database insert attempt ${retryCount + 1}/${maxRetries}`);
+        
+        const result = await supabase
+          .from('application')
+          .insert(applicationData)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+        break; // Success, exit retry loop
+      } catch (networkError) {
+        retryCount++;
+        console.error(`Debug: Network error on attempt ${retryCount}/${maxRetries}`, {
+          error: networkError,
+          errorMessage: networkError instanceof Error ? networkError.message : 'Unknown network error',
+          retryCount,
+          maxRetries
+        });
+        
+        if (retryCount >= maxRetries) {
+          // Run network diagnostics
+          console.log('Debug: Running network diagnostics after all retries failed');
+          const diagnostics = await diagnoseNetworkConnectivity();
+          
+          console.error('Debug: All retry attempts failed for database insert', {
+            error: networkError,
+            errorMessage: networkError instanceof Error ? networkError.message : 'Unknown network error',
+            errorStack: networkError instanceof Error ? networkError.stack : undefined,
+            supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+            attemptedData: applicationData,
+            userId: userId,
+            totalRetries: maxRetries,
+            networkDiagnostics: diagnostics
+          });
+          
+          // Send bug report with diagnostics
+          await sendBugReport(
+            `Network error after ${maxRetries} retry attempts during database insert: ${networkError instanceof Error ? networkError.message : 'Unknown network error'}. Network Diagnostics: Supabase reachable: ${diagnostics.supabaseReachable}, DNS resolution: ${diagnostics.dnsResolution}, Diagnostic error: ${diagnostics.error || 'None'}`,
+            userId,
+            formData
+          );
+          
+          return {
+            success: false,
+            error: 'Network connection failed after multiple attempts. Please check your internet connection and try again.'
+          };
+        }
+        
+        // Wait before retry (exponential backoff)
+        const waitTime = Math.pow(2, retryCount - 1) * 1000; // 1s, 2s, 4s
+        console.log(`Debug: Waiting ${waitTime}ms before retry ${retryCount + 1}`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
 
     if (error) {
       console.error('Debug: Application database insert failed', {
