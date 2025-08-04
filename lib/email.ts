@@ -521,78 +521,129 @@ export async function sendNoteNotification(data: NoteNotificationData): Promise<
       const cesPercent = oldCes > 0 ? Math.round((cesDiff / oldCes) * 100) : 0;
       
       changesHtml = `
-        <div class="metrics-container">
-          <div class="metrics-layout">
-            <!-- Left: CES Score Card -->
-            <div class="ces-card">
-              <div class="ces-header">
-                <span class="ces-label">CES Score</span>
-              </div>
-              <div class="ces-values">
-                <span class="ces-number">${newCes.toLocaleString()}</span>
-                <span class="ces-change ${cesDiff > 0 ? 'positive' : 'negative'}">
-                  ${cesDiff > 0 ? '+' : ''}${cesDiff.toLocaleString()}
-                  ${oldCes > 0 && cesDiff !== 0 ? ` (${cesPercent > 0 ? '+' : ''}${cesPercent}%)` : ''}
-                </span>
-              </div>
-            </div>
-            
-            <!-- Right: Individual Metrics -->
-            <div class="metrics-grid">
-              ${likes.diff !== 0 ? `
-              <div class="metric-item">
-                <div class="metric-header">
-                  <span class="metric-label">Likes</span>
-                </div>
-                <div class="metric-value">
-                  <span class="metric-number">${likes.new.toLocaleString()}</span>
-                  <span class="metric-change ${likes.diff > 0 ? 'positive' : 'negative'}">
-                    ${likes.diff > 0 ? '+' : ''}${likes.diff.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              ` : ''}
-              ${views.diff !== 0 ? `
-              <div class="metric-item">
-                <div class="metric-header">
-                  <span class="metric-label">Views</span>
-                </div>
-                <div class="metric-value">
-                  <span class="metric-number">${views.new.toLocaleString()}</span>
-                  <span class="metric-change ${views.diff > 0 ? 'positive' : 'negative'}">
-                    ${views.diff > 0 ? '+' : ''}${views.diff.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              ` : ''}
-              ${collects.diff !== 0 ? `
-              <div class="metric-item">
-                <div class="metric-header">
-                  <span class="metric-label">Saves</span>
-                </div>
-                <div class="metric-value">
-                  <span class="metric-number">${collects.new.toLocaleString()}</span>
-                  <span class="metric-change ${collects.diff > 0 ? 'positive' : 'negative'}">
-                    ${collects.diff > 0 ? '+' : ''}${collects.diff.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              ` : ''}
-              ${comments.diff !== 0 ? `
-              <div class="metric-item">
-                <div class="metric-header">
-                  <span class="metric-label">Comments</span>
-                </div>
-                <div class="metric-value">
-                  <span class="metric-number">${comments.new.toLocaleString()}</span>
-                  <span class="metric-change ${comments.diff > 0 ? 'positive' : 'negative'}">
-                    ${comments.diff > 0 ? '+' : ''}${comments.diff.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              ` : ''}
-            </div>
-          </div>
+        <div style="margin: 32px 0;">
+          <!-- Main Layout Table -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+            <tr>
+              <!-- Left: CES Score Card -->
+              <td class="mobile-stack" width="40%" valign="top" style="padding-right: 12px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 32px 24px; text-align: center;">
+                      <div style="margin-bottom: 16px;">
+                        <span style="font-size: 13px; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em;">CES SCORE</span>
+                      </div>
+                      <div style="margin-bottom: 8px;">
+                        <span style="font-size: 42px; font-weight: 800; color: #111827; line-height: 1; display: block;">${newCes.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span style="font-size: 16px; font-weight: 600; color: ${cesDiff > 0 ? '#374151' : '#6b7280'};">
+                          ${cesDiff > 0 ? '+' : ''}${cesDiff.toLocaleString()}
+                          ${oldCes > 0 && cesDiff !== 0 ? ` (${cesPercent > 0 ? '+' : ''}${cesPercent}%)` : ''}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              
+              <!-- Right: Individual Metrics -->
+              <td class="mobile-stack" width="60%" valign="top" style="padding-left: 12px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                  <tr>
+                    ${likes.diff !== 0 ? `
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-right: 6px; padding-bottom: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">LIKES</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${likes.new.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">
+                                ${likes.diff > 0 ? '+' : ''}${likes.diff.toLocaleString()}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    ` : '<td class="mobile-metric-cell" width="50%" style="padding-right: 6px;"></td>'}
+                    
+                    ${views.diff !== 0 ? `
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-left: 6px; padding-bottom: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">VIEWS</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${views.new.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">
+                                ${views.diff > 0 ? '+' : ''}${views.diff.toLocaleString()}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    ` : '<td class="mobile-metric-cell" width="50%" style="padding-left: 6px;"></td>'}
+                  </tr>
+                  <tr>
+                    ${collects.diff !== 0 ? `
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-right: 6px; padding-top: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">SAVES</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${collects.new.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">
+                                ${collects.diff > 0 ? '+' : ''}${collects.diff.toLocaleString()}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    ` : '<td class="mobile-metric-cell" width="50%" style="padding-right: 6px;"></td>'}
+                    
+                    ${comments.diff !== 0 ? `
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-left: 6px; padding-top: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">COMMENTS</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${comments.new.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">
+                                ${comments.diff > 0 ? '+' : ''}${comments.diff.toLocaleString()}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    ` : '<td class="mobile-metric-cell" width="50%" style="padding-left: 6px;"></td>'}
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
         </div>
       `;
       
@@ -655,94 +706,12 @@ ${hasIncrease ? '🎉 Amazing growth! Your app is gaining momentum on Xiaohongsh
               margin-bottom: 32px;
               line-height: 1.6;
             }
-            .metrics-container {
-              margin: 32px 0;
+            /* Email-compatible styles - minimal CSS due to inline styles */
+            table {
+              border-collapse: collapse;
             }
-            .metrics-layout {
-              display: grid;
-              grid-template-columns: 2fr 3fr;
-              gap: 24px;
-              margin-bottom: 24px;
-            }
-            .ces-card {
-              background: #f8fafc;
-              border: 1px solid #e2e8f0;
-              border-radius: 8px;
-              padding: 32px 24px;
-              text-align: center;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-            }
-            .ces-header {
-              margin-bottom: 16px;
-            }
-            .ces-label {
-              font-size: 13px;
-              font-weight: 500;
-              color: #6b7280;
-              text-transform: uppercase;
-              letter-spacing: 0.025em;
-            }
-            .ces-values {
-              display: flex;
-              flex-direction: column;
-              gap: 8px;
-            }
-            .ces-number {
-              font-size: 42px;
-              font-weight: 800;
-              color: #111827;
-              line-height: 1;
-            }
-            .ces-change {
-              font-size: 16px;
-              font-weight: 600;
-              color: #6b7280;
-            }
-            .ces-change.positive {
-              color: #374151;
-            }
-            .ces-change.negative {
-              color: #6b7280;
-            }
-            .metrics-grid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 12px;
-              align-content: center;
-            }
-            .metric-item {
-              background: #ffffff;
-              border: 1px solid #e5e7eb;
-              border-radius: 6px;
-              padding: 16px;
-            }
-            .metric-header {
-              margin-bottom: 12px;
-            }
-            .metric-label {
-              font-size: 12px;
-              font-weight: 500;
-              color: #9ca3af;
-              text-transform: uppercase;
-              letter-spacing: 0.025em;
-            }
-            .metric-value {
-              display: flex;
-              flex-direction: column;
-              gap: 6px;
-            }
-            .metric-number {
-              font-size: 24px;
-              font-weight: 700;
-              color: #111827;
-              line-height: 1;
-            }
-            .metric-change {
-              font-size: 12px;
-              font-weight: 500;
-              color: #6b7280;
+            .mobile-stack {
+              display: table-cell;
             }
             .success-banner {
               background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -833,21 +802,28 @@ ${hasIncrease ? '🎉 Amazing growth! Your app is gaining momentum on Xiaohongsh
             .footer p {
               margin: 0 0 8px 0;
             }
-            @media (max-width: 640px) {
-              body { padding: 12px; }
-              .header, .content, .footer { padding: 24px 20px; }
-              .metrics-layout { grid-template-columns: 1fr; gap: 20px; }
-              .ces-card { padding: 24px 20px; }
-              .ces-number { font-size: 32px; }
-              .metrics-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-              .metric-item { padding: 12px; }
-              .metric-item .metric-number { font-size: 18px; }
+            @media only screen and (max-width: 640px) {
+              body { padding: 12px !important; }
+              .header, .content, .footer { padding: 24px 20px !important; }
+              /* Stack layout on mobile */
+              .mobile-stack {
+                display: block !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin-bottom: 20px !important;
+              }
+              /* Stack metric cells vertically on mobile */
+              .mobile-metric-cell {
+                display: block !important;
+                width: 100% !important;
+                padding: 6px 0 !important;
+              }
               .cta-button, .cta-button-secondary, .cta-button-tertiary { 
-                display: block; 
-                text-align: center; 
-                margin: 8px 0; 
-                width: 100%;
-                box-sizing: border-box;
+                display: block !important; 
+                text-align: center !important; 
+                margin: 8px 0 !important; 
+                width: 100% !important;
+                box-sizing: border-box !important;
               }
             }
           </style>
