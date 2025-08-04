@@ -12,7 +12,11 @@ interface LeaderboardItem extends Application {
   total_engagement: number;
 }
 
-export function Leaderboard() {
+interface LeaderboardProps {
+  limit?: number; // Optional limit for number of items to display
+}
+
+export function Leaderboard({ limit }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -74,11 +78,12 @@ export function Leaderboard() {
     );
   }
 
-  // No need for max values calculation with milestone-based progress
+  // Apply limit if specified
+  const displayItems = limit ? leaderboard.slice(0, limit) : leaderboard;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {leaderboard.map((item, index) => (
+      {displayItems.map((item, index) => (
         <ScrollAnimation key={item.id} animation="fadeInUp" delay={index * 100}>
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 group">
             {/* Product Image */}

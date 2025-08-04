@@ -282,16 +282,29 @@ export default function Home() {
           </div>
         </ScrollAnimation>
 
-        {/* Social Proof Section */}
+        {/* Leaderboard Section */}
         <ScrollAnimation>
-          <div id="social-proof" className="py-16 border-t border-gray-200">
+          <div id="leaderboard" className="py-16 border-t border-gray-200">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Success Stories
+                Leaderboard
               </h2>
             </div>
             
-            <Leaderboard />
+            <Leaderboard limit={3} />
+            
+            {/* View Full Leaderboard Link */}
+            <div className="text-center mt-8">
+              <Link
+                href="/leaderboard"
+                className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-full text-base font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200"
+              >
+                View Full Leaderboard
+                <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </ScrollAnimation>
 

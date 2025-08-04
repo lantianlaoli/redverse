@@ -68,26 +68,39 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     }
   }, [user?.id]);
 
-  // Generate dynamic button text based on subscription status
+  // Generate dynamic button text with emotional and encouraging language
   const getButtonText = () => {
     if (userSubscriptionInfo.isLoading) {
-      return "Loading...";
+      return "Preparing Launch...";
     }
     
     if (!userSubscriptionInfo.canSubmit) {
       // User has reached their limit
       if (userSubscriptionInfo.planName === 'basic') {
-        return "Submit Your Product - Upgrade to Pro";
+        return "Unlock More Launches";
       } else {
-        return "Limit Reached - Contact Support";
+        return "Let's Talk";
       }
     }
     
     // User can still submit
-    if (userSubscriptionInfo.planName === 'pro') {
-      return "Submit Your Product - Pro";
+    if (userSubscriptionInfo.remainingCount === 1) {
+      // Last submission for limited users
+      return "Final Launch Push";
+    } else if (userSubscriptionInfo.remainingCount <= 2 && userSubscriptionInfo.remainingCount > 0) {
+      // Few submissions left
+      return "One More Boost";
     } else {
-      return "Submit Your Product - Free";
+      // Normal state - use encouraging language
+      const encouragingTexts = [
+        "Boost Your Launch",
+        "Ignite Your Vision", 
+        "Amplify Your Impact",
+        "Accelerate Your Dream"
+      ];
+      // Use a simple hash of user info to consistently show same text for same user
+      const textIndex = Math.abs((userSubscriptionInfo.planName + userSubscriptionInfo.remainingCount).length) % encouragingTexts.length;
+      return encouragingTexts[textIndex];
     }
   };
 
