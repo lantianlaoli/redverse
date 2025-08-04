@@ -215,7 +215,7 @@ export default function Home() {
 
         {/* Demo Video Section */}
         <ScrollAnimation>
-          <div id="demo" className="py-16 bg-gray-50">
+          <div id="demo" className="py-16">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 See it in action
