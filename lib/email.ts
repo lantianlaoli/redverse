@@ -76,87 +76,137 @@ export async function sendNewApplicationNotification(data: ApplicationNotificati
           <title>New Application Submitted</title>
           <style>
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
               line-height: 1.6;
-              color: #333;
+              color: #374151;
               max-width: 600px;
               margin: 0 auto;
               padding: 20px;
+              background-color: #f9fafb;
+            }
+            .email-container {
+              background: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             }
             .header {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              padding: 30px 20px;
-              border-radius: 8px 8px 0 0;
-              text-align: center;
+              background: #ffffff;
+              padding: 32px 32px 24px 32px;
+              border-bottom: 1px solid #f3f4f6;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              font-weight: 700;
+              color: #111827;
+              line-height: 1.3;
             }
             .content {
-              background: #ffffff;
-              padding: 30px 20px;
-              border: 1px solid #e1e5e9;
-              border-top: none;
+              padding: 32px;
             }
             .project-details {
-              background: #f8f9fa;
-              padding: 20px;
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
               border-radius: 8px;
-              margin: 20px 0;
+              padding: 24px;
+              margin: 24px 0;
             }
             .detail-item {
-              margin: 10px 0;
-              padding: 8px 0;
-              border-bottom: 1px solid #e9ecef;
+              margin: 16px 0;
+              padding: 0;
+              border-bottom: 1px solid #e5e7eb;
             }
             .detail-item:last-child {
               border-bottom: none;
+              margin-bottom: 0;
             }
             .label {
               font-weight: 600;
-              color: #495057;
+              color: #6b7280;
               display: inline-block;
               width: 120px;
+              font-size: 14px;
             }
             .value {
-              color: #333;
+              color: #111827;
+              font-weight: 500;
             }
             .cta-button {
               display: inline-block;
-              background: #000000;
-              color: white;
+              background: #111827;
+              color: white !important;
               padding: 12px 24px;
               text-decoration: none;
               border-radius: 6px;
-              margin: 10px 10px 10px 0;
+              margin: 0 8px 8px 0;
               font-weight: 500;
+              font-size: 14px;
+              transition: all 0.2s ease;
             }
             .cta-button:hover {
-              background: #333333;
+              background: #000000;
+              transform: translateY(-1px);
+            }
+            .cta-button-secondary {
+              display: inline-block;
+              background: #ffffff;
+              color: #374151 !important;
+              padding: 12px 24px;
+              text-decoration: none;
+              border-radius: 6px;
+              margin: 0 8px 8px 0;
+              font-weight: 500;
+              font-size: 14px;
+              border: 1px solid #d1d5db;
+              transition: all 0.2s ease;
+            }
+            .cta-button-secondary:hover {
+              background: #f9fafb;
+              border-color: #9ca3af;
+              transform: translateY(-1px);
             }
             .thumbnail {
               max-width: 100px;
               height: auto;
               border-radius: 6px;
-              border: 1px solid #e1e5e9;
+              border: 1px solid #e5e7eb;
             }
             .footer {
+              background: #f8fafc;
               text-align: center;
-              padding: 20px;
-              color: #6c757d;
-              font-size: 14px;
+              padding: 24px 32px;
+              color: #6b7280;
+              font-size: 13px;
+              border-top: 1px solid #f3f4f6;
+            }
+            .footer p {
+              margin: 0 0 8px 0;
+            }
+            @media only screen and (max-width: 640px) {
+              body { padding: 12px !important; }
+              .header, .content, .footer { padding: 24px 20px !important; }
+              .cta-button, .cta-button-secondary { 
+                display: block !important; 
+                text-align: center !important; 
+                margin: 8px 0 !important; 
+                width: 100% !important;
+                box-sizing: border-box !important;
+              }
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1 style="margin: 0; font-size: 24px;">🚀 New Application Submitted</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Redverse Platform</p>
-          </div>
-          
-          <div class="content">
+          <div class="email-container">
+            <div class="header">
+              <h1>🚀 New Application Submitted</h1>
+            </div>
+            
+            <div class="content">
             <p>A new application has been submitted to Redverse. Here are the details:</p>
             
             <div class="project-details">
-              <h3 style="margin-top: 0; color: #333;">Project Details</h3>
+              <h3 style="margin-top: 0; color: #111827; font-size: 18px; font-weight: 600;">Project Details</h3>
               
               <div class="detail-item">
                 <span class="label">Name:</span>
@@ -195,32 +245,30 @@ export async function sendNewApplicationNotification(data: ApplicationNotificati
               ` : ''}
             </div>
             
-            <div class="project-details" style="border-left: 4px solid #4f46e5;">
-              <h3 style="margin-top: 0; color: #4f46e5;">User Feedback</h3>
-              <div style="font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap;">${data.userFeedback || "No feedback provided"}</div>
-              <p style="margin: 15px 0 0 0; font-size: 14px; color: #666; font-style: italic;">
+            <div class="project-details" style="border-left: 4px solid #111827; background: #f1f5f9;">
+              <h3 style="margin-top: 0; color: #111827; font-size: 18px; font-weight: 600;">User Feedback</h3>
+              <div style="font-size: 16px; line-height: 1.6; color: #374151; white-space: pre-wrap; font-weight: 500;">${data.userFeedback || "No feedback provided"}</div>
+              <p style="margin: 15px 0 0 0; font-size: 14px; color: #6b7280; font-style: italic;">
                 ${data.userFeedback && data.userFeedback !== "No feedback provided" 
                   ? "User provided additional insights about desired data analytics beyond standard metrics."
                   : "User completed the feedback flow without providing additional comments."}
               </p>
             </div>
             
-            <div style="margin: 30px 0;">
-              <h3>Quick Actions</h3>
+            <div style="margin: 32px 0; text-align: center;">
+              <h3 style="color: #111827; font-size: 18px; font-weight: 600; margin-bottom: 20px;">Quick Actions</h3>
               <a href="${data.adminDashboardUrl}" class="cta-button" target="_blank">
                 View Admin Dashboard
               </a>
-              <a href="${data.websiteUrl}" class="cta-button" target="_blank" style="background: #007bff;">
+              <a href="${data.websiteUrl}" class="cta-button-secondary" target="_blank">
                 Visit Project
               </a>
             </div>
           </div>
           
-          <div class="footer">
-            <p>Best regards,<br>Redverse Team</p>
-            <p style="font-size: 12px; color: #999;">
-              This is an automated notification from Redverse application submission system.
-            </p>
+            <div class="footer">
+              <p>Redverse</p>
+            </div>
           </div>
         </body>
       </html>
@@ -950,86 +998,110 @@ export async function sendFeedbackEmail(data: FeedbackData): Promise<{
           <title>User Feedback - Redverse</title>
           <style>
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
               line-height: 1.6;
-              color: #333;
+              color: #374151;
               max-width: 600px;
               margin: 0 auto;
               padding: 20px;
+              background-color: #f9fafb;
+            }
+            .email-container {
+              background: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             }
             .header {
-              background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-              color: white;
-              padding: 30px 20px;
-              border-radius: 8px 8px 0 0;
-              text-align: center;
+              background: #ffffff;
+              padding: 32px 32px 24px 32px;
+              border-bottom: 1px solid #f3f4f6;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              font-weight: 700;
+              color: #111827;
+              line-height: 1.3;
             }
             .content {
-              background: #ffffff;
-              padding: 30px 20px;
-              border: 1px solid #e1e5e9;
-              border-top: none;
+              padding: 32px;
             }
             .feedback-content {
-              background: #f8f9fa;
-              padding: 20px;
+              background: #f1f5f9;
+              border: 1px solid #e2e8f0;
+              padding: 24px;
               border-radius: 8px;
-              margin: 20px 0;
-              border-left: 4px solid #4f46e5;
+              margin: 24px 0;
+              border-left: 4px solid #111827;
             }
             .user-details {
-              background: #f8f9fa;
-              padding: 20px;
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              padding: 24px;
               border-radius: 8px;
-              margin: 20px 0;
+              margin: 24px 0;
             }
             .detail-item {
-              margin: 10px 0;
-              padding: 8px 0;
-              border-bottom: 1px solid #e9ecef;
+              margin: 16px 0;
+              padding: 0;
+              border-bottom: 1px solid #e5e7eb;
             }
             .detail-item:last-child {
               border-bottom: none;
+              margin-bottom: 0;
             }
             .label {
               font-weight: 600;
-              color: #495057;
+              color: #6b7280;
               display: inline-block;
               width: 120px;
+              font-size: 14px;
             }
             .value {
-              color: #333;
+              color: #111827;
+              font-weight: 500;
             }
             .feedback-text {
               font-size: 16px;
               line-height: 1.6;
-              color: #333;
+              color: #374151;
               white-space: pre-wrap;
+              font-weight: 500;
             }
             .footer {
+              background: #f8fafc;
               text-align: center;
-              padding: 20px;
-              color: #6c757d;
-              font-size: 14px;
+              padding: 24px 32px;
+              color: #6b7280;
+              font-size: 13px;
+              border-top: 1px solid #f3f4f6;
+            }
+            .footer p {
+              margin: 0 0 8px 0;
+            }
+            @media only screen and (max-width: 640px) {
+              body { padding: 12px !important; }
+              .header, .content, .footer { padding: 24px 20px !important; }
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1 style="margin: 0; font-size: 24px;">💬 New User Feedback</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Redverse Platform</p>
-          </div>
-          
-          <div class="content">
+          <div class="email-container">
+            <div class="header">
+              <h1>💬 New User Feedback</h1>
+            </div>
+            
+            <div class="content">
             <p>A user has provided feedback about our services. Here are the details:</p>
             
             <div class="feedback-content">
-              <h3 style="margin-top: 0; color: #4f46e5;">Feedback Content</h3>
+              <h3 style="margin-top: 0; color: #111827; font-size: 18px; font-weight: 600;">Feedback Content</h3>
               <div class="feedback-text">${data.feedbackText}</div>
             </div>
             
             <div class="user-details">
-              <h3 style="margin-top: 0; color: #333;">User Information</h3>
+              <h3 style="margin-top: 0; color: #111827; font-size: 18px; font-weight: 600;">User Information</h3>
               
               <div class="detail-item">
                 <span class="label">Name:</span>
@@ -1064,11 +1136,9 @@ export async function sendFeedbackEmail(data: FeedbackData): Promise<{
             </p>
           </div>
           
-          <div class="footer">
-            <p>Best regards,<br>Redverse Feedback System</p>
-            <p style="font-size: 12px; color: #999;">
-              This is an automated feedback notification from Redverse.
-            </p>
+            <div class="footer">
+              <p>Redverse</p>
+            </div>
           </div>
         </body>
       </html>
