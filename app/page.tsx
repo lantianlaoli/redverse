@@ -226,7 +226,7 @@ export default function Home() {
             </div>
             
             <div className="max-w-4xl mx-auto">
-              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black group hover:shadow-3xl transition-all duration-300">
+              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
                 <iframe
                   width="100%"
                   height="100%"
@@ -235,49 +235,8 @@ export default function Home() {
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
-                  className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+                  className="absolute inset-0"
                 ></iframe>
-                
-                {/* Gradient overlay for better contrast */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none"></div>
-                
-                {/* Demo badge */}
-                <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg animate-pulse">
-                  • LIVE DEMO
-                </div>
-                
-                {/* Duration badge */}
-                <div className="absolute bottom-4 right-4 bg-black/80 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                  2:34
-                </div>
-              </div>
-              
-              {/* Video highlights */}
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Real product submission</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <span>Content creation process</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <span>Results & engagement</span>
-                </div>
-              </div>
-              
-              <div className="text-center mt-6">
-                <p className="text-xs text-gray-400">
-                  Watch the complete journey from idea to viral Xiaohongshu success
-                </p>
               </div>
             </div>
           </div>
