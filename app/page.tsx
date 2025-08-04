@@ -99,21 +99,35 @@ export default function Home() {
 
               {/* Main Heading */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold font-mono text-gray-900 leading-tight animate-fadeInUp animate-delay-300">
-              🚀Launch your indie product to China&apos;s visual discovery engine
+                Launch your product on{" "}
+                <span className="relative inline-block group">
+                  <a 
+                    href="https://www.xiaohongshu.com/explore" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="underline decoration-2 underline-offset-4 hover:text-gray-700 transition-colors"
+                  >
+                    Xiaohongshu
+                  </a>
+                  <button
+                    type="button"
+                    className="ml-1 w-4 h-4 text-gray-500 hover:text-gray-700 transition-colors align-super"
+                    title="China's 300M-user discovery app"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                      <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.67-1.34l.04-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd"/>
+                    </svg>
+                  </button>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                    China&apos;s 300M-user discovery app
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black"></div>
+                  </div>
+                </span>
               </h1>
               
               {/* Subtitle */}
               <p className="text-lg lg:text-xl font-serif text-gray-600 leading-relaxed animate-fadeInUp animate-delay-400 max-w-lg mx-auto lg:mx-0">
-                Beam your project into{" "}
-                <a 
-                  href="https://www.xiaohongshu.com/explore" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="underline decoration-2 underline-offset-4 hover:text-gray-800 transition-colors"
-                >
-                  Xiaohongshu
-                </a>
-                {" "}— boasting over 300 million monthly active users.
+                Redverse takes your project and makes it discoverable by Chinese users, all done-for-you.
               </p>
               
               {/* Guide Button */}
