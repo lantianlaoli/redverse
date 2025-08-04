@@ -50,12 +50,12 @@ export function Header() {
               >
                 How it works
               </SmoothScrollLink>
-              <SmoothScrollLink 
-                href="/#social-proof" 
+              <Link 
+                href="/leaderboard" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Success Stories
-              </SmoothScrollLink>
+                Leaderboard
+              </Link>
               <Link 
                 href="/guides" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
@@ -133,13 +133,13 @@ export function Header() {
                 >
                   How it works
                 </SmoothScrollLink>
-                <SmoothScrollLink 
-                  href="/#social-proof" 
+                <Link 
+                  href="/leaderboard" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Success Stories
-                </SmoothScrollLink>
+                  Leaderboard
+                </Link>
                 <Link 
                   href="/guides" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
