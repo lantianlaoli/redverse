@@ -31,11 +31,13 @@ interface NoteNotificationData {
   projectName: string;
   action: 'created' | 'updated';
   noteUrl?: string;
+  founderName?: string;
   changes?: {
     likes: { old: number; new: number; diff: number };
     collects: { old: number; new: number; diff: number };
     comments: { old: number; new: number; diff: number };
     views: { old: number; new: number; diff: number };
+    shares?: { old: number; new: number; diff: number };
   };
 }
 
@@ -497,8 +499,7 @@ export async function sendNoteNotification(data: NoteNotificationData): Promise<
     }
 
     const isUpdate = data.action === 'updated' && data.changes;
-    const actionText = data.action === 'created' ? 'Your App Featured on Xiaohongshu!' : 'Note Data Updated';
-    const actionEmoji = data.action === 'created' ? '🎉' : '📊';
+    const actionText = data.action === 'created' ? `${data.projectName} - Featured on Xiaohongshu!` : `${data.projectName} - Performance Update`;
 
     let changesHtml = '';
     let changesText = '';
@@ -513,88 +514,85 @@ export async function sendNoteNotification(data: NoteNotificationData): Promise<
       const collectsPercent = collects.old > 0 ? Math.round((collects.diff / collects.old) * 100) : 0;
       const commentsPercent = comments.old > 0 ? Math.round((comments.diff / comments.old) * 100) : 0;
       
+      // Calculate CES Score using Xiaohongshu algorithm: Likes×1 + Saves×1 + Comments×4 + Shares×4
+      const oldCes = (likes.old * 1) + (collects.old * 1) + (comments.old * 4) + ((data.changes.shares?.old || 0) * 4);
+      const newCes = (likes.new * 1) + (collects.new * 1) + (comments.new * 4) + ((data.changes.shares?.new || 0) * 4);
+      const cesDiff = newCes - oldCes;
+      const cesPercent = oldCes > 0 ? Math.round((cesDiff / oldCes) * 100) : 0;
+      
       changesHtml = `
         <div class="metrics-container">
-          <h3 class="metrics-title">📊 Performance Update</h3>
-          <div class="metrics-list">
-            ${likes.diff !== 0 ? `
-            <div class="metric-item">
-              <div class="metric-left">
-                <div class="metric-icon">👍</div>
-                <div class="metric-label">Likes</div>
+          <div class="metrics-layout">
+            <!-- Left: CES Score Card -->
+            <div class="ces-card">
+              <div class="ces-header">
+                <span class="ces-label">CES Score</span>
               </div>
-              <div class="metric-right">
-                <div class="metric-values">
-                  <span class="old-value">${likes.old.toLocaleString()}</span>
-                  <span class="arrow">→</span>
-                  <span class="new-value">${likes.new.toLocaleString()}</span>
-                </div>
-                <div class="metric-change ${likes.diff > 0 ? 'positive' : 'negative'}">
-                  ${likes.diff > 0 ? '+' : ''}${likes.diff.toLocaleString()}
-                  ${likes.old > 0 && likes.diff !== 0 ? ` (${likesPercent > 0 ? '+' : ''}${likesPercent}%)` : ''}
-                </div>
+              <div class="ces-values">
+                <span class="ces-number">${newCes.toLocaleString()}</span>
+                <span class="ces-change ${cesDiff > 0 ? 'positive' : 'negative'}">
+                  ${cesDiff > 0 ? '+' : ''}${cesDiff.toLocaleString()}
+                  ${oldCes > 0 && cesDiff !== 0 ? ` (${cesPercent > 0 ? '+' : ''}${cesPercent}%)` : ''}
+                </span>
               </div>
             </div>
-            ` : ''}
-            ${views.diff !== 0 ? `
-            <div class="metric-item">
-              <div class="metric-left">
-                <div class="metric-icon">👀</div>
-                <div class="metric-label">Views</div>
-              </div>
-              <div class="metric-right">
-                <div class="metric-values">
-                  <span class="old-value">${views.old.toLocaleString()}</span>
-                  <span class="arrow">→</span>
-                  <span class="new-value">${views.new.toLocaleString()}</span>
+            
+            <!-- Right: Individual Metrics -->
+            <div class="metrics-grid">
+              ${likes.diff !== 0 ? `
+              <div class="metric-item">
+                <div class="metric-header">
+                  <span class="metric-label">Likes</span>
                 </div>
-                <div class="metric-change ${views.diff > 0 ? 'positive' : 'negative'}">
-                  ${views.diff > 0 ? '+' : ''}${views.diff.toLocaleString()}
-                  ${views.old > 0 && views.diff !== 0 ? ` (${viewsPercent > 0 ? '+' : ''}${viewsPercent}%)` : ''}
+                <div class="metric-value">
+                  <span class="metric-number">${likes.new.toLocaleString()}</span>
+                  <span class="metric-change ${likes.diff > 0 ? 'positive' : 'negative'}">
+                    ${likes.diff > 0 ? '+' : ''}${likes.diff.toLocaleString()}
+                  </span>
                 </div>
               </div>
+              ` : ''}
+              ${views.diff !== 0 ? `
+              <div class="metric-item">
+                <div class="metric-header">
+                  <span class="metric-label">Views</span>
+                </div>
+                <div class="metric-value">
+                  <span class="metric-number">${views.new.toLocaleString()}</span>
+                  <span class="metric-change ${views.diff > 0 ? 'positive' : 'negative'}">
+                    ${views.diff > 0 ? '+' : ''}${views.diff.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              ` : ''}
+              ${collects.diff !== 0 ? `
+              <div class="metric-item">
+                <div class="metric-header">
+                  <span class="metric-label">Saves</span>
+                </div>
+                <div class="metric-value">
+                  <span class="metric-number">${collects.new.toLocaleString()}</span>
+                  <span class="metric-change ${collects.diff > 0 ? 'positive' : 'negative'}">
+                    ${collects.diff > 0 ? '+' : ''}${collects.diff.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              ` : ''}
+              ${comments.diff !== 0 ? `
+              <div class="metric-item">
+                <div class="metric-header">
+                  <span class="metric-label">Comments</span>
+                </div>
+                <div class="metric-value">
+                  <span class="metric-number">${comments.new.toLocaleString()}</span>
+                  <span class="metric-change ${comments.diff > 0 ? 'positive' : 'negative'}">
+                    ${comments.diff > 0 ? '+' : ''}${comments.diff.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              ` : ''}
             </div>
-            ` : ''}
-            ${collects.diff !== 0 ? `
-            <div class="metric-item">
-              <div class="metric-left">
-                <div class="metric-icon">⭐</div>
-                <div class="metric-label">Collects</div>
-              </div>
-              <div class="metric-right">
-                <div class="metric-values">
-                  <span class="old-value">${collects.old.toLocaleString()}</span>
-                  <span class="arrow">→</span>
-                  <span class="new-value">${collects.new.toLocaleString()}</span>
-                </div>
-                <div class="metric-change ${collects.diff > 0 ? 'positive' : 'negative'}">
-                  ${collects.diff > 0 ? '+' : ''}${collects.diff.toLocaleString()}
-                  ${collects.old > 0 && collects.diff !== 0 ? ` (${collectsPercent > 0 ? '+' : ''}${collectsPercent}%)` : ''}
-                </div>
-              </div>
-            </div>
-            ` : ''}
-            ${comments.diff !== 0 ? `
-            <div class="metric-item">
-              <div class="metric-left">
-                <div class="metric-icon">💬</div>
-                <div class="metric-label">Comments</div>
-              </div>
-              <div class="metric-right">
-                <div class="metric-values">
-                  <span class="old-value">${comments.old.toLocaleString()}</span>
-                  <span class="arrow">→</span>
-                  <span class="new-value">${comments.new.toLocaleString()}</span>
-                </div>
-                <div class="metric-change ${comments.diff > 0 ? 'positive' : 'negative'}">
-                  ${comments.diff > 0 ? '+' : ''}${comments.diff.toLocaleString()}
-                  ${comments.old > 0 && comments.diff !== 0 ? ` (${commentsPercent > 0 ? '+' : ''}${commentsPercent}%)` : ''}
-                </div>
-              </div>
-            </div>
-            ` : ''}
           </div>
-          ${hasIncrease ? '<div class="success-banner">🎉 Amazing growth! Your app is gaining momentum on Xiaohongshu!</div>' : ''}
         </div>
       `;
       
@@ -614,232 +612,312 @@ ${hasIncrease ? '🎉 Amazing growth! Your app is gaining momentum on Xiaohongsh
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${actionText} - ${data.projectName}</title>
+          <title>${actionText}</title>
           <style>
             body {
               font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
               line-height: 1.6;
-              color: #37352f;
+              color: #374151;
               max-width: 600px;
               margin: 0 auto;
               padding: 20px;
-              background-color: #ffffff;
+              background-color: #f9fafb;
+            }
+            .email-container {
+              background: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             }
             .header {
               background: #ffffff;
-              color: #37352f;
-              padding: 32px 24px;
-              border-radius: 8px 8px 0 0;
-              text-align: center;
-              border: 1px solid #e5e5e5;
-              border-bottom: none;
+              padding: 32px 32px 24px 32px;
+              border-bottom: 1px solid #f3f4f6;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+              font-weight: 700;
+              color: #111827;
+              line-height: 1.3;
             }
             .content {
-              background: #ffffff;
-              padding: 32px 24px;
-              border: 1px solid #e5e5e5;
-              border-top: none;
-              border-bottom: none;
+              padding: 32px;
+            }
+            .greeting {
+              font-size: 16px;
+              color: #374151;
+              margin-bottom: 20px;
+            }
+            .description {
+              font-size: 16px;
+              color: #6b7280;
+              margin-bottom: 32px;
+              line-height: 1.6;
             }
             .metrics-container {
-              background: #f8f8f8;
-              padding: 20px;
-              border-radius: 6px;
-              margin: 24px 0;
-              border: 1px solid #e5e5e5;
+              margin: 32px 0;
             }
-            .metrics-title {
-              font-size: 16px;
-              font-weight: 600;
-              color: #37352f;
-              margin: 0 0 16px 0;
-              display: flex;
-              align-items: center;
-              gap: 6px;
+            .metrics-layout {
+              display: grid;
+              grid-template-columns: 2fr 3fr;
+              gap: 24px;
+              margin-bottom: 24px;
             }
-            .metrics-list {
+            .ces-card {
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 8px;
+              padding: 32px 24px;
+              text-align: center;
               display: flex;
               flex-direction: column;
-              gap: 0;
+              justify-content: center;
             }
-            .metric-item {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              padding: 12px 0;
-              border-bottom: 1px solid #e5e5e5;
+            .ces-header {
+              margin-bottom: 16px;
             }
-            .metric-item:last-child {
-              border-bottom: none;
-            }
-            .metric-left {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              flex: 1;
-            }
-            .metric-icon {
-              font-size: 16px;
-              width: 20px;
-              text-align: center;
-            }
-            .metric-label {
-              font-size: 14px;
-              font-weight: 500;
-              color: #37352f;
-            }
-            .metric-right {
-              display: flex;
-              align-items: center;
-              gap: 12px;
-              font-size: 14px;
-            }
-            .metric-values {
-              color: #6b7280;
-              font-weight: 400;
-            }
-            .old-value {
-              color: #9ca3af;
-            }
-            .arrow {
-              color: #9ca3af;
-              margin: 0 2px;
-            }
-            .new-value {
-              color: #37352f;
-              font-weight: 500;
-            }
-            .metric-change {
+            .ces-label {
               font-size: 13px;
               font-weight: 500;
-              padding: 2px 6px;
-              border-radius: 4px;
-              min-width: 60px;
-              text-align: center;
+              color: #6b7280;
+              text-transform: uppercase;
+              letter-spacing: 0.025em;
             }
-            .metric-change.positive {
-              background: #f0f9f4;
-              color: #22c55e;
+            .ces-values {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
             }
-            .metric-change.negative {
-              background: #fef2f2;
-              color: #ef4444;
+            .ces-number {
+              font-size: 42px;
+              font-weight: 800;
+              color: #111827;
+              line-height: 1;
+            }
+            .ces-change {
+              font-size: 16px;
+              font-weight: 600;
+              color: #6b7280;
+            }
+            .ces-change.positive {
+              color: #374151;
+            }
+            .ces-change.negative {
+              color: #6b7280;
+            }
+            .metrics-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 12px;
+              align-content: center;
+            }
+            .metric-item {
+              background: #ffffff;
+              border: 1px solid #e5e7eb;
+              border-radius: 6px;
+              padding: 16px;
+            }
+            .metric-header {
+              margin-bottom: 12px;
+            }
+            .metric-label {
+              font-size: 12px;
+              font-weight: 500;
+              color: #9ca3af;
+              text-transform: uppercase;
+              letter-spacing: 0.025em;
+            }
+            .metric-value {
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+            }
+            .metric-number {
+              font-size: 24px;
+              font-weight: 700;
+              color: #111827;
+              line-height: 1;
+            }
+            .metric-change {
+              font-size: 12px;
+              font-weight: 500;
+              color: #6b7280;
             }
             .success-banner {
-              background: #22c55e;
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
               color: white;
-              padding: 12px 16px;
-              border-radius: 6px;
+              padding: 16px 20px;
+              border-radius: 8px;
               font-weight: 500;
               text-align: center;
-              margin-top: 16px;
+              margin-top: 20px;
               font-size: 14px;
+              box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            }
+            .cta-section {
+              margin: 32px 0;
+              text-align: center;
             }
             .cta-button {
               display: inline-block;
-              background: #37352f;
-              color: white;
+              background: #111827;
+              color: white !important;
               padding: 12px 24px;
               text-decoration: none;
               border-radius: 6px;
-              margin: 16px 16px 16px 0;
+              margin: 0 8px 8px 0;
               font-weight: 500;
               font-size: 14px;
-              border: 1px solid #37352f;
+              border: none;
+              transition: all 0.2s ease;
             }
             .cta-button:hover {
               background: #000000;
-              border-color: #000000;
+              transform: translateY(-1px);
+            }
+            .cta-button-secondary {
+              display: inline-block;
+              background: #ffffff;
+              color: #374151 !important;
+              padding: 12px 24px;
+              text-decoration: none;
+              border-radius: 6px;
+              margin: 0 8px 8px 0;
+              font-weight: 500;
+              font-size: 14px;
+              border: 1px solid #d1d5db;
+              transition: all 0.2s ease;
+            }
+            .cta-button-secondary:hover {
+              background: #f9fafb;
+              border-color: #9ca3af;
+              transform: translateY(-1px);
+            }
+            .cta-button-tertiary {
+              display: inline-block;
+              background: #ffffff;
+              color: #6b7280 !important;
+              padding: 12px 24px;
+              text-decoration: none;
+              border-radius: 6px;
+              margin: 0 8px 8px 0;
+              font-weight: 500;
+              font-size: 14px;
+              border: 1px solid #e5e7eb;
+              transition: all 0.2s ease;
+            }
+            .cta-button-tertiary:hover {
+              background: #f9fafb;
+              border-color: #d1d5db;
+              transform: translateY(-1px);
+            }
+            .tip-section {
+              background: #f8fafc;
+              border-left: 4px solid #3b82f6;
+              border-radius: 0 6px 6px 0;
+              padding: 16px 20px;
+              margin: 24px 0;
+            }
+            .tip-section strong {
+              color: #1e40af;
             }
             .footer {
+              background: #f8fafc;
               text-align: center;
-              padding: 24px;
-              color: #9ca3af;
+              padding: 24px 32px;
+              color: #6b7280;
               font-size: 13px;
-              border-radius: 0 0 8px 8px;
-              background: #f8f8f8;
-              border: 1px solid #e5e5e5;
-              border-top: none;
+              border-top: 1px solid #f3f4f6;
+            }
+            .footer p {
+              margin: 0 0 8px 0;
             }
             @media (max-width: 640px) {
-              body { padding: 16px; }
-              .header, .content { padding: 24px 16px; }
-              .metrics-container { padding: 16px; margin: 20px 0; }
-              .metric-item { flex-direction: column; align-items: flex-start; gap: 8px; }
-              .metric-right { justify-content: space-between; width: 100%; }
+              body { padding: 12px; }
+              .header, .content, .footer { padding: 24px 20px; }
+              .metrics-layout { grid-template-columns: 1fr; gap: 20px; }
+              .ces-card { padding: 24px 20px; }
+              .ces-number { font-size: 32px; }
+              .metrics-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+              .metric-item { padding: 12px; }
+              .metric-item .metric-number { font-size: 18px; }
+              .cta-button, .cta-button-secondary, .cta-button-tertiary { 
+                display: block; 
+                text-align: center; 
+                margin: 8px 0; 
+                width: 100%;
+                box-sizing: border-box;
+              }
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1 style="margin: 0; font-size: 22px; font-weight: 600;">${actionEmoji} ${actionText}</h1>
-            <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 14px;">${data.projectName}</p>
-          </div>
-          
-          <div class="content">
-            <p>Hey there! 👋</p>
-            <p>${data.action === 'created' 
-              ? `Amazing news! <strong>${data.projectName}</strong> just got featured on Xiaohongshu! 🎉 This is huge - your app is now in front of millions of active users in China who love discovering cool new products.`
-              : `We've got some fresh numbers for <strong>${data.projectName}</strong> on Xiaohongshu! Here's how your post is performing:`
-            }</p>
-            
-            ${changesHtml}
-            
-            ${data.noteUrl ? `
-            <div style="margin: 30px 0;">
-              <a href="${data.noteUrl}" class="cta-button" target="_blank">
-                View on Xiaohongshu
-              </a>
+          <div class="email-container">
+            <div class="header">
+              <h1>${actionText}</h1>
             </div>
-            ` : ''}
             
-            ${data.action === 'created' ? `
-            <p style="margin-top: 24px; padding: 16px; background-color: #f8f9fa; border-left: 3px solid #000; border-radius: 6px; color: #37352f;">
-              <strong>💡 Quick tip:</strong> This is perfect content to share with your community and investors. Xiaohongshu exposure can be a real game-changer for market entry in China!
-            </p>
-            ` : `
-            <p style="margin-top: 24px; color: #6b7280;">
-              Keep up the great work! 🚀 These numbers show real people are discovering and engaging with your product.
-            </p>
-            `}
-          </div>
-          
-          <div class="footer">
-            <p>Best regards,<br>Redverse Team</p>
-            <p style="font-size: 12px; color: #999;">
-              This is an automated notification from Redverse.
-            </p>
+            <div class="content">
+              <div class="greeting">
+                Hello ${data.founderName ? data.founderName : 'there'}!
+              </div>
+              
+              <div class="description">
+                ${data.action === 'created' 
+                  ? `<strong>${data.projectName}</strong> is now featured on Xiaohongshu.`
+                  : `Performance update for <strong>${data.projectName}</strong>:`
+                }
+              </div>
+              
+              ${changesHtml}
+              
+              <div class="cta-section">
+                ${data.noteUrl ? `
+                <a href="${data.noteUrl}" class="cta-button" target="_blank">
+                  View on Xiaohongshu
+                </a>
+                ` : ''}
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://redverse.online'}/dashboard" class="cta-button-secondary" target="_blank">
+                  View Dashboard
+                </a>
+                <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://redverse.online'}/guides" class="cta-button-tertiary" target="_blank">
+                  Learn about CES
+                </a>
+              </div>
+              
+            </div>
+            
+            <div class="footer">
+              <p>Redverse</p>
+            </div>
           </div>
         </body>
       </html>
     `;
 
     const emailText = `
-${actionText} - ${data.projectName}
+${actionText}
 
-Hey there! 👋
+Hello ${data.founderName ? data.founderName : 'there'}!
 
 ${data.action === 'created' 
-  ? `Amazing news! ${data.projectName} just got featured on Xiaohongshu! 🎉 This is huge - your app is now in front of millions of active users in China who love discovering cool new products.`
-  : `We've got some fresh numbers for ${data.projectName} on Xiaohongshu! Here's how your post is performing:`
+  ? `${data.projectName} is now featured on Xiaohongshu.`
+  : `Performance update for ${data.projectName}:`
 }
 
 ${changesText}
 
 ${data.noteUrl ? `View on Xiaohongshu: ${data.noteUrl}` : ''}
+View Dashboard: ${process.env.NEXT_PUBLIC_SITE_URL || 'https://redverse.online'}/dashboard
 
-${data.action === 'created' ? `
-💡 Quick tip: This is perfect content to share with your community and investors. Xiaohongshu exposure can be a real game-changer for market entry in China!` : `
-Keep up the great work! 🚀 These numbers show real people are discovering and engaging with your product.`}
-
-Best regards,
-Redverse Team
+Redverse
     `;
 
     const result = await resend.emails.send({
       from: 'Redverse <hello@redverse.online>',
       to: data.userEmail,
-      subject: `${actionEmoji} ${actionText} - ${data.projectName}`,
+      subject: actionText,
       html: emailHtml,
       text: emailText,
     });

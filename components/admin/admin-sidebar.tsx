@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Users, FileText, ChevronRight, Home, CreditCard, Bot } from 'lucide-react';
+import { Users, FileText, ChevronRight, Home, CreditCard, Bot, Mail } from 'lucide-react';
 
 interface AdminSidebarProps {
   currentView: string;
@@ -37,6 +37,12 @@ export function AdminSidebar({ currentView, onViewChange }: AdminSidebarProps) {
       icon: Bot,
       label: 'Xiaohongshu Crawler',
       description: 'Manage data crawling'
+    },
+    {
+      id: 'email-testing',
+      icon: Mail,
+      label: 'Email Testing',
+      description: 'Test email templates'
     }
   ];
 

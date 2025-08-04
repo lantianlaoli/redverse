@@ -5,7 +5,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { checkApplicationLimit } from '@/lib/subscription';
 import { revalidatePath } from 'next/cache';
-import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification } from './email';
+import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification, sendFeedbackEmail } from './email';
 
 // Helper function to send bug report email
 async function sendBugReport(error: string, userId: string | null, formData: FormData) {
@@ -538,13 +538,15 @@ export async function createNote(appId: string, formData: FormData): Promise<{
           const client = await clerkClient();
           const user = await client.users.getUser(app.user_id);
           const userEmail = user.emailAddresses?.[0]?.emailAddress;
+          const founderName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || undefined;
 
           if (userEmail) {
             await sendNoteNotification({
               userEmail,
               projectName: app.name || 'Your Project',
               action: 'created',
-              noteUrl: note.url || undefined
+              noteUrl: note.url || undefined,
+              founderName
             });
           }
         } catch (userError) {
@@ -659,6 +661,7 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
             const client = await clerkClient();
             const user = await client.users.getUser(app.user_id);
             const userEmail = user.emailAddresses?.[0]?.emailAddress;
+            const founderName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || undefined;
 
             if (userEmail) {
               const changes = {
@@ -697,6 +700,8 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
                   userEmail,
                   projectName: app.name || 'Your Project',
                   action: 'updated',
+                  noteUrl: url || undefined,
+                  founderName,
                   changes
                 });
               }
@@ -1090,6 +1095,113 @@ export async function submitFeedback(feedbackText: string, applicationData?: {
     return {
       success: false,
       error: 'Something went wrong. Please try again.'
+    };
+  }
+}
+
+// Test email function for admin debugging
+export async function sendTestEmail(emailType: 'application' | 'bug' | 'note_created' | 'note_updated' | 'feedback'): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const { userId } = await auth();
+    
+    // Only allow admin to use this function
+    if (!userId) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const userEmail = user.emailAddresses?.[0]?.emailAddress;
+    
+    if (userEmail !== process.env.ADMIN_EMAIL && userEmail !== 'lantianlaoli@gmail.com') {
+      return { success: false, error: 'Admin access required' };
+    }
+
+    const currentDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    switch (emailType) {
+      case 'application':
+        await sendNewApplicationNotification({
+          projectName: 'TestApp Pro',
+          websiteUrl: 'https://testapp.example.com',
+          twitterUsername: 'testfounder',
+          submitterEmail: 'founder@testapp.com',
+          submittedAt: currentDate,
+          thumbnailUrl: 'https://via.placeholder.com/100x100?text=TestApp',
+          adminDashboardUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/admin`,
+          userFeedback: 'This is a test application submission for debugging email templates. The app focuses on productivity and has been growing steadily in the past few months.'
+        });
+        break;
+
+      case 'bug':
+        await sendBugReportEmail({
+          error: 'Test Error: Database connection timeout occurred during application submission process. This is a simulated error for testing email templates.',
+          userEmail: 'testuser@example.com',
+          timestamp: currentDate,
+          submissionData: {
+            projectName: 'Failed Test App',
+            websiteUrl: 'https://failedtestapp.com',
+            twitterUsername: 'failedfounder'
+          },
+          userAgent: 'Mozilla/5.0 (Test Browser) Test/1.0'
+        });
+        break;
+
+      case 'note_created':
+        await sendNoteNotification({
+          userEmail: process.env.ADMIN_EMAIL || 'lantianlaoli@gmail.com',
+          projectName: 'OneTab',
+          action: 'created',
+          noteUrl: 'https://xiaohongshu.com/test-note-url',
+          founderName: 'Alex Johnson'
+        });
+        break;
+
+      case 'note_updated':
+        await sendNoteNotification({
+          userEmail: process.env.ADMIN_EMAIL || 'lantianlaoli@gmail.com',
+          projectName: 'OneTab',
+          action: 'updated',
+          noteUrl: 'https://xiaohongshu.com/test-note-url',
+          founderName: 'Alex Johnson',
+          changes: {
+            likes: { old: 224, new: 232, diff: 8 },
+            collects: { old: 45, new: 52, diff: 7 },
+            comments: { old: 12, new: 15, diff: 3 },
+            views: { old: 1850, new: 2100, diff: 250 },
+            shares: { old: 8, new: 12, diff: 4 }
+          }
+        });
+        break;
+
+      case 'feedback':
+        await sendFeedbackEmail({
+          feedbackText: 'This is a test feedback submission for debugging email templates. The user is requesting a new feature for better analytics dashboard and mentioned some UI improvements that could enhance the user experience.',
+          userEmail: 'testuser@example.com',
+          userName: 'Test User',
+          submittedAt: currentDate,
+          applicationData: {
+            name: 'Test Feedback App',
+            url: 'https://testfeedbackapp.com',
+            id: 'test-app-123'
+          }
+        });
+        break;
+
+      default:
+        return { success: false, error: 'Unknown email type' };
+    }
+
+    return { success: true };
+
+  } catch (error) {
+    console.error('Send test email error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to send test email'
     };
   }
 }

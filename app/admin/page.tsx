@@ -8,6 +8,7 @@ import { AllApplicationsView } from '@/components/admin/all-applications-view';
 import { FounderUsersView } from '@/components/admin/founder-users-view';
 import { SubscriptionsView } from '@/components/admin/subscriptions-view';
 import { CrawlerManagement } from '@/components/admin/crawler-management';
+import { EmailTestingView } from '@/components/admin/email-testing-view';
 import { ToastProvider } from '@/components/ui/toast';
 
 export default function AdminDashboard() {
@@ -38,6 +39,8 @@ export default function AdminDashboard() {
         return <SubscriptionsView />;
       case 'crawler':
         return <CrawlerManagement />;
+      case 'email-testing':
+        return <EmailTestingView />;
       default:
         return <AllApplicationsView />;
     }
