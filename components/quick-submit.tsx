@@ -24,6 +24,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
   const [countdown, setCountdown] = useState<number>(6);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [hasUnloadListenerAdded, setHasUnloadListenerAdded] = useState<boolean>(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
   const [userSubscriptionInfo, setUserSubscriptionInfo] = useState<{
     canSubmit: boolean;
     remainingCount: number;
@@ -127,6 +128,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
         // Switch to feedback mode after 3 seconds
         setTimeout(() => {
           setSubmissionStatus('feedback');
+          setFeedbackSubmitted(false); // Reset feedback submission state
         }, 3000);
       } else {
         let errorMsg = result.error || 'Submission failed';
@@ -149,8 +151,9 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
   };
 
   const handleReset = useCallback(async () => {
-    // Always send feedback email when feedback flow ends, regardless of content
-    if (submissionStatus === 'feedback' && submittedApplication) {
+    // Only send feedback email once when feedback flow ends
+    if (submissionStatus === 'feedback' && submittedApplication && !feedbackSubmitted) {
+      setFeedbackSubmitted(true);
       try {
         await submitFeedback(feedbackText.trim(), submittedApplication);
         console.log('Feedback submitted with content:', feedbackText.trim() || 'No feedback provided');
@@ -164,11 +167,15 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     setErrorMessage('');
     setFeedbackText('');
     setSubmittedApplication(null);
-  }, [submissionStatus, submittedApplication, feedbackText]);
+    setFeedbackSubmitted(false);
+  }, [submissionStatus, submittedApplication, feedbackText, feedbackSubmitted]);
 
-  // Handle page unload (close tab/browser)
+  // Handle page unload (close tab/browser) - only if feedback hasn't been submitted yet
   const handlePageUnload = useCallback(() => {
-    if (submissionStatus === 'feedback' && submittedApplication) {
+    if (submissionStatus === 'feedback' && submittedApplication && !feedbackSubmitted) {
+      // Mark as submitted to prevent duplicate submissions
+      setFeedbackSubmitted(true);
+      
       // Try navigator.sendBeacon first (most reliable for page unload)
       if (navigator.sendBeacon) {
         try {
@@ -179,12 +186,13 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
           // Send to feedback endpoint
           navigator.sendBeacon('/api/submit-feedback-beacon', formData);
           console.log('Feedback sent via sendBeacon on page unload');
+          return; // Exit early to prevent fallback
         } catch (error) {
           console.error('SendBeacon failed:', error);
         }
       }
       
-      // Fallback: synchronous fetch with keepalive
+      // Fallback: synchronous fetch with keepalive (only if sendBeacon failed)
       try {
         fetch('/api/submit-feedback', {
           method: 'POST',
@@ -203,7 +211,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
         console.error('Unload fetch failed:', error);
       }
     }
-  }, [submissionStatus, submittedApplication, feedbackText]);
+  }, [submissionStatus, submittedApplication, feedbackText, feedbackSubmitted]);
 
 
   // Handle ESC key and smart countdown for feedback mode

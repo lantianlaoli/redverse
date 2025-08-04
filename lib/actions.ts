@@ -1074,6 +1074,9 @@ export async function updateApplication(appId: string, formData: FormData): Prom
   }
 }
 
+// Track recent feedback submissions to prevent duplicates (in-memory store for session)
+const recentFeedbackSubmissions = new Map<string, number>();
+
 // Submit feedback server action
 export async function submitFeedback(feedbackText: string, applicationData?: {
   id: string;
@@ -1093,10 +1096,39 @@ export async function submitFeedback(feedbackText: string, applicationData?: {
       };
     }
 
+    // Create a unique key for this feedback submission to prevent duplicates
+    const shortKey = `${userId}_${applicationData?.id || 'unknown'}`;
+    
+    // Check if we've submitted feedback for this application recently (within 30 seconds)
+    const recentSubmission = recentFeedbackSubmissions.get(shortKey);
+    const now = Date.now();
+    
+    if (recentSubmission && (now - recentSubmission) < 30000) {
+      console.log('Debug: Duplicate feedback submission prevented', {
+        userId,
+        applicationId: applicationData?.id,
+        timeSinceLastSubmission: now - recentSubmission
+      });
+      return {
+        success: true // Return success to avoid error messages, but don't send duplicate email
+      };
+    }
+    
+    // Record this submission
+    recentFeedbackSubmissions.set(shortKey, now);
+    
+    // Clean up old entries (older than 1 minute)
+    for (const [key, timestamp] of recentFeedbackSubmissions.entries()) {
+      if (now - timestamp > 60000) {
+        recentFeedbackSubmissions.delete(key);
+      }
+    }
+
     // Allow empty feedback for cases where user skips feedback
     console.log('Debug: Processing feedback submission', {
       feedbackLength: feedbackText.trim().length,
-      hasApplicationData: !!applicationData
+      hasApplicationData: !!applicationData,
+      submissionKey: shortKey
     });
 
     // Get user information
