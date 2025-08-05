@@ -80,11 +80,24 @@ export function CrawlerManagement() {
     } catch (error) {
       console.error('Failed to load login status:', error);
     }
-  }, [CRAWLER_API_BASE]);
+  }, [CRAWLER_API_BASE, loginStep]);
 
   useEffect(() => {
     loadLoginStatus();
   }, [loadLoginStatus]);
+
+  // 停止轮询
+  const stopProgressPolling = useCallback(() => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (pollTimeoutRef.current) {
+      clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
+    }
+    setIsPolling(false);
+  }, []);
 
   // 开始轮询状态更新
   const startProgressPolling = useCallback(() => {
@@ -132,20 +145,7 @@ export function CrawlerManagement() {
     pollTimeoutRef.current = setTimeout(() => {
       stopProgressPolling();
     }, 600000);
-  }, [CRAWLER_API_BASE]);
-
-  // 停止轮询
-  const stopProgressPolling = useCallback(() => {
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = null;
-    }
-    if (pollTimeoutRef.current) {
-      clearTimeout(pollTimeoutRef.current);
-      pollTimeoutRef.current = null;
-    }
-    setIsPolling(false);
-  }, []);
+  }, [CRAWLER_API_BASE, isPolling, stopProgressPolling]);
 
   // 监听登录状态变化，自动开始轮询
   useEffect(() => {
@@ -154,12 +154,12 @@ export function CrawlerManagement() {
     }
     
     return stopProgressPolling;
-  }, [loginStatus?.loginStatus, loginStatus?.updateStatus]);
+  }, [loginStatus?.loginStatus, loginStatus?.updateStatus, startProgressPolling, stopProgressPolling]);
 
   // 组件卸载时清理定时器
   useEffect(() => {
     return stopProgressPolling;
-  }, []);
+  }, [stopProgressPolling]);
 
   const startPhoneLogin = async () => {
     if (!phoneNumber) {

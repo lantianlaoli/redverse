@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "highlight.js/styles/github.css";
 
 :root {
   --background: #ffffff;
@@ -183,40 +184,168 @@ body {
   animation-delay: 600ms;
 }
 
-/* === Guide文章prose样式强化 === */
-.prose {
-  color: #111827 !important;
+/* === Markdown渲染样式 === */
+.markdown-rendered {
+  color: #333;
+  line-height: 1.6;
+  font-size: 16px;
 }
 
-.prose p {
-  color: #111827 !important;
+.markdown-rendered h1 {
+  color: #333;
+  font-size: 2em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 16px 0;
 }
 
-.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-  color: #000000 !important;
+.markdown-rendered h2 {
+  color: #333;
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 24px 0 16px 0;
 }
 
-.prose strong, .prose b {
-  color: #000000 !important;
+.markdown-rendered h3 {
+  color: #333;
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 24px 0 16px 0;
 }
 
-.prose ul, .prose ol {
-  color: #111827 !important;
+.markdown-rendered h4 {
+  color: #333;
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 24px 0 16px 0;
 }
 
-.prose li {
-  color: #111827 !important;
+.markdown-rendered h5 {
+  color: #333;
+  font-size: 0.875em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 24px 0 16px 0;
 }
 
-.prose blockquote {
-  color: #374151 !important;
+.markdown-rendered h6 {
+  color: #666;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 24px 0 16px 0;
 }
 
-.prose code {
-  color: #000000 !important;
+.markdown-rendered p {
+  color: #333;
+  margin: 0 0 16px 0;
 }
 
-/* 移除了红岸工程主题的复杂样式，现在使用简洁设计 */
+.markdown-rendered ul, .markdown-rendered ol {
+  color: #333;
+  margin: 0 0 16px 0;
+  padding-left: 32px;
+}
+
+.markdown-rendered li {
+  margin: 4px 0;
+}
+
+.markdown-rendered strong {
+  font-weight: 600;
+}
+
+.markdown-rendered em {
+  font-style: italic;
+}
+
+.markdown-rendered code {
+  background-color: rgba(175, 184, 193, 0.2);
+  color: #333;
+  font-size: 85%;
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.markdown-rendered pre {
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  font-size: 85%;
+  line-height: 1.45;
+  overflow: auto;
+  padding: 16px;
+  margin: 0 0 16px 0;
+}
+
+.markdown-rendered pre code {
+  background-color: transparent;
+  border: 0;
+  display: inline;
+  line-height: inherit;
+  margin: 0;
+  max-width: auto;
+  overflow: visible;
+  padding: 0;
+  word-wrap: normal;
+}
+
+.markdown-rendered blockquote {
+  border-left: 0.25em solid #d1d9e0;
+  color: #656d76;
+  padding: 0 1em;
+  margin: 0 0 16px 0;
+}
+
+.markdown-rendered a {
+  color: #333;
+  text-decoration: none;
+}
+
+.markdown-rendered a:hover {
+  color: #333;
+}
+
+.markdown-rendered table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  display: block;
+  margin: 0 0 16px 0;
+  overflow: auto;
+  width: max-content;
+  max-width: 100%;
+}
+
+.markdown-rendered table th,
+.markdown-rendered table td {
+  border: 1px solid #d1d9e0;
+  padding: 6px 13px;
+}
+
+.markdown-rendered table th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+
+.markdown-rendered table tr {
+  background-color: #ffffff;
+  border-top: 1px solid #d1d9e0;
+}
+
+.markdown-rendered table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+.markdown-rendered hr {
+  background-color: #d1d9e0;
+  border: 0;
+  height: 0.25em;
+  margin: 24px 0;
+  padding: 0;
+}
 
 /* Scroll triggered animations */
 .scroll-animate {

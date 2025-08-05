@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { ArrowLeft, Clock, Tag, ArrowRight } from 'lucide-react';
 import { promises as fs } from 'fs';
 import path from 'path';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { CESCalculator } from '@/components/ces-calculator';
 import { TrafficSourcesChart } from '@/components/traffic-sources-chart';
 import { AlgorithmFlowchart } from '@/components/algorithm-flowchart';
 import { Breadcrumb } from '@/components/breadcrumb';
+import { MarkdownRenderer } from '@/components/markdown-renderer';
 import { Metadata } from 'next';
+import { getAllArticles, getArticleBySlug } from '@/lib/supabase';
 
 const guidesConfig = {
   'algorithm-deep-dive': {
@@ -85,13 +85,34 @@ interface GuidePageProps {
 
 export default async function GuidePage({ params }: GuidePageProps) {
   const { slug } = await params;
-  const guide = guidesConfig[slug as keyof typeof guidesConfig];
+  
+  // Try to get article from database first
+  const article = await getArticleBySlug(slug);
+  let guide = null;
+  let content = '';
+  
+  if (article) {
+    // Article found in database
+    content = article.content;
+    guide = {
+      title: article.title,
+      subtitle: '', // Can be extended later
+      category: 'Guide',
+      estimatedTime: `${Math.max(1, Math.ceil(article.content.length / 1000))} min read`,
+      order: 1 // Default order
+    };
+  } else {
+    // Fallback to static content
+    guide = guidesConfig[slug as keyof typeof guidesConfig];
+    if (!guide) {
+      notFound();
+    }
+    content = await getMarkdownContent(guide.markdownFile);
+  }
   
   if (!guide) {
     notFound();
   }
-
-  const content = await getMarkdownContent(guide.markdownFile);
 
   return (
     <div className="min-h-screen bg-white">
@@ -138,11 +159,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
           {/* Main Content - Centered with max-width for readability */}
           <div className="max-w-5xl mx-auto">
-            <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-900 prose-strong:text-gray-900 prose-ul:text-gray-900 prose-ol:text-gray-900 prose-li:text-gray-900">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {content}
-              </ReactMarkdown>
-            </div>
+            <MarkdownRenderer content={content} />
           </div>
 
           {/* Interactive Components - Consistent width */}
@@ -193,7 +210,23 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const guide = guidesConfig[slug as keyof typeof guidesConfig];
+  
+  // Try to get article from database first
+  const article = await getArticleBySlug(slug);
+  let guide = null;
+  let description = '';
+  let keywords = ['promote app in China', 'market your app in China', 'launch app in Chinese market', 'Xiaohongshu marketing', 'Redverse', 'app localization China', 'Chinese social media promotion'];
+
+  if (article) {
+    guide = { title: article.title };
+    description = article.content.substring(0, 160) + '...';
+  } else {
+    guide = guidesConfig[slug as keyof typeof guidesConfig];
+    if (guide) {
+      description = guide.description;
+      keywords = guide.keywords;
+    }
+  }
   
   if (!guide) {
     return {
@@ -206,8 +239,8 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
   
   return {
     title: `${guide.title} | Redverse - AI App Marketing in China`,
-    description: guide.description,
-    keywords: guide.keywords,
+    description: description,
+    keywords: keywords,
     authors: [{ name: 'lantianlaoli' }],
     robots: {
       index: true,
@@ -249,8 +282,19 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
   };
 }
 
-export function generateStaticParams() {
-  return Object.keys(guidesConfig).map((slug) => ({
-    slug,
-  }));
+export async function generateStaticParams() {
+  // Get articles from database
+  const articles = await getAllArticles();
+  const dbSlugs = articles.map(article => ({ slug: article.slug }));
+  
+  // Add static config slugs as fallback
+  const staticSlugs = Object.keys(guidesConfig).map((slug) => ({ slug }));
+  
+  // Combine and deduplicate
+  const allSlugs = [...dbSlugs, ...staticSlugs];
+  const uniqueSlugs = allSlugs.filter((item, index, self) => 
+    index === self.findIndex(t => t.slug === item.slug)
+  );
+  
+  return uniqueSlugs;
 }

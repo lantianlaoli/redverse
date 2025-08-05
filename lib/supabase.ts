@@ -66,6 +66,14 @@ export interface UserSubscription {
   creem_id: string | null;
 }
 
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  created_at: string;
+}
+
 // Image upload utility functions
 export async function uploadImage(file: File, userId: string): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
@@ -138,4 +146,79 @@ export async function uploadImage(file: File, userId: string): Promise<{ success
     });
     return { success: false, error: `Unexpected upload error: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
+}
+
+// Article management functions
+export async function getAllArticles(): Promise<Article[]> {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching articles:', error);
+    return [];
+  }
+  
+  return data || [];
+}
+
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  
+  if (error) {
+    console.error('Error fetching article:', error);
+    return null;
+  }
+  
+  return data;
+}
+
+export async function createArticle(article: Omit<Article, 'id' | 'created_at'>): Promise<{ success: boolean; error?: string; data?: Article }> {
+  const { data, error } = await supabase
+    .from('articles')
+    .insert([article])
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error creating article:', error);
+    return { success: false, error: error.message };
+  }
+  
+  return { success: true, data };
+}
+
+export async function updateArticle(id: string, updates: Partial<Omit<Article, 'id' | 'created_at'>>): Promise<{ success: boolean; error?: string; data?: Article }> {
+  const { data, error } = await supabase
+    .from('articles')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error updating article:', error);
+    return { success: false, error: error.message };
+  }
+  
+  return { success: true, data };
+}
+
+export async function deleteArticle(id: string): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase
+    .from('articles')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    console.error('Error deleting article:', error);
+    return { success: false, error: error.message };
+  }
+  
+  return { success: true };
 }

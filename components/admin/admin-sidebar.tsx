@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Users, FileText, ChevronRight, Home, CreditCard, Bot, Mail } from 'lucide-react';
+import { Users, FileText, ChevronRight, Home, CreditCard, Bot, Mail, BookOpen } from 'lucide-react';
 
 interface AdminSidebarProps {
   currentView: string;
@@ -43,6 +43,12 @@ export function AdminSidebar({ currentView, onViewChange }: AdminSidebarProps) {
       icon: Mail,
       label: 'Email Testing',
       description: 'Test email templates'
+    },
+    {
+      id: 'articles',
+      icon: BookOpen,
+      label: 'Articles Management',
+      description: 'Manage guide articles'
     }
   ];
 
