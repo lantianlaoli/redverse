@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Dashboard - Redverse | Manage Your AI App Marketing",
   description: "Access your Redverse dashboard to manage AI app marketing campaigns, track Xiaohongshu posts performance, and monitor your Chinese market growth.",
-  keywords: ["AI app dashboard", "marketing campaign management", "Xiaohongshu analytics", "Chinese market tracking", "AI promotion dashboard"],
+  keywords: ["promote app in China dashboard", "market your app in China management", "launch app in Chinese market analytics", "Xiaohongshu marketing dashboard", "Redverse dashboard", "app localization China tracking", "Chinese social media promotion management"],
   openGraph: {
     title: "Dashboard - Redverse | Manage Your AI App Marketing",
     description: "Access your Redverse dashboard to manage AI app marketing campaigns, track Xiaohongshu posts performance, and monitor your Chinese market growth.",

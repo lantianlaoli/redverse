@@ -12,7 +12,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Redverse - Make Your AI App Go Viral in China | Home",
   description: "Transform your AI app into viral Xiaohongshu posts and reach millions of Chinese users. Bridge global AI innovation with the Chinese market through our powerful marketing platform.",
-  keywords: ["AI app marketing", "Xiaohongshu viral content", "Chinese market penetration", "AI product launch", "social media marketing China", "RedBook promotion"],
+  keywords: ["promote app in China", "market your app in China", "launch app in Chinese market", "Xiaohongshu marketing", "Redverse", "app localization China", "Chinese social media promotion"],
   openGraph: {
     title: "Redverse - Make Your AI App Go Viral in China",
     description: "Transform your AI app into viral Xiaohongshu posts and reach millions of Chinese users. Bridge global AI innovation with the Chinese market.",

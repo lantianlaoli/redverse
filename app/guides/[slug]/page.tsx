@@ -20,7 +20,7 @@ const guidesConfig = {
     order: 1,
     markdownFile: 'part1.md',
     description: 'Understand Xiaohongshu\'s CES algorithm scoring system. Learn how engagement, shares, and comments affect your AI app\'s reach in China.',
-    keywords: ['xiaohongshu algorithm', 'CES scoring system', 'AI app China marketing', 'xiaohongshu engagement', 'redbook algorithm', 'china social media algorithm']
+    keywords: ['promote app in China algorithm', 'market your app in China', 'launch app in Chinese market', 'Xiaohongshu marketing', 'Redverse algorithm guide', 'app localization China', 'Chinese social media promotion']
   },
   'traffic-sources-analysis': {
     title: 'Traffic Sources Analysis',
@@ -30,7 +30,7 @@ const guidesConfig = {
     order: 2,
     markdownFile: 'part2.md',
     description: 'Discover the three main traffic sources on Xiaohongshu: discovery, search, and recommendations. Optimize your AI app content for each channel.',
-    keywords: ['xiaohongshu traffic sources', 'redbook discovery', 'china app marketing channels', 'xiaohongshu search optimization', 'AI app viral marketing']
+    keywords: ['promote app in China traffic', 'market your app in China channels', 'launch app in Chinese market discovery', 'Xiaohongshu marketing sources', 'Redverse traffic guide', 'app localization China', 'Chinese social media promotion']
   },
   'push-mechanisms-explained': {
     title: 'Push Mechanisms Explained',
@@ -40,7 +40,7 @@ const guidesConfig = {
     order: 3,
     markdownFile: 'part3.md',
     description: 'Master Xiaohongshu\'s five push mechanisms: immediate, delayed, hot content, search, and recommendation systems for AI app promotion.',
-    keywords: ['xiaohongshu push mechanisms', 'content distribution china', 'AI app promotion strategy', 'redbook content optimization', 'viral content china']
+    keywords: ['promote app in China distribution', 'market your app in China mechanisms', 'launch app in Chinese market push', 'Xiaohongshu marketing optimization', 'Redverse distribution guide', 'app localization China', 'Chinese social media promotion']
   },
   'advanced-strategies': {
     title: 'Advanced Strategies',
@@ -50,7 +50,7 @@ const guidesConfig = {
     order: 4,
     markdownFile: 'part4.md',
     description: 'Advanced AI app marketing strategies for Xiaohongshu: decentralized promotion, paid campaigns, and scaling viral content in China.',
-    keywords: ['advanced xiaohongshu marketing', 'AI app scaling china', 'decentralized promotion', 'xiaohongshu paid promotion', 'viral AI app strategies']
+    keywords: ['promote app in China advanced', 'market your app in China strategies', 'launch app in Chinese market scaling', 'Xiaohongshu marketing advanced', 'Redverse advanced guide', 'app localization China', 'Chinese social media promotion']
   }
 };
 

@@ -6,7 +6,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'AI App Marketing Guides | Redverse - Complete Xiaohongshu Strategy',
   description: 'Complete guide to marketing AI apps in China through Xiaohongshu. Learn algorithm insights, traffic optimization, and viral content strategies from experts.',
-  keywords: ['AI app marketing China', 'Xiaohongshu marketing guide', 'AI app China launch', 'redbook marketing strategy', 'China app promotion', 'viral marketing China', 'AI startup China'],
+  keywords: ['promote app in China guide', 'market your app in China', 'launch app in Chinese market', 'Xiaohongshu marketing', 'Redverse', 'app localization China', 'Chinese social media promotion'],
   authors: [{ name: 'lantianlaoli' }],
   robots: {
     index: true,

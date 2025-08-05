@@ -26,7 +26,7 @@ const interDisplay = Inter({
 export const metadata: Metadata = {
   title: "Redverse - Make Your AI App Go Viral in China",
   description: "Bridge global AI innovation with the Chinese market. Transform your AI app into viral Xiaohongshu posts and reach millions of Chinese users.",
-  keywords: ["AI app marketing", "Xiaohongshu promotion", "Chinese market", "AI viral marketing", "social media marketing", "AI product launch", "China marketing", "RedBook marketing"],
+  keywords: ["promote app in China", "market your app in China", "launch app in Chinese market", "Xiaohongshu marketing", "Redverse", "app localization China", "Chinese social media promotion"],
   authors: [{ name: "lantianlaoli" }],
   robots: {
     index: true,

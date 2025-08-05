@@ -8,7 +8,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Leaderboard - Top Performing AI Apps on Xiaohongshu | Redverse",
   description: "Discover the most successful AI apps that went viral on Xiaohongshu. See real engagement metrics, likes, views, and comments from top-performing launches.",
-  keywords: ["AI app leaderboard", "Xiaohongshu success stories", "viral AI apps China", "top performing apps", "engagement metrics", "Chinese market leaders"],
+  keywords: ["app success in China", "Xiaohongshu marketing results", "launch app in Chinese market", "Chinese social media promotion", "Redverse success stories", "app localization China", "market your app in China"],
   openGraph: {
     title: "Leaderboard - Top Performing AI Apps on Xiaohongshu",
     description: "Discover the most successful AI apps that went viral on Xiaohongshu. See real engagement metrics and learn from top performers.",
