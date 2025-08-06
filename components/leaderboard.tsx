@@ -148,14 +148,14 @@ export function Leaderboard({ limit }: LeaderboardProps) {
                 <div className="flex gap-2">
                   {index < 3 && (
                     <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                      index === 0 ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-                      index === 1 ? 'bg-gray-100 text-gray-800 border border-gray-200' :
-                      'bg-orange-100 text-orange-800 border border-orange-200'
+                      index === 0 ? 'bg-gray-900 text-white border border-gray-900' :
+                      index === 1 ? 'bg-gray-200 text-gray-800 border border-gray-200' :
+                      'bg-gray-100 text-gray-700 border border-gray-200'
                     }`}>
                       <TrophyIcon className={`w-3 h-3 mr-1 ${
-                        index === 0 ? 'text-yellow-600' :
+                        index === 0 ? 'text-white' :
                         index === 1 ? 'text-gray-600' :
-                        'text-orange-600'
+                        'text-gray-500'
                       }`} />
                       #{index + 1}
                     </span>
@@ -164,9 +164,9 @@ export function Leaderboard({ limit }: LeaderboardProps) {
                 
                 {/* Total Engagement in top-right */}
                 {item.note && (
-                  <div className="inline-flex items-center px-2 py-1 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200">
-                    <TrendingUpIcon className="w-3 h-3 text-purple-600 mr-1" />
-                    <span className="text-xs font-medium text-purple-700">
+                  <div className="inline-flex items-center px-2 py-1 rounded-lg bg-gray-50 border border-gray-200">
+                    <TrendingUpIcon className="w-3 h-3 text-gray-600 mr-1" />
+                    <span className="text-xs font-medium text-gray-700">
                       {item.total_engagement.toLocaleString()}
                     </span>
                   </div>
@@ -176,23 +176,23 @@ export function Leaderboard({ limit }: LeaderboardProps) {
               {/* Engagement Metrics */}
               {item.note && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
                     <HeartIcon className="w-3 h-3 mr-1" />
                     {(item.note.likes_count || 0).toLocaleString()} likes
                   </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                     <EyeIcon className="w-3 h-3 mr-1" />
                     {(item.note.views_count || 0).toLocaleString()} views
                   </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
                     <BookmarkIcon className="w-3 h-3 mr-1" />
                     {(item.note.collects_count || 0).toLocaleString()} saves
                   </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                     <ShareIcon className="w-3 h-3 mr-1" />
                     {(item.note.shares_count || 0).toLocaleString()} shares
                   </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
                     <MessageCircleIcon className="w-3 h-3 mr-1" />
                     {(item.note.comments_count || 0).toLocaleString()} comments
                   </span>

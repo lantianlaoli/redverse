@@ -1278,19 +1278,59 @@ export async function sendTestEmail(emailType: 'application' | 'bug' | 'note_cre
         break;
 
       case 'note_updated':
+        // Simulate realistic test data matching actual update scenario
+        // Include some metrics with no changes to test edge cases
+        const testOldNote = {
+          likes_count: 224,
+          collects_count: 45,
+          comments_count: 12,
+          views_count: 1850,
+          shares_count: 8
+        };
+        const testNewData = {
+          likesCount: 245,        // +21 increase
+          collectsCount: 45,      // No change (diff = 0)
+          commentsCount: 16,      // +4 increase  
+          viewsCount: 2150,       // +300 increase
+          sharesCount: 8          // No change (diff = 0)
+        };
+        
+        // Use exact same logic as updateNote function
+        const testChanges = {
+          likes: {
+            old: testOldNote.likes_count || 0,
+            new: testNewData.likesCount,
+            diff: testNewData.likesCount - (testOldNote.likes_count || 0)
+          },
+          collects: {
+            old: testOldNote.collects_count || 0,
+            new: testNewData.collectsCount,
+            diff: testNewData.collectsCount - (testOldNote.collects_count || 0)
+          },
+          comments: {
+            old: testOldNote.comments_count || 0,
+            new: testNewData.commentsCount,
+            diff: testNewData.commentsCount - (testOldNote.comments_count || 0)
+          },
+          views: {
+            old: testOldNote.views_count || 0,
+            new: testNewData.viewsCount,
+            diff: testNewData.viewsCount - (testOldNote.views_count || 0)
+          },
+          shares: {
+            old: testOldNote.shares_count || 0,
+            new: testNewData.sharesCount,
+            diff: testNewData.sharesCount - (testOldNote.shares_count || 0)
+          }
+        };
+
         await sendNoteNotification({
           userEmail: process.env.ADMIN_EMAIL || 'lantianlaoli@gmail.com',
           projectName: 'OneTab',
           action: 'updated',
           noteUrl: 'https://xiaohongshu.com/test-note-url',
           founderName: 'Alex Johnson',
-          changes: {
-            likes: { old: 224, new: 232, diff: 8 },
-            collects: { old: 45, new: 52, diff: 7 },
-            comments: { old: 12, new: 15, diff: 3 },
-            views: { old: 1850, new: 2100, diff: 250 },
-            shares: { old: 8, new: 12, diff: 4 }
-          }
+          changes: testChanges
         });
         break;
 
