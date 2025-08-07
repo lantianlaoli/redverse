@@ -57,16 +57,16 @@ export function Header() {
                 How it works
               </SmoothScrollLink>
               <Link 
-                href="/leaderboard" 
+                href="/examples" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Leaderboard
+                Examples
               </Link>
               <Link 
-                href="/guides" 
+                href="/blog" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Guides
+                Blog
               </Link>
               <SmoothScrollLink 
                 href="/#pricing" 
@@ -147,18 +147,18 @@ export function Header() {
                   How it works
                 </SmoothScrollLink>
                 <Link 
-                  href="/leaderboard" 
+                  href="/examples" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Leaderboard
+                  Examples
                 </Link>
                 <Link 
-                  href="/guides" 
+                  href="/blog" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Guides
+                  Blog
                 </Link>
                 <SmoothScrollLink 
                   href="/#pricing" 

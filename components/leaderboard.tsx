@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getLeaderboard } from '@/lib/actions';
 import { Application, Note } from '@/lib/supabase';
 import { ScrollAnimation } from './scroll-animation';
-import { TrendingUpIcon, HeartIcon, EyeIcon, BookmarkIcon, MessageCircleIcon, ShareIcon, TrophyIcon, ExternalLinkIcon, UserIcon, XiaohongshuIcon } from '@/components/icons';
+import { TrendingUpIcon, HeartIcon, EyeIcon, BookmarkIcon, MessageCircleIcon, ShareIcon, ExternalLinkIcon, UserIcon, XiaohongshuIcon } from '@/components/icons';
 import Image from 'next/image';
 
 interface LeaderboardItem extends Application {
@@ -143,31 +143,14 @@ export function Leaderboard({ limit }: LeaderboardProps) {
 
             {/* Card Content */}
             <div className="p-6">
-              {/* Top Row: Ranking + Total Engagement */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex gap-2">
-                  {index < 3 && (
-                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                      index === 0 ? 'bg-gray-900 text-white border border-gray-900' :
-                      index === 1 ? 'bg-gray-200 text-gray-800 border border-gray-200' :
-                      'bg-gray-100 text-gray-700 border border-gray-200'
-                    }`}>
-                      <TrophyIcon className={`w-3 h-3 mr-1 ${
-                        index === 0 ? 'text-white' :
-                        index === 1 ? 'text-gray-600' :
-                        'text-gray-500'
-                      }`} />
-                      #{index + 1}
-                    </span>
-                  )}
-                </div>
-                
-                {/* Total Engagement in top-right */}
+              {/* Top Row: CES Score */}
+              <div className="flex justify-end items-start mb-4">
+                {/* CES Score in top-right */}
                 {item.note && (
                   <div className="inline-flex items-center px-2 py-1 rounded-lg bg-gray-50 border border-gray-200">
                     <TrendingUpIcon className="w-3 h-3 text-gray-600 mr-1" />
                     <span className="text-xs font-medium text-gray-700">
-                      {item.total_engagement.toLocaleString()}
+                      CES {item.total_engagement.toLocaleString()}
                     </span>
                   </div>
                 )}

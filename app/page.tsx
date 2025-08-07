@@ -134,7 +134,7 @@ export default function Home() {
               <div className="animate-fadeInUp animate-delay-400 mb-4">
                 <div className="w-full max-w-2xl mx-auto">
                   <Link
-                    href="/guides"
+                    href="/blog"
                     className="guide-button group w-full flex items-center justify-center bg-white border-2 border-gray-200 hover:border-gray-300 rounded-full shadow-lg px-8 py-3 min-h-[60px] transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                   >
                     <div className="flex items-center space-x-2 sm:space-x-3">
@@ -242,6 +242,191 @@ export default function Home() {
           </div>
         </ScrollAnimation>
 
+        {/* Competitor Comparison Section */}
+        <ScrollAnimation>
+          <div id="comparison" className="py-16 border-t border-gray-200">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Us vs. them
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                See how Redverse stands out from other China market entry solutions
+              </p>
+            </div>
+            
+            {/* Comparison Table */}
+            <div className="max-w-6xl mx-auto">
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-hidden rounded-lg border border-gray-200 shadow-lg">
+                <table className="w-full bg-white">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 border-b border-gray-200">Category</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-b border-gray-200 bg-gray-100">
+                        <strong>Redverse</strong>
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 border-b border-gray-200">Influchina</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 border-b border-gray-200">AppInChina</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Target User</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Indie developers, SaaS tools</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Global brands</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">App/game developers</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Core Service</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Xiaohongshu promotion + AI content support</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">KOL/KOC media buying</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">App publishing, localization, compliance</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Speed of Execution</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Promotional note published within 5 hours</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Slower, project-based timeline</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Slower, process-heavy</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Content Type</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Native-style review notes</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Commercial influencer ads</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">No content services provided</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Platform Focus</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Xiaohongshu</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Multi-platform (Xiaohongshu, Douyin, etc.)</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">App Stores (iOS & Android)</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Strategy Support</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Algorithm-driven content strategy for Xiaohongshu</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">No algorithmic focus</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">No content strategy</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Submission Rules</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Unlimited application submissions</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Manual filtering and approval</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Requires full compliance documents</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Execution Mode</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">Self-serve + AI automation</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Fully manual agency model</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Full-service agency</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Pricing</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">$9.9/month (low barrier)</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">High-budget, case-by-case pricing</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">Quoted per service</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">Indie Developer Friendly</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 bg-gray-50 font-medium">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Very suitable
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                          Not suitable
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          Partially suitable, costly
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="lg:hidden space-y-6">
+                <div className="bg-white rounded-lg border-2 border-gray-900 p-6 shadow-lg">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Redverse</h3>
+                  <div className="space-y-3">
+                    <div><span className="font-medium">Target User:</span> Indie developers, SaaS tools</div>
+                    <div><span className="font-medium">Core Service:</span> Xiaohongshu promotion + AI content support</div>
+                    <div><span className="font-medium">Speed:</span> Within 5 hours</div>
+                    <div><span className="font-medium">Content Type:</span> Native-style review notes</div>
+                    <div><span className="font-medium">Platform:</span> Xiaohongshu</div>
+                    <div><span className="font-medium">Strategy:</span> Algorithm-driven content strategy</div>
+                    <div><span className="font-medium">Submissions:</span> Unlimited</div>
+                    <div><span className="font-medium">Mode:</span> Self-serve + AI automation</div>
+                    <div><span className="font-medium">Pricing:</span> $9.9/month</div>
+                    <div className="flex items-center">
+                      <span className="font-medium mr-2">Indie Friendly:</span>
+                      <svg className="w-5 h-5 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Very suitable
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-4">Influchina</h3>
+                  <div className="space-y-3 text-sm text-gray-600">
+                    <div><span className="font-medium">Target User:</span> Global brands</div>
+                    <div><span className="font-medium">Core Service:</span> KOL/KOC media buying</div>
+                    <div><span className="font-medium">Speed:</span> Slower, project-based timeline</div>
+                    <div><span className="font-medium">Content Type:</span> Commercial influencer ads</div>
+                    <div><span className="font-medium">Platform:</span> Multi-platform</div>
+                    <div><span className="font-medium">Strategy:</span> No algorithmic focus</div>
+                    <div><span className="font-medium">Submissions:</span> Manual filtering and approval</div>
+                    <div><span className="font-medium">Mode:</span> Fully manual agency model</div>
+                    <div><span className="font-medium">Pricing:</span> High-budget, case-by-case</div>
+                    <div className="flex items-center">
+                      <span className="font-medium mr-2">Indie Friendly:</span>
+                      <svg className="w-5 h-5 text-red-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      Not suitable
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-4">AppInChina</h3>
+                  <div className="space-y-3 text-sm text-gray-600">
+                    <div><span className="font-medium">Target User:</span> App/game developers</div>
+                    <div><span className="font-medium">Core Service:</span> App publishing, localization, compliance</div>
+                    <div><span className="font-medium">Speed:</span> Slower, process-heavy</div>
+                    <div><span className="font-medium">Content Type:</span> No content services provided</div>
+                    <div><span className="font-medium">Platform:</span> App Stores (iOS & Android)</div>
+                    <div><span className="font-medium">Strategy:</span> No content strategy</div>
+                    <div><span className="font-medium">Submissions:</span> Requires full compliance documents</div>
+                    <div><span className="font-medium">Mode:</span> Full-service agency</div>
+                    <div><span className="font-medium">Pricing:</span> Quoted per service</div>
+                    <div className="flex items-center">
+                      <span className="font-medium mr-2">Indie Friendly:</span>
+                      <svg className="w-5 h-5 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      Partially suitable, costly
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollAnimation>
+
         {/* How it works Section */}
         <ScrollAnimation>
           <div id="how-it-works" className="py-20 border-t border-gray-200">
@@ -251,7 +436,7 @@ export default function Home() {
               </h2>
               <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
                 Want to understand the full strategy behind Xiaohongshu marketing? 
-                <Link href="/guides" className="text-gray-900 underline hover:text-gray-700 ml-1">
+                <Link href="/blog" className="text-gray-900 underline hover:text-gray-700 ml-1">
                   Read our complete guide
                 </Link>
               </p>
@@ -325,24 +510,24 @@ export default function Home() {
           </div>
         </ScrollAnimation>
 
-        {/* Leaderboard Section */}
+        {/* Examples Section */}
         <ScrollAnimation>
-          <div id="leaderboard" className="py-16 border-t border-gray-200">
+          <div id="examples" className="py-16 border-t border-gray-200">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Leaderboard
+                Examples
               </h2>
             </div>
             
             <Leaderboard limit={3} />
             
-            {/* View Full Leaderboard Link */}
+            {/* View All Examples Link */}
             <div className="text-center mt-8">
               <Link
-                href="/leaderboard"
+                href="/examples"
                 className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-full text-base font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200"
               >
-                View Full Leaderboard
+                View All Examples
                 <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

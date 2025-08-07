@@ -33,6 +33,22 @@ export function Footer() {
             <p className="text-gray-400 text-xs text-center lg:text-left">
               © 2025 Redverse. All rights reserved.
             </p>
+            
+            {/* Legal Links */}
+            <div className="flex items-center justify-center lg:justify-end space-x-6">
+              <a
+                href="/terms"
+                className="text-gray-400 hover:text-white transition-colors text-xs"
+              >
+                Terms
+              </a>
+              <a
+                href="/privacy"
+                className="text-gray-400 hover:text-white transition-colors text-xs"
+              >
+                Privacy
+              </a>
+            </div>
           </div>
         </div>
       </div>
