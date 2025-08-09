@@ -29,7 +29,7 @@ interface BugReportData {
 interface NoteNotificationData {
   userEmail: string;
   projectName: string;
-  action: 'created' | 'updated';
+  action: 'created' | 'updated' | 'report';
   noteUrl?: string;
   founderName?: string;
   changes?: {
@@ -39,6 +39,14 @@ interface NoteNotificationData {
     views: { old: number; new: number; diff: number };
     shares?: { old: number; new: number; diff: number };
   };
+  completeData?: {
+    likes_count: number;
+    collects_count: number;
+    comments_count: number;
+    views_count: number;
+    shares_count: number;
+  };
+  dataDate?: string;
 }
 
 interface FeedbackData {
@@ -547,12 +555,157 @@ export async function sendNoteNotification(data: NoteNotificationData): Promise<
     }
 
     const isUpdate = data.action === 'updated' && data.changes;
-    const actionText = data.action === 'created' ? `${data.projectName} - Featured on Xiaohongshu!` : `${data.projectName} - Performance Update`;
+    const isReport = data.action === 'report';
+    
+    // Format date for display
+    const displayDate = data.dataDate ? new Date(data.dataDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC'
+    }) : new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const actionText = data.action === 'created' 
+      ? `${data.projectName} - Featured on Xiaohongshu!` 
+      : isReport 
+        ? `${data.projectName} - Data Report (${displayDate})` 
+        : `${data.projectName} - Performance Update (${displayDate})`;
 
     let changesHtml = '';
     let changesText = '';
     
-    if (isUpdate && data.changes) {
+    // If we have complete data, use it; otherwise fall back to changes
+    if (data.completeData) {
+      // Use complete data to create display
+      const { likes_count, collects_count, comments_count, views_count, shares_count } = data.completeData;
+      
+      // Calculate CES Score using Xiaohongshu algorithm: Likes×1 + Saves×1 + Comments×4 + Shares×4
+      const cesScore = (likes_count * 1) + (collects_count * 1) + (comments_count * 4) + (shares_count * 4);
+      
+      changesHtml = `
+        <div style="margin: 32px 0;">
+          <!-- Main Layout Table -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+            <tr>
+              <!-- Left: CES Score Card -->
+              <td class="mobile-stack" width="40%" valign="top" style="padding-right: 12px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 32px 24px; text-align: center;">
+                      <div style="margin-bottom: 16px;">
+                        <span style="font-size: 13px; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.025em;">CES SCORE</span>
+                      </div>
+                      <div style="margin-bottom: 8px;">
+                        <span style="font-size: 42px; font-weight: 800; color: #111827; line-height: 1; display: block;">${cesScore.toLocaleString()}</span>
+                      </div>
+                      <div>
+                        <span style="font-size: 16px; font-weight: 600; color: #374151;">
+                          Current Total
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              
+              <!-- Right: Individual Metrics -->
+              <td class="mobile-stack" width="60%" valign="top" style="padding-left: 12px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                  <tr>
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-right: 6px; padding-bottom: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">LIKES</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${likes_count.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">Total</span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-left: 6px; padding-bottom: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">VIEWS</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${views_count.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">Total</span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-right: 6px; padding-top: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">SAVES</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${collects_count.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">Total</span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    
+                    <td class="mobile-metric-cell" width="50%" valign="top" style="padding-left: 6px; padding-top: 12px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 6px; border-collapse: collapse;">
+                        <tr>
+                          <td style="padding: 16px;">
+                            <div style="margin-bottom: 12px;">
+                              <span style="font-size: 12px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.025em;">COMMENTS</span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                              <span style="font-size: 24px; font-weight: 700; color: #111827; line-height: 1; display: block;">${comments_count.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span style="font-size: 12px; font-weight: 500; color: #6b7280;">Total</span>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+      `;
+      
+      changesText = `
+Complete Data Report:
+• Likes: ${likes_count.toLocaleString()}
+• Views: ${views_count.toLocaleString()}
+• Saves: ${collects_count.toLocaleString()}
+• Comments: ${comments_count.toLocaleString()}
+• Shares: ${shares_count.toLocaleString()}
+• CES Score: ${cesScore.toLocaleString()}
+      `;
+    } else if (isUpdate && data.changes) {
       const { likes, collects, comments, views } = data.changes;
       const hasIncrease = likes.diff > 0 || collects.diff > 0 || comments.diff > 0 || views.diff > 0;
       
@@ -890,7 +1043,9 @@ ${hasIncrease ? '🎉 Amazing growth! Your app is gaining momentum on Xiaohongsh
               <div class="description">
                 ${data.action === 'created' 
                   ? `<strong>${data.projectName}</strong> is now featured on Xiaohongshu.`
-                  : `Performance update for <strong>${data.projectName}</strong>:`
+                  : data.action === 'report'
+                    ? `Here's the complete performance data for <strong>${data.projectName}</strong> as of <strong>${displayDate}</strong>:`
+                    : `Performance update for <strong>${data.projectName}</strong> as of <strong>${displayDate}</strong>:`
                 }
               </div>
               
@@ -927,7 +1082,9 @@ Hello ${data.founderName ? data.founderName : 'there'}!
 
 ${data.action === 'created' 
   ? `${data.projectName} is now featured on Xiaohongshu.`
-  : `Performance update for ${data.projectName}:`
+  : data.action === 'report'
+    ? `Here's the complete performance data for ${data.projectName} as of ${displayDate}:`
+    : `Performance update for ${data.projectName} as of ${displayDate}:`
 }
 
 ${changesText}

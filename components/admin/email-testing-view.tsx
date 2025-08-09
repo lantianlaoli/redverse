@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Mail, Send, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { sendTestEmail } from '@/lib/actions';
 
-type EmailType = 'application' | 'bug' | 'note_created' | 'note_updated' | 'feedback';
+type EmailType = 'application' | 'bug' | 'note_created' | 'note_updated' | 'note_report' | 'feedback';
 
 interface TestStatus {
   loading: boolean;
@@ -34,8 +34,14 @@ const emailTypes = [
   {
     id: 'note_updated' as EmailType,
     title: 'Note Data Updated',
-    description: 'Test the email sent when note metrics are updated',
+    description: 'Test the email sent when note metrics are updated (shows changes)',
     icon: '📊',
+  },
+  {
+    id: 'note_report' as EmailType,
+    title: 'Complete Data Report',
+    description: 'Test the email sent with complete data (no changes needed)',
+    icon: '📋',
   },
   {
     id: 'feedback' as EmailType,
@@ -51,6 +57,7 @@ export function EmailTestingView() {
     bug: { loading: false, success: null, message: '' },
     note_created: { loading: false, success: null, message: '' },
     note_updated: { loading: false, success: null, message: '' },
+    note_report: { loading: false, success: null, message: '' },
     feedback: { loading: false, success: null, message: '' },
   });
 

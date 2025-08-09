@@ -1238,7 +1238,7 @@ export async function submitFeedback(feedbackText: string, applicationData?: {
 }
 
 // Test email function for admin debugging
-export async function sendTestEmail(emailType: 'application' | 'bug' | 'note_created' | 'note_updated' | 'feedback'): Promise<{
+export async function sendTestEmail(emailType: 'application' | 'bug' | 'note_created' | 'note_updated' | 'note_report' | 'feedback'): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -1351,7 +1351,34 @@ export async function sendTestEmail(emailType: 'application' | 'bug' | 'note_cre
           action: 'updated',
           noteUrl: 'https://xiaohongshu.com/test-note-url',
           founderName: 'Alex Johnson',
-          changes: testChanges
+          changes: testChanges,
+          completeData: {
+            likes_count: testNewData.likesCount,
+            collects_count: testNewData.collectsCount,
+            comments_count: testNewData.commentsCount,
+            views_count: testNewData.viewsCount,
+            shares_count: testNewData.sharesCount,
+          },
+          dataDate: new Date().toISOString()
+        });
+        break;
+
+      case 'note_report':
+        // Test complete data report (no changes, just current data)
+        await sendNoteNotification({
+          userEmail: process.env.ADMIN_EMAIL || 'lantianlaoli@gmail.com',
+          projectName: 'OneTab',
+          action: 'report',
+          noteUrl: 'https://xiaohongshu.com/test-note-url',
+          founderName: 'Alex Johnson',
+          completeData: {
+            likes_count: 245,
+            collects_count: 45,
+            comments_count: 16,
+            views_count: 2150,
+            shares_count: 8,
+          },
+          dataDate: new Date().toISOString()
         });
         break;
 

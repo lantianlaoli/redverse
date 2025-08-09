@@ -4,7 +4,7 @@ import { sendNoteNotification } from '../../../../lib/email';
 interface NoteNotificationRequest {
   userEmail: string;
   projectName: string;
-  action: 'created' | 'updated';
+  action: 'created' | 'updated' | 'report';
   noteUrl?: string;
   founderName?: string;
   changes?: {
@@ -14,6 +14,14 @@ interface NoteNotificationRequest {
     views: { old: number; new: number; diff: number };
     shares?: { old: number; new: number; diff: number };
   };
+  completeData?: {
+    likes_count: number;
+    collects_count: number;
+    comments_count: number;
+    views_count: number;
+    shares_count: number;
+  };
+  dataDate?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -39,6 +47,8 @@ export async function POST(request: NextRequest) {
       noteUrl: body.noteUrl,
       founderName: body.founderName,
       changes: body.changes,
+      completeData: body.completeData,
+      dataDate: body.dataDate,
     });
 
     if (result.success) {
