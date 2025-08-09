@@ -113,6 +113,27 @@ export async function submitApplication(formData: FormData) {
       };
     }
 
+    // Check for Vercel domains
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+      if (hostname.includes('vercel.app') || 
+          hostname.includes('vercel.dev') || 
+          hostname.includes('vercel.com') ||
+          hostname.endsWith('.vercel.app') ||
+          hostname.endsWith('.vercel.dev')) {
+        return {
+          success: false,
+          error: 'Vercel domains are not allowed. Please use your custom domain.'
+        };
+      }
+    } catch {
+      return {
+        success: false,
+        error: 'Invalid URL format'
+      };
+    }
+
     // Check subscription limits
     console.log('Debug: Checking subscription limits for user', { userId });
     

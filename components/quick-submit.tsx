@@ -48,8 +48,25 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     }
   };
 
-  const urlIsValid = isValidUrl(websiteUrl);
+  // Vercel domain validation function
+  const isVercelDomain = (url: string): boolean => {
+    if (!url.trim()) return false;
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+      return hostname.includes('vercel.app') || 
+             hostname.includes('vercel.dev') || 
+             hostname.includes('vercel.com') ||
+             hostname.endsWith('.vercel.app') ||
+             hostname.endsWith('.vercel.dev');
+    } catch {
+      return false;
+    }
+  };
+
+  const urlIsValid = isValidUrl(websiteUrl) && !isVercelDomain(websiteUrl);
   const showValidation = websiteUrl.length > 0;
+  const isVercelUrl = isVercelDomain(websiteUrl);
 
   // Fetch user subscription info when user is available
   useEffect(() => {
@@ -589,10 +606,56 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
         </div>
         
         {/* URL validation message - only for validation errors, not submission errors */}
-        {showValidation && !urlIsValid && submissionStatus === 'idle' && (
-          <p className="text-sm text-red-600 text-center">
-            Please enter a valid URL (e.g., https://your-app.com)
-          </p>
+        {showValidation && submissionStatus === 'idle' && (
+          <>
+            {isVercelUrl && (
+              <p className="text-sm text-red-600 text-center">
+                Vercel domains are not allowed. Please use your custom domain.
+              </p>
+            )}
+            {!isValidUrl(websiteUrl) && !isVercelUrl && (
+              <p className="text-sm text-red-600 text-center">
+                Please enter a valid URL (e.g., https://your-app.com)
+              </p>
+            )}
+          </>
+        )}
+
+        {/* Submission Restrictions - Only show when Vercel domain is detected */}
+        {isVercelUrl && showValidation && submissionStatus === 'idle' && (
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-amber-800 mb-2">Submission Guidelines</h3>
+                <p className="text-xs text-amber-700 mb-3">Please ensure your project meets these requirements:</p>
+                <ul className="text-xs text-amber-700 space-y-1">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>Cannot use Vercel original domains (e.g., vercel.app)</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>Cannot be games or entertainment projects</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>Must have a clear business model</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>Must target individual users (not B2B only)</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>Must be landing pages or app store links</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
         )}
       </form>
       
