@@ -18,7 +18,10 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
     price_monthly: 0,
     max_applications: 1,
     features: [] as string[],
-    enable: true
+    enable: true,
+    creem_product_id: '',
+    creem_dev_product_id: '',
+    is_one_time: false
   });
   const [saving, setSaving] = useState(false);
   const { addToast } = useToast();
@@ -30,7 +33,10 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
         price_monthly: Number(plan.price_monthly) || 0,
         max_applications: plan.max_applications || 1,
         features: formatFeatures(plan.features),
-        enable: plan.enable !== undefined ? plan.enable : true
+        enable: plan.enable !== undefined ? plan.enable : true,
+        creem_product_id: plan.creem_product_id || '',
+        creem_dev_product_id: plan.creem_dev_product_id || '',
+        is_one_time: plan.is_one_time || false
       });
     } else {
       setFormData({
@@ -38,7 +44,10 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
         price_monthly: 0,
         max_applications: 1,
         features: [],
-        enable: true
+        enable: true,
+        creem_product_id: '',
+        creem_dev_product_id: '',
+        is_one_time: false
       });
     }
   }, [plan]);
@@ -116,7 +125,10 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
           plan_name: formData.plan_name.trim(),
           price_monthly: formData.price_monthly,
           max_applications: formData.max_applications,
-          features: filteredFeatures
+          features: filteredFeatures,
+          creem_product_id: formData.creem_product_id.trim() || null,
+          creem_dev_product_id: formData.creem_dev_product_id.trim() || null,
+          is_one_time: formData.is_one_time
         }),
       });
 
@@ -208,6 +220,37 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
             <p className="text-xs text-gray-600 mt-1">Set to -1 for unlimited applications</p>
           </div>
 
+          {/* Creem Product IDs */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Production Product ID
+              </label>
+              <input
+                type="text"
+                value={formData.creem_product_id}
+                onChange={(e) => handleInputChange('creem_product_id', e.target.value)}
+                placeholder="e.g., prod_3twXmymyMbDeQAulcYIVkC"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              />
+              <p className="text-xs text-gray-600 mt-1">Production Creem product ID</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Development Product ID
+              </label>
+              <input
+                type="text"
+                value={formData.creem_dev_product_id}
+                onChange={(e) => handleInputChange('creem_dev_product_id', e.target.value)}
+                placeholder="e.g., prod_6otMT2wPikZDMOrE7rSa9u"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              />
+              <p className="text-xs text-gray-600 mt-1">Development/Test Creem product ID</p>
+            </div>
+          </div>
+
           {/* Features */}
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -257,6 +300,24 @@ export function SubscriptionEditModal({ plan, isOpen, onClose, onSave }: Subscri
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Payment Type */}
+          <div>
+            <label className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={formData.is_one_time}
+                onChange={(e) => handleInputChange('is_one_time', e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm font-medium text-gray-900">
+                One-time payment
+              </span>
+            </label>
+            <p className="text-xs text-gray-600 mt-1 ml-7">
+              Check this if the plan is a one-time purchase instead of monthly subscription
+            </p>
           </div>
 
           {/* Enable Status */}

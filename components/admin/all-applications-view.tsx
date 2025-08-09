@@ -6,7 +6,7 @@ import { Application } from '@/lib/supabase';
 import { NotesManagementModal } from './notes-management-modal';
 import { AppEditModal } from './app-edit-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { User, ExternalLink, FileText, Trash2, Edit, AlertCircle } from 'lucide-react';
+import { ExternalLink, FileText, Trash2, Edit, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export function AllApplicationsView() {
@@ -228,16 +228,6 @@ export function AllApplicationsView() {
                     </a>
                   </div>
                   
-                  <div className="space-y-1 text-sm text-gray-500">
-                    {app.founder_url && (
-                      <div className="flex items-center space-x-1">
-                        <User className="w-3 h-3" />
-                        <a href={app.founder_url} target="_blank" rel="noopener noreferrer" className="text-black hover:text-gray-700 underline underline-offset-2 decoration-1 hover:decoration-2 transition-all">
-                          Founder Profile
-                        </a>
-                      </div>
-                    )}
-                  </div>
 
                   {/* Missing Fields Warning */}
                   {getMissingFields(app).length > 0 && (

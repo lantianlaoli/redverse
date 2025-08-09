@@ -3,7 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Users, FileText, Home, CreditCard, Bot, Mail, BookOpen } from 'lucide-react';
+import { FileText, Home, CreditCard, Bot, Mail, BookOpen } from 'lucide-react';
 
 interface AdminSidebarProps {
   currentView: string;
@@ -19,12 +19,6 @@ export function AdminSidebar({ currentView, onViewChange }: AdminSidebarProps) {
       icon: FileText,
       label: 'All Applications',
       description: 'Manage all submissions'
-    },
-    {
-      id: 'founder',
-      icon: Users,
-      label: 'Founder Users',
-      description: 'Group by users'
     },
     {
       id: 'subscriptions',

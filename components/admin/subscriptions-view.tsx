@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Edit, Trash2, DollarSign, Users, Star } from 'lucide-react';
+import { Plus, Edit, Trash2, DollarSign, Users, Settings } from 'lucide-react';
 import { SubscriptionPlan } from '@/lib/supabase';
 import { SubscriptionEditModal } from './subscription-edit-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -15,7 +15,27 @@ export function SubscriptionsView() {
   const [togglingPlan, setTogglingPlan] = useState<SubscriptionPlan | null>(null);
   const [toggleLoading, setToggleLoading] = useState<string | null>(null);
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const [devMode, setDevMode] = useState(false);
   const { addToast } = useToast();
+
+  // Initialize dev mode from Redis
+  useEffect(() => {
+    const fetchDevMode = async () => {
+      try {
+        const response = await fetch('/api/admin/dev-mode');
+        if (response.ok) {
+          const data = await response.json();
+          setDevMode(data.devMode);
+        }
+      } catch (error) {
+        console.error('Failed to fetch dev mode:', error);
+        // Fallback to environment variable
+        setDevMode(process.env.NEXT_PUBLIC_DEV_MODE === 'true');
+      }
+    };
+
+    fetchDevMode();
+  }, []);
 
   const fetchPlans = useCallback(async () => {
     try {
@@ -132,8 +152,53 @@ export function SubscriptionsView() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Subscription Management</h1>
-          <p className="text-gray-600 mt-1">Manage pricing plans and features</p>
+          <div className="flex items-center space-x-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Subscription Management</h1>
+              <p className="text-gray-600 mt-1">Manage pricing plans and features</p>
+            </div>
+            {/* Development Mode Toggle */}
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <Settings className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Dev Mode</span>
+              <button
+                onClick={async () => {
+                  const newDevMode = !devMode;
+                  try {
+                    const response = await fetch('/api/admin/dev-mode', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ devMode: newDevMode })
+                    });
+                    
+                    if (response.ok) {
+                      const data = await response.json();
+                      setDevMode(newDevMode);
+                      addToast(data.message, 'success');
+                    } else {
+                      addToast('Failed to switch mode', 'error');
+                    }
+                  } catch (error) {
+                    console.error('Failed to switch dev mode:', error);
+                    addToast('Failed to switch mode', 'error');
+                  }
+                }}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                  devMode ? 'bg-gray-900' : 'bg-gray-300'
+                }`}
+                title={devMode ? 'Switch to Production Mode' : 'Switch to Development Mode'}
+              >
+                <span
+                  className={`inline-block h-3 w-3 rounded-full bg-white transition-transform ${
+                    devMode ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-xs font-medium ${devMode ? 'text-orange-600' : 'text-green-600'}`}>
+                {devMode ? 'Development' : 'Production'}
+              </span>
+            </div>
+          </div>
         </div>
         <button
           onClick={handleCreate}
@@ -146,61 +211,72 @@ export function SubscriptionsView() {
 
       {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {plans.map((plan) => (
-          <div key={plan.id} className={`bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow ${!plan.enable ? 'opacity-60' : ''}`}>
-            {/* Plan Header */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 capitalize">
-                  {plan.plan_name}
-                </h3>
-                <div className="flex items-center space-x-2 mt-1">
-                  {plan.plan_name === 'pro' && (
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                      <span className="text-xs text-yellow-600">Popular</span>
-                    </div>
-                  )}
-                  <div className="flex items-center">
-                    <div className={`w-2 h-2 rounded-full mr-1 ${plan.enable ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    <span className={`text-xs font-medium ${plan.enable ? 'text-green-600' : 'text-red-600'}`}>
-                      {plan.enable ? 'Enabled' : 'Disabled'}
-                    </span>
-                  </div>
+        {plans.map((plan) => {
+          const isRecommended = plan.plan_name.toLowerCase() === 'plus';
+          return (
+          <div 
+            key={plan.id} 
+            className={`relative bg-white border border-gray-200 hover:border-gray-400 transition-colors duration-200 ${
+              isRecommended ? 'ring-2 ring-gray-900' : ''
+            } ${!plan.enable ? 'opacity-50' : ''}`}
+          >
+            {/* Recommended Badge */}
+            {isRecommended && (
+              <div className="absolute -top-2 left-4">
+                <div className="bg-gray-900 text-white text-xs font-medium px-2 py-1 rounded">
+                  Recommended
                 </div>
               </div>
-              <div className="flex space-x-2">
+            )}
+            
+            <div className="p-6">
+            {/* Plan Header */}
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <h3 className="text-lg font-semibold text-gray-900 capitalize">
+                    {plan.plan_name}
+                  </h3>
+                  <div className={`w-2 h-2 rounded-full ${
+                    plan.enable ? 'bg-gray-900' : 'bg-gray-400'
+                  }`}></div>
+                </div>
+                <p className="text-sm text-gray-500">
+                  {plan.enable ? 'Active' : 'Disabled'}
+                </p>
+              </div>
+              <div className="flex items-center space-x-1">
                 <button
                   onClick={() => handleToggleEnable(plan)}
                   disabled={toggleLoading === plan.id}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                    plan.enable 
-                      ? 'bg-green-600 focus:ring-green-500' 
-                      : 'bg-gray-200 focus:ring-gray-300'
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                    plan.enable ? 'bg-gray-900' : 'bg-gray-300'
                   } ${toggleLoading === plan.id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title={plan.enable ? 'Click to disable plan' : 'Click to enable plan'}
+                  title={plan.enable ? 'Disable plan' : 'Enable plan'}
                 >
                   {toggleLoading === plan.id ? (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-2 h-2 border border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   ) : (
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                        plan.enable ? 'translate-x-6' : 'translate-x-1'
+                      className={`inline-block h-3 w-3 rounded-full bg-white transition-transform ${
+                        plan.enable ? 'translate-x-5' : 'translate-x-1'
                       }`}
                     />
                   )}
                 </button>
                 <button
                   onClick={() => handleEdit(plan)}
-                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                  title="Edit"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setDeletingPlan(plan)}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+                  title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -208,54 +284,90 @@ export function SubscriptionsView() {
             </div>
 
             {/* Price */}
-            <div className="mb-4">
-              <div className="flex items-center space-x-2">
-                <DollarSign className="w-5 h-5 text-green-600" />
+            <div className="mb-4 p-3 bg-gray-50 rounded">
+              <div className="flex items-baseline space-x-2">
                 <span className="text-2xl font-bold text-gray-900">
                   {plan.price_monthly === 0 ? 'Free' : `$${plan.price_monthly}`}
                 </span>
                 {plan.price_monthly !== 0 && (
-                  <span className="text-gray-500">/month</span>
+                  <span className="text-gray-500">
+                    {plan.is_one_time ? ' one-time' : '/month'}
+                  </span>
                 )}
               </div>
+              {plan.is_one_time && plan.price_monthly !== 0 && (
+                <div className="mt-2">
+                  <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-200 text-gray-700">
+                    One-time payment
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Max Applications */}
-            {(plan.max_applications !== null && plan.max_applications !== undefined) && (
-              <div className="mb-4 flex items-center space-x-2 text-gray-600">
-                <Users className="w-4 h-4" />
-                <span className="text-sm">
-                  {plan.max_applications === -1 ? 'Unlimited' : plan.max_applications} applications
-                </span>
-              </div>
-            )}
+            {/* Plan Details */}
+            <div className="space-y-3 mb-4">
+              {/* Max Applications */}
+              {(plan.max_applications !== null && plan.max_applications !== undefined) && (
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-700">Applications</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">
+                    {plan.max_applications === -1 ? 'Unlimited' : plan.max_applications}
+                  </span>
+                </div>
+              )}
+
+              {/* Creem Product ID */}
+              {(devMode ? plan.creem_dev_product_id : plan.creem_product_id) && (
+                <div className="py-2">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <DollarSign className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs text-gray-500">
+                      {devMode ? 'Dev Product ID' : 'Prod Product ID'}
+                    </span>
+                  </div>
+                  <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono text-gray-700 block break-all">
+                    {devMode ? plan.creem_dev_product_id : plan.creem_product_id}
+                  </code>
+                </div>
+              )}
+            </div>
 
             {/* Features */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-700">Features:</h4>
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Features</h4>
               <div className="space-y-1">
                 {formatFeatures(plan.features).slice(0, 3).map((feature, index) => (
-                  <div key={index} className="text-sm text-gray-600 flex items-start">
-                    <span className="text-green-500 mr-2">•</span>
-                    <span>{typeof feature === 'string' ? feature : feature.name || 'Feature'}</span>
+                  <div key={index} className="flex items-start space-x-2">
+                    <div className="w-1 h-1 rounded-full bg-gray-400 mt-2 flex-shrink-0"></div>
+                    <span className="text-sm text-gray-600">
+                      {typeof feature === 'string' ? feature : feature.name || 'Feature'}
+                    </span>
                   </div>
                 ))}
                 {formatFeatures(plan.features).length > 3 && (
-                  <div className="text-xs text-gray-400">
-                    +{formatFeatures(plan.features).length - 3} more features
+                  <div className="text-xs text-gray-400 mt-1">
+                    +{formatFeatures(plan.features).length - 3} more
                   </div>
                 )}
               </div>
             </div>
 
             {/* Created Date */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-400">
-                Created: {new Date(plan.created_at || '').toLocaleDateString()}
-              </p>
+            <div className="pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-between text-xs text-gray-400">
+                <span>{new Date(plan.created_at || '').toLocaleDateString()}</span>
+                <span className="font-mono">
+                  {plan.id.slice(0, 8)}
+                </span>
+              </div>
+            </div>
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
 
       {/* Empty State */}

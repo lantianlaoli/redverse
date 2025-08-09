@@ -30,7 +30,7 @@ export async function GET() {
 // POST - 创建新订阅计划
 export async function POST(request: NextRequest) {
   try {
-    const { plan_name, price_monthly, max_applications, features, enable } = await request.json();
+    const { plan_name, price_monthly, max_applications, features, enable, creem_product_id, creem_dev_product_id, is_one_time } = await request.json();
 
     // 验证必填字段
     if (!plan_name || plan_name.trim() === '') {
@@ -62,7 +62,10 @@ export async function POST(request: NextRequest) {
         price_monthly: price_monthly || 0,
         max_applications: max_applications || 1,
         features: features || [],
-        enable: enable !== undefined ? enable : true
+        enable: enable !== undefined ? enable : true,
+        creem_product_id: creem_product_id || null,
+        creem_dev_product_id: creem_dev_product_id || null,
+        is_one_time: is_one_time || false
       })
       .select()
       .single();

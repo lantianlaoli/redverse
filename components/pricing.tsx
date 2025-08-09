@@ -62,10 +62,28 @@ export function Pricing() {
     );
   }
 
-  const basicPlan = plans.find(p => p.plan_name === 'basic');
-  const proPlan = plans.find(p => p.plan_name === 'pro');
+  // Filter enabled plans and arrange with Plus always in the center
+  const filteredPlans = plans.filter(p => p.enable);
+  const enabledPlans = (() => {
+    const basicPlan = filteredPlans.find(p => p.plan_name.toLowerCase() === 'basic');
+    const plusPlan = filteredPlans.find(p => p.plan_name.toLowerCase() === 'plus');
+    const proPlan = filteredPlans.find(p => p.plan_name.toLowerCase() === 'pro');
+    const otherPlans = filteredPlans.filter(p => !['basic', 'plus', 'pro'].includes(p.plan_name.toLowerCase()));
+    
+    // Always put Plus in the middle for prominence: Basic → Plus → Pro
+    const orderedPlans = [];
+    if (basicPlan) orderedPlans.push(basicPlan);
+    if (plusPlan) orderedPlans.push(plusPlan);  // Plus always in middle position
+    if (proPlan) orderedPlans.push(proPlan);
+    orderedPlans.push(...otherPlans.sort((a, b) => a.price_monthly - b.price_monthly));
+    
+    // Debug: log the final order
+    console.log('Plan ordering:', orderedPlans.map(p => p.plan_name));
+    
+    return orderedPlans;
+  })();
 
-  const handleUpgradeClick = async () => {
+  const handleUpgradeClick = async (planName: string) => {
     if (paymentLoading || !user?.id) return;
     
     const userEmail = user.emailAddresses?.[0]?.emailAddress;
@@ -83,7 +101,8 @@ export function Pricing() {
         },
         body: JSON.stringify({
           userId: user.id,
-          userEmail: userEmail
+          userEmail: userEmail,
+          planName: planName
         })
       });
 
@@ -92,7 +111,7 @@ export function Pricing() {
       if (data.success && data.checkout_url) {
         window.open(data.checkout_url, '_blank');
       } else {
-        alert('Failed to create payment session. Please try again.');
+        alert(data.error || 'Failed to create payment session. Please try again.');
       }
     } catch (error) {
       console.error('Payment error:', error);
@@ -109,111 +128,132 @@ export function Pricing() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-center">
-        {/* Basic Plan - Only show if enabled */}
-        {basicPlan?.enable && (
-          <ScrollAnimation animation="fadeInLeft" delay={100}>
-          <div className="relative bg-white border border-gray-200 rounded-xl p-8 h-full flex flex-col hover-lift transition-all duration-300">
-          <div className="flex justify-between items-start mb-8">
-            <h3 className="text-lg font-medium text-gray-900">Basic</h3>
-            <span className="bg-black text-white text-xs font-medium px-3 py-1 rounded-full">
-              {basicPlan?.enable ? 'Available' : 'Available'}
-            </span>
-          </div>
-
-          <div className="mb-6">
-            <div className="flex items-baseline">
-              <span className="text-5xl font-bold text-gray-900">
-                {basicPlan?.price_monthly === 0 ? 'Free' : `$${basicPlan?.price_monthly}`}
-              </span>
-              {basicPlan?.price_monthly !== 0 && (
-                <span className="text-gray-500 text-2xl">/m</span>
-              )}
-            </div>
-          </div>
-
-          <p className="text-gray-600 mb-8">
-            Perfect for getting started with your first AI project on Xiaohongshu.
-          </p>
-
-          <ul className="space-y-3 mb-8 text-gray-700 flex-grow">
-            {(() => {
-              const features = formatFeatures(basicPlan?.features || null);
-              return features.map((feature, index) => (
-                <li key={index}>• {feature}</li>
-              ));
-            })()}
-          </ul>
-
-          {/* Only show current plan status if user is on basic plan */}
-          {user && userSubscription?.plan_name === 'basic' ? (
-            <button className="w-full bg-green-600 text-white py-3 px-6 rounded-full font-medium cursor-default">
-              ✓ Current Plan
-            </button>
-          ) : (
-            <div className="py-3"></div>
-          )}
-          </div>
-        </ScrollAnimation>
-        )}
-
-        {/* Pro Plan - Larger with emphasis */}
-        <ScrollAnimation animation="fadeInRight" delay={200}>
-          <div className="relative bg-white border-4 border-black rounded-xl p-10 shadow-lg transform scale-105 h-full flex flex-col hover-lift transition-all duration-300">
-          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-black text-white text-sm font-medium px-4 py-1 rounded-full">
-            Recommended
-          </div>
+      <div className={`grid gap-8 max-w-6xl mx-auto items-center ${
+        enabledPlans.length === 1 ? 'grid-cols-1 max-w-md' :
+        enabledPlans.length === 2 ? 'grid-cols-1 md:grid-cols-2' :
+        'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+      }`}>
+        {enabledPlans.map((plan, index) => {
+          const isRecommended = plan.plan_name.toLowerCase() === 'plus';
+          const isCurrentPlan = user && userSubscription?.plan_name === plan.plan_name;
           
-          <div className="flex justify-between items-start mb-8">
-            <h3 className="text-xl font-medium text-gray-900">Pro</h3>
-          </div>
-
-          <div className="mb-6">
-            <div className="flex items-baseline">
-              <span className="text-6xl font-bold text-gray-900">
-                ${proPlan?.price_monthly || '29.99'}
-              </span>
-              <span className="text-gray-500 text-2xl">/m</span>
-            </div>
-          </div>
-
-          <p className="text-gray-600 mb-8 text-lg">
-            Perfect for scaling your AI products and maximizing reach on Xiaohongshu.
-          </p>
-
-          <ul className="space-y-3 mb-8 text-gray-700 text-lg flex-grow">
-            {(() => {
-              const features = formatFeatures(proPlan?.features || null);
-              return features.map((feature, index) => (
-                <li key={index}>• {feature}</li>
-              ));
-            })()}
-          </ul>
-
-          {/* Different button states based on plan availability and user subscription */}
-          {!user ? (
-            <button className="w-full bg-gray-300 text-gray-500 py-4 px-6 rounded-full font-medium text-lg cursor-not-allowed">
-              Sign in required
-            </button>
-          ) : userSubscription?.plan_name === 'pro' ? (
-            <button className="w-full bg-green-600 text-white py-4 px-6 rounded-full font-medium text-lg cursor-default">
-              ✓ Current Plan
-            </button>
-          ) : proPlan?.enable === false ? (
-            <button className="w-full bg-gray-400 text-white py-4 px-6 rounded-full font-medium text-lg cursor-default">
-              Coming Soon
-            </button>
-          ) : (
-            <button 
-              className="w-full bg-black text-white py-4 px-6 rounded-full font-medium text-lg hover:bg-gray-800 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleUpgradeClick}
-              disabled={paymentLoading}
+          // Debug: log each plan
+          console.log(`Plan ${plan.plan_name}:`, {
+            isRecommended,
+            isCurrentPlan,
+            index
+          });
+          
+          // Define plan hierarchy (higher number = higher tier)
+          const planHierarchy = { basic: 1, plus: 2, pro: 3 };
+          const currentPlanTier = userSubscription?.plan_name ? planHierarchy[userSubscription.plan_name.toLowerCase() as keyof typeof planHierarchy] || 0 : 0;
+          const targetPlanTier = planHierarchy[plan.plan_name.toLowerCase() as keyof typeof planHierarchy] || 0;
+          const isUpgrade = targetPlanTier > currentPlanTier;
+          const isDowngrade = targetPlanTier < currentPlanTier;
+          
+          // Debug info (will be removed later)
+          if (plan.plan_name.toLowerCase() === 'plus') {
+            console.log('Plus plan debug:', {
+              currentPlan: userSubscription?.plan_name,
+              currentPlanTier,
+              targetPlanTier,
+              isUpgrade,
+              isDowngrade,
+              isCurrentPlan
+            });
+          }
+          
+          return (
+            <ScrollAnimation 
+              key={plan.id} 
+              animation={index % 2 === 0 ? "fadeInLeft" : "fadeInRight"} 
+              delay={100 + index * 100}
             >
-              {paymentLoading ? 'Processing...' : 'Upgrade to Pro'}
-            </button>
-          )}
-          </div>
-        </ScrollAnimation>
+              <div className={`relative bg-white rounded-xl h-full flex flex-col hover-lift transition-all duration-300 ${
+                isRecommended 
+                  ? 'border-4 border-black shadow-lg transform scale-105 p-10' 
+                  : 'border border-gray-200 p-8'
+              }`}>
+                {isRecommended && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-black text-white text-sm font-medium px-4 py-1 rounded-full">
+                    Recommended
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-start mb-8">
+                  <h3 className={`font-medium text-gray-900 capitalize ${isRecommended ? 'text-xl' : 'text-lg'}`}>
+                    {plan.plan_name}
+                  </h3>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex items-baseline">
+                    <span className={`font-bold text-gray-900 ${isRecommended ? 'text-6xl' : 'text-5xl'}`}>
+                      {plan.price_monthly === 0 ? 'Free' : `$${plan.price_monthly}`}
+                    </span>
+                    {plan.price_monthly !== 0 && (
+                      <span className={`text-gray-500 ${isRecommended ? 'text-2xl' : 'text-2xl'}`}>
+                        {plan.is_one_time ? ' one-time' : '/m'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <ul className={`space-y-3 mb-8 text-gray-700 flex-grow ${isRecommended ? 'text-lg' : ''}`}>
+                  {(() => {
+                    const features = formatFeatures(plan.features || null);
+                    return features.map((feature, index) => (
+                      <li key={index}>• {feature}</li>
+                    ));
+                  })()}
+                </ul>
+
+                {/* Button based on user and plan status */}
+                {!user ? (
+                  <button className={`w-full bg-gray-300 text-gray-500 rounded-full font-medium cursor-not-allowed ${
+                    isRecommended ? 'py-4 px-6 text-lg' : 'py-3 px-6'
+                  }`}>
+                    Sign in required
+                  </button>
+                ) : isCurrentPlan ? (
+                  <button className={`w-full bg-green-600 text-white rounded-full font-medium cursor-default ${
+                    isRecommended ? 'py-4 px-6 text-lg' : 'py-3 px-6'
+                  }`}>
+                    ✓ Current Plan
+                  </button>
+                ) : plan.price_monthly === 0 ? (
+                  <div className={isRecommended ? 'py-4' : 'py-3'}></div>
+                ) : isDowngrade ? (
+                  <button className={`w-full bg-gray-400 text-white rounded-full font-medium cursor-default ${
+                    isRecommended ? 'py-4 px-6 text-lg' : 'py-3 px-6'
+                  }`}>
+                    Lower Tier Plan
+                  </button>
+                ) : isUpgrade ? (
+                  <button 
+                    className={`w-full bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isRecommended ? 'py-4 px-6 text-lg' : 'py-3 px-6'
+                    }`}
+                    onClick={() => handleUpgradeClick(plan.plan_name)}
+                    disabled={paymentLoading}
+                  >
+                    {paymentLoading ? 'Processing...' : `Upgrade to ${plan.plan_name.charAt(0).toUpperCase() + plan.plan_name.slice(1)}`}
+                  </button>
+                ) : (
+                  <button 
+                    className={`w-full bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isRecommended ? 'py-4 px-6 text-lg' : 'py-3 px-6'
+                    }`}
+                    onClick={() => handleUpgradeClick(plan.plan_name)}
+                    disabled={paymentLoading}
+                  >
+                    {paymentLoading ? 'Processing...' : `Switch to ${plan.plan_name.charAt(0).toUpperCase() + plan.plan_name.slice(1)}`}
+                  </button>
+                )}
+              </div>
+            </ScrollAnimation>
+          );
+        })}
       </div>
     </div>
   );

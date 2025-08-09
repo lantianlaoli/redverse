@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { AdminLayout } from '@/components/admin/admin-layout';
 import { AllApplicationsView } from '@/components/admin/all-applications-view';
-import { FounderUsersView } from '@/components/admin/founder-users-view';
 import { SubscriptionsView } from '@/components/admin/subscriptions-view';
 import { CrawlerManagement } from '@/components/admin/crawler-management';
 import { EmailTestingView } from '@/components/admin/email-testing-view';
@@ -34,8 +33,6 @@ export default function AdminDashboard() {
     switch (currentView) {
       case 'applications':
         return <AllApplicationsView />;
-      case 'founder':
-        return <FounderUsersView />;
       case 'subscriptions':
         return <SubscriptionsView />;
       case 'crawler':

@@ -7,7 +7,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { plan_name, price_monthly, max_applications, features, enable } = await request.json();
+    const { plan_name, price_monthly, max_applications, features, enable, creem_product_id, creem_dev_product_id, is_one_time } = await request.json();
     const { id: planId } = await params;
 
     // 验证必填字段
@@ -57,7 +57,10 @@ export async function PUT(
         price_monthly: price_monthly || 0,
         max_applications: max_applications || 1,
         features: features || [],
-        enable: enable !== undefined ? enable : true
+        enable: enable !== undefined ? enable : true,
+        creem_product_id: creem_product_id || null,
+        creem_dev_product_id: creem_dev_product_id || null,
+        is_one_time: is_one_time || false
       })
       .eq('id', planId)
       .select()

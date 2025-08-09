@@ -56,6 +56,9 @@ export interface SubscriptionPlan {
   features: Record<string, unknown> | string[] | null;
   enable: boolean;
   created_at: string;
+  creem_product_id: string | null;
+  creem_dev_product_id: string | null;
+  is_one_time: boolean;
 }
 
 export interface UserSubscription {
