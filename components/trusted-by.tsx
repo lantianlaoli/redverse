@@ -32,12 +32,19 @@ export function TrustedBy() {
         for (const format of formats) {
           const testUrl = `${baseUrl}/founder_${i}.${format}`;
           try {
-            const response = await fetch(testUrl, { method: 'HEAD' });
+            const response = await fetch(testUrl, { 
+              method: 'HEAD',
+              cache: 'no-cache',
+              headers: {
+                'Accept': 'image/*'
+              }
+            });
             if (response.ok) {
               avatarUrl = testUrl;
               break;
             }
           } catch {
+            // Silently continue to next format
             continue;
           }
         }

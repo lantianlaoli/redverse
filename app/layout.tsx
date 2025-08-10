@@ -24,9 +24,9 @@ const interDisplay = Inter({
 
 
 export const metadata: Metadata = {
-  title: "Redverse - Make Your AI App Go Viral in China",
-  description: "Bridge global AI innovation with the Chinese market. Transform your AI app into viral Xiaohongshu posts and reach millions of Chinese users.",
-  keywords: ["promote app in China", "market your app in China", "launch app in Chinese market", "Xiaohongshu marketing", "Redverse", "app localization China", "Chinese social media promotion"],
+  title: "Redverse - AI Product Marketing on Xiaohongshu",
+  description: "Help indie developers and startups promote their AI products in China. Transform your AI tools and apps into viral Xiaohongshu posts and reach millions of Chinese users.",
+  keywords: ["AI product marketing China", "indie developer China marketing", "startup AI promotion China", "AI tools Xiaohongshu", "Xiaohongshu marketing", "Redverse", "AI product localization China", "Chinese social media promotion", "AI startup marketing"],
   authors: [{ name: "lantianlaoli" }],
   robots: {
     index: true,
@@ -70,8 +70,8 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: "Redverse - Make Your AI App Go Viral in China",
-    description: "Bridge global AI innovation with the Chinese market. Transform your AI app into viral Xiaohongshu posts and reach millions of Chinese users.",
+    title: "Redverse - AI Product Marketing on Xiaohongshu",
+    description: "Help indie developers and startups promote their AI products in China. Transform your AI tools and apps into viral Xiaohongshu posts and reach millions of Chinese users.",
     url: 'https://www.redverse.online',
     siteName: 'Redverse',
     images: [
@@ -87,8 +87,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Redverse - Make Your AI App Go Viral in China",
-    description: "Bridge global AI innovation with the Chinese market. Transform your AI app into viral Xiaohongshu posts and reach millions of Chinese users.",
+    title: "Redverse - AI Product Marketing on Xiaohongshu",
+    description: "Help indie developers and startups promote their AI products in China. Transform your AI tools and apps into viral Xiaohongshu posts and reach millions of Chinese users.",
     images: ['/twitter.png'],
     creator: '@redverse',
   },
