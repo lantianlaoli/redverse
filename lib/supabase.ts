@@ -45,7 +45,7 @@ export interface Note {
 }
 
 export interface ApplicationWithNotes extends Application {
-  note: Note[];
+  notes: Note[];
 }
 
 export interface SubscriptionPlan {

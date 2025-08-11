@@ -12,7 +12,7 @@ import { getUserSubscription, getUserApplicationCount } from '@/lib/subscription
 import { TrendingUpIcon, HeartIcon, BookmarkIcon, MessageCircleIcon, ShareIcon, TwitterIcon, EyeIcon, SubmissionIcon, SubscriptionIcon, EngagementIcon } from '@/components/icons';
 
 interface ApplicationItem extends Application {
-  note?: Note; // Single note object, not array
+  notes?: Note; // Single note object, not array
   total_engagement: number;
 }
 
@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   // Check if application is under review (no note data available yet)
   const isApplicationUnderReview = (app: ApplicationItem): boolean => {
-    return !app.note;
+    return !app.notes;
   };
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function Dashboard() {
         setApplications(result.applications);
         // Calculate total engagement (only for apps with published notes)
         const total = result.applications.reduce((sum, app) => {
-          if (app.note && app.total_engagement) {
+          if (app.notes && app.total_engagement) {
             return sum + app.total_engagement;
           }
           return sum;
@@ -272,7 +272,7 @@ export default function Dashboard() {
                           </div>
 
                           {/* Progress Bars */}
-                          {item.note && (
+                          {item.notes && (
                             <div className="space-y-3">
                               {/* Total Engagement - Most Prominent */}
                               <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 border border-gray-200">
@@ -296,7 +296,7 @@ export default function Dashboard() {
                                       <span className="text-xs font-medium text-gray-700">Likes</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
-                                      {(item.note.likes_count || 0).toLocaleString()}
+                                      {(item.notes.likes_count || 0).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
@@ -307,7 +307,7 @@ export default function Dashboard() {
                                       <span className="text-xs font-medium text-gray-700">Views</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
-                                      {(item.note.views_count || 0).toLocaleString()}
+                                      {(item.notes.views_count || 0).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
@@ -318,7 +318,7 @@ export default function Dashboard() {
                                       <span className="text-xs font-medium text-gray-700">Saves</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
-                                      {(item.note.collects_count || 0).toLocaleString()}
+                                      {(item.notes.collects_count || 0).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
@@ -329,7 +329,7 @@ export default function Dashboard() {
                                       <span className="text-xs font-medium text-gray-700">Shares</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
-                                      {(item.note.shares_count || 0).toLocaleString()}
+                                      {(item.notes.shares_count || 0).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
@@ -340,7 +340,7 @@ export default function Dashboard() {
                                       <span className="text-xs font-medium text-gray-700">Comments</span>
                                     </div>
                                     <span className="text-lg font-bold text-gray-900">
-                                      {(item.note.comments_count || 0).toLocaleString()}
+                                      {(item.notes.comments_count || 0).toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
@@ -348,7 +348,7 @@ export default function Dashboard() {
                             </div>
                           )}
 
-                          {!item.note && (
+                          {!item.notes && (
                             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                               <p className="text-sm text-gray-500 text-center">
                                 No engagement data available yet. Your app will appear on the leaderboard once published.
@@ -357,7 +357,7 @@ export default function Dashboard() {
                           )}
 
                           {/* Action Buttons */}
-                          {(item.url || item.note?.url) && (
+                          {(item.url || item.notes?.url) && (
                             <div className="mt-4 flex justify-end space-x-3">
                               {item.url && (
                                 <a
@@ -370,9 +370,9 @@ export default function Dashboard() {
                                   <span>→</span>
                                 </a>
                               )}
-                              {item.note?.url && (
+                              {item.notes?.url && (
                                 <a
-                                  href={item.note?.url}
+                                  href={item.notes?.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="btn-primary-black space-x-2"

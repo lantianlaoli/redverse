@@ -171,11 +171,11 @@ export async function submitApplication(formData: FormData) {
     console.log('Debug: Checking for existing application', {
       userId: userId,
       url: url.trim(),
-      tableName: 'application'
+      tableName: 'applications'
     });
     
     const { data: existingApp, error: checkError } = await supabase
-      .from('application')
+      .from('applications')
       .select('id')
       .eq('user_id', userId)
       .eq('url', url.trim())
@@ -227,7 +227,7 @@ export async function submitApplication(formData: FormData) {
     };
     
     console.log('Debug: Attempting to insert application', {
-      tableName: 'application',
+      tableName: 'applications',
       data: applicationData,
       userId: userId
     });
@@ -241,7 +241,7 @@ export async function submitApplication(formData: FormData) {
         console.log(`Debug: Database insert attempt ${retryCount + 1}/${maxRetries}`);
         
         const result = await supabase
-          .from('application')
+          .from('applications')
           .insert(applicationData)
           .select()
           .single();
@@ -300,7 +300,7 @@ export async function submitApplication(formData: FormData) {
         errorMessage: error.message,
         errorDetails: error.details,
         errorHint: error.hint,
-        tableName: 'application',
+        tableName: 'applications',
         attemptedData: applicationData,
         userId: userId
       });
@@ -358,7 +358,7 @@ export async function submitApplication(formData: FormData) {
 // Get user applications server action
 export async function getUserApplications(): Promise<{
   success: boolean;
-  applications?: Array<Application & { note?: Note; total_engagement: number }>;
+  applications?: Array<Application & { notes?: Note; total_engagement: number }>;
   error?: string;
 }> {
   try {
@@ -373,7 +373,7 @@ export async function getUserApplications(): Promise<{
 
     // Step 1: Get user's applications
     const { data: applications, error: appError } = await supabase
-      .from('application')
+      .from('applications')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -396,7 +396,7 @@ export async function getUserApplications(): Promise<{
     // Step 2: Get all notes for these applications
     const appIds = applications.map(app => app.id);
     const { data: notes, error: noteError } = await supabase
-      .from('note')
+      .from('notes')
       .select('*')
       .in('app_id', appIds);
 
@@ -425,7 +425,7 @@ export async function getUserApplications(): Promise<{
       
       return {
         ...app,
-        note: mostRecentNote,
+        notes: mostRecentNote,
         total_engagement: totalEngagement,
       };
     })
@@ -448,13 +448,13 @@ export async function getUserApplications(): Promise<{
 // Get leaderboard server action
 export async function getLeaderboard(): Promise<{
   success: boolean;
-  leaderboard?: Array<Application & { note?: Note; total_engagement: number }>;
+  leaderboard?: Array<Application & { notes?: Note; total_engagement: number }>;
   error?: string;
 }> {
   try {
     // Step 1: Query all applications
     const { data: applications, error: appError } = await supabase
-      .from('application')
+      .from('applications')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -476,7 +476,7 @@ export async function getLeaderboard(): Promise<{
     // Step 2: Query notes for these applications
     const appIds = applications.map(app => app.id);
     const { data: notes, error: noteError } = await supabase
-      .from('note')
+      .from('notes')
       .select('*')
       .in('app_id', appIds);
 
@@ -506,11 +506,11 @@ export async function getLeaderboard(): Promise<{
         
         return {
           ...app,
-          note: mostRecentNote,
+          notes: mostRecentNote,
           total_engagement: totalEngagement,
         };
       })
-      .filter(app => app.note) // Only include apps that have notes
+      .filter(app => app.notes) // Only include apps that have notes
       .sort((a, b) => b.total_engagement - a.total_engagement)
       .slice(0, 10); // Top 10
 
@@ -536,7 +536,7 @@ export async function getAllApplications(): Promise<{
 }> {
   try {
     const { data: applications, error } = await supabase
-      .from('application')
+      .from('applications')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -609,7 +609,7 @@ export async function createNote(appId: string, formData: FormData): Promise<{
     console.log('Debug: Attempting to insert note:', insertData);
 
     const { data: note, error } = await supabase
-      .from('note')
+      .from('notes')
       .insert(insertData)
       .select()
       .single();
@@ -633,7 +633,7 @@ export async function createNote(appId: string, formData: FormData): Promise<{
     // Get application and user information for notification
     try {
       const { data: app } = await supabase
-        .from('application')
+        .from('applications')
         .select('name, user_id')
         .eq('id', appId)
         .single();
@@ -725,13 +725,13 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
 
     // Get current note data before update for comparison
     const { data: oldNote } = await supabase
-      .from('note')
+      .from('notes')
       .select('likes_count, collects_count, comments_count, views_count, shares_count, app_id')
       .eq('id', noteId)
       .single();
 
     const { error } = await supabase
-      .from('note')
+      .from('notes')
       .update(updateData)
       .eq('id', noteId);
 
@@ -756,7 +756,7 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
     if (oldNote) {
       try {
         const { data: app } = await supabase
-          .from('application')
+          .from('applications')
           .select('name, user_id')
           .eq('id', oldNote.app_id)
           .single();
@@ -841,7 +841,7 @@ export async function deleteNote(noteId: string): Promise<{
 }> {
   try {
     const { error } = await supabase
-      .from('note')
+      .from('notes')
       .delete()
       .eq('id', noteId);
 
@@ -874,7 +874,7 @@ export async function getNotesForApp(appId: string): Promise<{
 }> {
   try {
     const { data: notes, error } = await supabase
-      .from('note')
+      .from('notes')
       .select('*')
       .eq('app_id', appId)
       .order('created_at', { ascending: false });
@@ -908,7 +908,7 @@ export async function deleteApplication(appId: string): Promise<{
   try {
     // First delete all notes associated with this application
     const { error: notesError } = await supabase
-      .from('note')
+      .from('notes')
       .delete()
       .eq('app_id', appId);
 
@@ -922,7 +922,7 @@ export async function deleteApplication(appId: string): Promise<{
 
     // Then delete the application
     const { error: appError } = await supabase
-      .from('application')
+      .from('applications')
       .delete()
       .eq('id', appId);
 
@@ -964,7 +964,7 @@ export async function getApplicationsByFounder(): Promise<{
 }> {
   try {
     const { data: applications, error } = await supabase
-      .from('application')
+      .from('applications')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -1067,7 +1067,7 @@ export async function updateApplication(appId: string, formData: FormData): Prom
 
     // Update application in database
     const { error } = await supabase
-      .from('application')
+      .from('applications')
       .update(updateData)
       .eq('id', appId);
 

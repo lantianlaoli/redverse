@@ -8,7 +8,7 @@ import { TrendingUpIcon, HeartIcon, EyeIcon, BookmarkIcon, MessageCircleIcon, Sh
 import Image from 'next/image';
 
 interface LeaderboardItem extends Application {
-  note?: Note; // Single note object, not array
+  notes?: Note; // Single note object, not array
   total_engagement: number;
 }
 
@@ -146,7 +146,7 @@ export function Leaderboard({ limit }: LeaderboardProps) {
               {/* Top Row: CES Score */}
               <div className="flex justify-end items-start mb-4">
                 {/* CES Score in top-right */}
-                {item.note && (
+                {item.notes && (
                   <div className="inline-flex items-center px-2 py-1 rounded-lg bg-gray-50 border border-gray-200">
                     <TrendingUpIcon className="w-3 h-3 text-gray-600 mr-1" />
                     <span className="text-xs font-medium text-gray-700">
@@ -157,27 +157,27 @@ export function Leaderboard({ limit }: LeaderboardProps) {
               </div>
 
               {/* Engagement Metrics */}
-              {item.note && (
+              {item.notes && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
                     <HeartIcon className="w-3 h-3 mr-1" />
-                    {(item.note.likes_count || 0).toLocaleString()} likes
+                    {(item.notes.likes_count || 0).toLocaleString()} likes
                   </span>
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                     <EyeIcon className="w-3 h-3 mr-1" />
-                    {(item.note.views_count || 0).toLocaleString()} views
+                    {(item.notes.views_count || 0).toLocaleString()} views
                   </span>
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
                     <BookmarkIcon className="w-3 h-3 mr-1" />
-                    {(item.note.collects_count || 0).toLocaleString()} saves
+                    {(item.notes.collects_count || 0).toLocaleString()} saves
                   </span>
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                     <ShareIcon className="w-3 h-3 mr-1" />
-                    {(item.note.shares_count || 0).toLocaleString()} shares
+                    {(item.notes.shares_count || 0).toLocaleString()} shares
                   </span>
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
                     <MessageCircleIcon className="w-3 h-3 mr-1" />
-                    {(item.note.comments_count || 0).toLocaleString()} comments
+                    {(item.notes.comments_count || 0).toLocaleString()} comments
                   </span>
                 </div>
               )}
@@ -215,9 +215,9 @@ export function Leaderboard({ limit }: LeaderboardProps) {
                 )}
 
                 {/* Xiaohongshu Link */}
-                {item.note?.url ? (
+                {item.notes?.url ? (
                   <a
-                    href={item.note.url}
+                    href={item.notes.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-primary-black px-3 py-2 text-sm"

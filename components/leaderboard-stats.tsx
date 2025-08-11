@@ -27,7 +27,7 @@ export function LeaderboardStats() {
       
       // Get total number of applications
       const { count, error } = await supabase
-        .from('application')
+        .from('applications')
         .select('*', { count: 'exact', head: true });
 
       if (error) {

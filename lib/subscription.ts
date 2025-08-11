@@ -109,7 +109,7 @@ export async function getUserApplicationCount(userId: string): Promise<{
 }> {
   try {
     const { count, error } = await supabase
-      .from('application')
+      .from('applications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
