@@ -2,13 +2,40 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['img.clerk.com', 'images.clerk.dev', 'mzewkidgqgxygyciyvbl.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.clerk.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'mzewkidgqgxygyciyvbl.supabase.co',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+  },
+  webpack: (config, { dev, isServer }) => {
+    // Handle chunk loading errors by retrying
+    if (!isServer && dev) {
+      const originalEntry = config.entry;
+      config.entry = async () => {
+        const entries = await originalEntry();
+        if (entries['main.js'] && !entries['main.js'].includes('./lib/chunk-retry.js')) {
+          entries['main.js'].unshift('./lib/chunk-retry.js');
+        }
+        return entries;
+      };
+    }
+    return config;
   },
   async headers() {
     return [

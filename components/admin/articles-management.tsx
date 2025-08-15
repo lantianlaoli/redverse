@@ -6,9 +6,27 @@ import { getAllArticles, createArticle, updateArticle, deleteArticle, Article } 
 import { useToast } from '@/components/ui/toast';
 import dynamic from 'next/dynamic';
 
+const EditorFallback = () => (
+  <div className="border border-gray-300 rounded p-4 min-h-[200px] text-gray-500">
+    Editor failed to load. Please refresh the page.
+  </div>
+);
+
+const EditorLoading = () => (
+  <div className="border border-gray-300 rounded p-4 min-h-[200px] animate-pulse bg-gray-50">
+    Loading editor...
+  </div>
+);
+
 const MDEditor = dynamic(
-  () => import('@uiw/react-md-editor').then((mod) => mod.default),
-  { ssr: false }
+  () => import('@uiw/react-md-editor').then((mod) => mod.default).catch((error) => {
+    console.error('Failed to load MDEditor:', error);
+    return EditorFallback;
+  }),
+  { 
+    ssr: false,
+    loading: EditorLoading
+  }
 );
 
 interface ArticleFormData {

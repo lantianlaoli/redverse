@@ -14,14 +14,21 @@ async function diagnoseNetworkConnectivity(): Promise<{
   error?: string;
 }> {
   try {
-    // Test basic fetch to Supabase
+    // Test basic fetch to Supabase with proper timeout handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 10000); // 10 second timeout
+    
     const response = await fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + '/rest/v1/', {
       method: 'HEAD',
       headers: {
         'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
       },
-      signal: AbortSignal.timeout(10000), // 10 second timeout
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
     
     return {
       supabaseReachable: response.status === 401, // 401 is expected without proper auth
