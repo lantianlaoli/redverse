@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Edit, Trash2, DollarSign, Users, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, DollarSign, Users } from 'lucide-react';
 import { SubscriptionPlan } from '@/lib/supabase';
 import { SubscriptionEditModal } from './subscription-edit-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -15,27 +15,7 @@ export function SubscriptionsView() {
   const [togglingPlan, setTogglingPlan] = useState<SubscriptionPlan | null>(null);
   const [toggleLoading, setToggleLoading] = useState<string | null>(null);
   const [isCreateMode, setIsCreateMode] = useState(false);
-  const [devMode, setDevMode] = useState(false);
   const { addToast } = useToast();
-
-  // Initialize dev mode from Redis
-  useEffect(() => {
-    const fetchDevMode = async () => {
-      try {
-        const response = await fetch('/api/admin/dev-mode');
-        if (response.ok) {
-          const data = await response.json();
-          setDevMode(data.devMode);
-        }
-      } catch (error) {
-        console.error('Failed to fetch dev mode:', error);
-        // Fallback to environment variable
-        setDevMode(process.env.NEXT_PUBLIC_DEV_MODE === 'true');
-      }
-    };
-
-    fetchDevMode();
-  }, []);
 
   const fetchPlans = useCallback(async () => {
     try {
@@ -152,53 +132,8 @@ export function SubscriptionsView() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <div className="flex items-center space-x-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Subscription Management</h1>
-              <p className="text-gray-600 mt-1">Manage pricing plans and features</p>
-            </div>
-            {/* Development Mode Toggle */}
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <Settings className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">Dev Mode</span>
-              <button
-                onClick={async () => {
-                  const newDevMode = !devMode;
-                  try {
-                    const response = await fetch('/api/admin/dev-mode', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ devMode: newDevMode })
-                    });
-                    
-                    if (response.ok) {
-                      const data = await response.json();
-                      setDevMode(newDevMode);
-                      addToast(data.message, 'success');
-                    } else {
-                      addToast('Failed to switch mode', 'error');
-                    }
-                  } catch (error) {
-                    console.error('Failed to switch dev mode:', error);
-                    addToast('Failed to switch mode', 'error');
-                  }
-                }}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                  devMode ? 'bg-gray-900' : 'bg-gray-300'
-                }`}
-                title={devMode ? 'Switch to Production Mode' : 'Switch to Development Mode'}
-              >
-                <span
-                  className={`inline-block h-3 w-3 rounded-full bg-white transition-transform ${
-                    devMode ? 'translate-x-5' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-              <span className={`text-xs font-medium ${devMode ? 'text-orange-600' : 'text-green-600'}`}>
-                {devMode ? 'Development' : 'Production'}
-              </span>
-            </div>
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Subscription Management</h1>
+          <p className="text-gray-600 mt-1">Manage pricing plans and features</p>
         </div>
         <button
           onClick={handleCreate}
@@ -320,16 +255,16 @@ export function SubscriptionsView() {
               )}
 
               {/* Creem Product ID */}
-              {(devMode ? plan.creem_dev_product_id : plan.creem_product_id) && (
+              {plan.creem_product_id && (
                 <div className="py-2">
                   <div className="flex items-center space-x-2 mb-1">
                     <DollarSign className="w-4 h-4 text-gray-400" />
                     <span className="text-xs text-gray-500">
-                      {devMode ? 'Dev Product ID' : 'Prod Product ID'}
+                      Product ID
                     </span>
                   </div>
                   <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono text-gray-700 block break-all">
-                    {devMode ? plan.creem_dev_product_id : plan.creem_product_id}
+                    {plan.creem_product_id}
                   </code>
                 </div>
               )}

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { RedisStore } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,8 +38,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No userId in metadata' }, { status: 400 });
     }
 
-    // Get current development mode from Redis
-    const isDevMode = await RedisStore.getDevMode();
+    // Check environment configuration
+    const isDevMode = process.env.CREEM_ENVIRONMENT === 'development';
     
     try {
       // Determine plan based on product_id
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest) {
 
           if (matchingPlan) {
             planName = matchingPlan.plan_name;
-            console.log(`✅ Found matching plan: ${planName} for product_id: ${productId} (${isDevMode ? 'dev' : 'prod'} mode)`);
+            console.log(`Found matching plan: ${planName} for product_id: ${productId}`);
           } else {
             console.warn(`⚠️ No matching plan found for product_id: ${productId}, defaulting to 'basic'`);
           }

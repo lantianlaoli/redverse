@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { RedisStore } from '@/lib/redis';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,8 +41,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get current environment mode from Redis
-    const isDevMode = await RedisStore.getDevMode();
+    // Check environment configuration
+    const isDevMode = process.env.CREEM_ENVIRONMENT === 'development';
     const productId = isDevMode ? plan.creem_dev_product_id : plan.creem_product_id;
     
     if (!productId) {
@@ -54,8 +53,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Select API configuration based on environment
-    const apiUrl = isDevMode ? process.env.CREEM_DEV_API_URL : process.env.CREEM_API_URL;
-    const apiKey = isDevMode ? process.env.CREEM_DEV_API_KEY : process.env.CREEM_API_KEY;
+    const apiUrl = isDevMode ? process.env.CREEM_API_URL_DEV : process.env.CREEM_API_URL_PROD;
+    const apiKey = isDevMode ? process.env.CREEM_API_KEY_DEV : process.env.CREEM_API_KEY_PROD;
 
     if (!apiUrl || !apiKey) {
       return NextResponse.json(
