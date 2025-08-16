@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { AdminFloatingButton } from '@/components/admin-floating-button';
 import { UserInitializer } from '@/components/user-initializer';
 import { ConditionalHeader } from '@/components/conditional-header';
+import { getClerkKeys } from '@/lib/clerk-config';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -66,7 +67,7 @@ export const metadata: Metadata = {
     siteName: 'Redverse',
     images: [
       {
-        url: '/twitter.png',
+        url: 'https://mzewkidgqgxygyciyvbl.supabase.co/storage/v1/object/public/images/other/twitter.png',
         width: 1200,
         height: 630,
         alt: 'Redverse - AI App Marketing Platform',
@@ -79,7 +80,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "Redverse - AI Product Marketing on Xiaohongshu",
     description: "Help indie developers and startups promote their AI products in China. Transform your AI tools and apps into viral Xiaohongshu posts and reach millions of Chinese users.",
-    images: ['/twitter.png'],
+    images: ['https://mzewkidgqgxygyciyvbl.supabase.co/storage/v1/object/public/images/other/twitter.png'],
     creator: '@redverse',
   },
 };
@@ -93,8 +94,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { publishableKey } = getClerkKeys();
+  
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={publishableKey}>
       <html lang="en" suppressHydrationWarning>
         <head>
           <meta name="google-site-verification" content="5VLUKXmW8gT248m1IKBZFLgD4DD8pmU1TzqAAb1zASo" />
@@ -115,7 +118,7 @@ export default function RootLayout({
                     "url": "https://www.redverse.online",
                     "logo": {
                       "@type": "ImageObject",
-                      "url": "https://www.redverse.online/logo.png"
+                      "url": "https://mzewkidgqgxygyciyvbl.supabase.co/storage/v1/object/public/images/other/logo.png"
                     },
                     "description": "Bridge global AI innovation with the Chinese market through Xiaohongshu marketing",
                     "sameAs": [

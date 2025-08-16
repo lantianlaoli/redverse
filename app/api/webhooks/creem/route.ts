@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No userId in metadata' }, { status: 400 });
     }
 
-    // Check environment configuration
-    const isDevMode = process.env.CREEM_ENVIRONMENT === 'development';
+    // Environment configuration available if needed
+    // const isDevMode = process.env.CREEM_ENVIRONMENT === 'development';
     
     try {
       // Determine plan based on product_id

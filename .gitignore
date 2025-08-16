@@ -45,3 +45,6 @@ CLAUDE.md
 
 # temporary captures
 capture/
+
+# clerk configuration (can include secrets)
+/.clerk/

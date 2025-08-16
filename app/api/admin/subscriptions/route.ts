@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// GET - 获取所有订阅计划
+// GET - Get all subscription plans
 export async function GET() {
   try {
     const { data: plans, error } = await supabase
@@ -27,12 +27,12 @@ export async function GET() {
   }
 }
 
-// POST - 创建新订阅计划
+// POST - Create new subscription plan
 export async function POST(request: NextRequest) {
   try {
     const { plan_name, price_monthly, max_applications, features, enable, creem_product_id, creem_dev_product_id, is_one_time } = await request.json();
 
-    // 验证必填字段
+    // Validate required fields
     if (!plan_name || plan_name.trim() === '') {
       return NextResponse.json(
         { error: 'Plan name is required' },
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 检查计划名称是否已存在
+    // Check if plan name already exists
     const { data: existingPlan } = await supabase
       .from('subscription_plans')
       .select('id')
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 创建新计划
+    // Create new plan
     const { data: newPlan, error } = await supabase
       .from('subscription_plans')
       .insert({

@@ -1,0 +1,104 @@
+{
+  "timestamp": "2025-08-15T15:08:46.597Z",
+  "summary": {
+    "total": 21,
+    "success": 4,
+    "skipped": 0,
+    "failed": 17
+  },
+  "results": {
+    "success": [
+      {
+        "testId": "user_30BQhJpvnjGqUsQV7RXrwAFieQ3",
+        "prodId": "user_31KQkWwH3TxFlObe9qU7a06k65p",
+        "email": "aknurseidazym@gmail.com"
+      },
+      {
+        "testId": "user_30D4scrbfyxe6Dy3sOWmM3D3Tj8",
+        "prodId": "user_31KQkiYZaKnsPhPpntCKasBSEL9",
+        "email": "marvel551478@gmail.com"
+      },
+      {
+        "testId": "user_30DEB3wOkinI2QcdQJZL2c0sav1",
+        "prodId": "user_31KQkpNFL2XAOpbtLm8cSzVgacF",
+        "email": "vivekgautamofficial@gmail.com"
+      },
+      {
+        "testId": "user_31Bh6b5X7S3kzjI8uMWsY5BIoup",
+        "prodId": "user_31KQwsbWb0Po4fU6TFVIDsgsc9y",
+        "email": "corentin.probusiness@gmail.com"
+      }
+    ],
+    "skipped": [],
+    "failed": [
+      {
+        "user": "lantianlaoli@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "kamalovdamir2022@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "yfw111realone@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "berdyshev.k1004@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "abubakar16350@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "1695219012@qq.com",
+        "error": "Clerk API error 422: {\"errors\":[{\"message\":\"missing data\",\"long_message\":\"[\\\"email_address\\\"] data doesn't match user requirements set for this instance\",\"code\":\"form_data_missing\",\"meta\":{\"param_names\":[\"email_address\"]}}],\"clerk_trace_id\":\"881391b40f3dd73a829d904e04b3372a\"}"
+      },
+      {
+        "user": "siddhesh.agarwal@gmail.com",
+        "error": "Clerk API error 422: {\"errors\":[{\"message\":\"missing data\",\"long_message\":\"[\\\"email_address\\\"] data doesn't match user requirements set for this instance\",\"code\":\"form_data_missing\",\"meta\":{\"param_names\":[\"email_address\"]}}],\"clerk_trace_id\":\"8284ebbb5a21ab27cfb835955cb3f8f8\"}"
+      },
+      {
+        "user": "tanmaygupta.0215@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "ajpicard25@icloud.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "u55861634@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "adityathespiderman0403@gmail.com",
+        "error": "fetch failed"
+      },
+      {
+        "user": "ocrmddotcom@gmail.com",
+        "error": "Clerk API error 422: {\"errors\":[{\"message\":\"missing data\",\"long_message\":\"[\\\"email_address\\\"] data doesn't match user requirements set for this instance\",\"code\":\"form_data_missing\",\"meta\":{\"param_names\":[\"email_address\"]}}],\"clerk_trace_id\":\"f536c005cf229fe92862cea9c59e9b64\"}"
+      },
+      {
+        "user": "smt786.sm67@gmail.com",
+        "error": "Clerk API error 422: {\"errors\":[{\"message\":\"missing data\",\"long_message\":\"[\\\"email_address\\\"] data doesn't match user requirements set for this instance\",\"code\":\"form_data_missing\",\"meta\":{\"param_names\":[\"email_address\"]}}],\"clerk_trace_id\":\"e55db23ef87c5461db260c94b54e6231\"}"
+      },
+      {
+        "user": "adamrofayel@gmail.com",
+        "error": "Clerk API error 422: {\"errors\":[{\"message\":\"missing data\",\"long_message\":\"[\\\"email_address\\\"] data doesn't match user requirements set for this instance\",\"code\":\"form_data_missing\",\"meta\":{\"param_names\":[\"email_address\"]}}],\"clerk_trace_id\":\"d1442f112cc578e10ba5d838084c8056\"}"
+      },
+      {
+        "user": "orifito@gmail.com",
+        "error": "Clerk API error 422: {\"errors\":[{\"message\":\"missing data\",\"long_message\":\"[\\\"email_address\\\"] data doesn't match user requirements set for this instance\",\"code\":\"form_data_missing\",\"meta\":{\"param_names\":[\"email_address\"]}}],\"clerk_trace_id\":\"c55e3c1e2d6cf7706af29ba8d4760e94\"}"
+      },
+      {
+        "user": "jihalin995@bizmud.com",
+        "error": "Clerk API error 422: {\"errors\":[{\"message\":\"missing data\",\"long_message\":\"[\\\"email_address\\\"] data doesn't match user requirements set for this instance\",\"code\":\"form_data_missing\",\"meta\":{\"param_names\":[\"email_address\"]}}],\"clerk_trace_id\":\"9fdb04602ad0c6281d386565023b473d\"}"
+      },
+      {
+        "user": "seowithbala@gmail.com",
+        "error": "fetch failed"
+      }
+    ]
+  }
+}

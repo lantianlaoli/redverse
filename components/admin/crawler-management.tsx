@@ -31,7 +31,7 @@ export function CrawlerManagement() {
 
   const CRAWLER_API_BASE = process.env.NEXT_PUBLIC_CRAWLER_API_URL || 'http://localhost:3000';
 
-  // 手机号脱敏显示
+  // Mask phone number for privacy
   const maskPhoneNumber = (phone: string) => {
     if (phone.length >= 11) {
       return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
@@ -46,7 +46,7 @@ export function CrawlerManagement() {
       
       if (data.success) {
         setLoginStatus(prevStatus => {
-          // 只有在数据真的发生变化时才更新状态
+          // Only update state when data actually changes
           if (JSON.stringify(prevStatus) !== JSON.stringify(data.data)) {
             console.log('🔄 [Debug] Status data changed, updating UI:', {
               updateStatus: data.data?.updateStatus,
@@ -58,7 +58,7 @@ export function CrawlerManagement() {
           return prevStatus;
         });
         
-        // 重置SMS进程标志当登录成功时
+        // Reset SMS process flag when login succeeds
         if (data.data.loginStatus === 'logged_in') {
           smsInProgressRef.current = false;
         }
@@ -68,18 +68,18 @@ export function CrawlerManagement() {
     }
   }, [CRAWLER_API_BASE]);
 
-  // 通用状态轮询 - 页面进入后持续检查状态
+  // General status polling - continuously check status after page entry
   const startGeneralPolling = useCallback(() => {
-    if (generalPollingRef.current) return; // 防止重复启动
+    if (generalPollingRef.current) return; // Prevent duplicate startup
     
     console.log('🔄 [Debug] Starting general status polling...');
     generalPollingRef.current = setInterval(() => {
       console.log('🔄 [Debug] General polling - requesting status...');
       loadLoginStatus();
-    }, 5000); // 每5秒检查一次状态
+    }, 5000); // Check status every 5 seconds
   }, [loadLoginStatus]);
 
-  // 停止通用轮询
+  // Stop general polling
   const stopGeneralPolling = useCallback(() => {
     if (generalPollingRef.current) {
       clearInterval(generalPollingRef.current);
@@ -88,7 +88,7 @@ export function CrawlerManagement() {
     }
   }, []);
 
-  // 初始化加载状态，移除依赖避免循环
+  // Initialize loading status, remove dependencies to avoid loops
   useEffect(() => {
     const initLoad = async () => {
       try {

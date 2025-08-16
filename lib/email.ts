@@ -61,6 +61,8 @@ interface FeedbackData {
   } | null;
 }
 
+// Note: UserReRegistrationData interface removed as it's not currently used
+
 export async function sendNewApplicationNotification(data: ApplicationNotificationData): Promise<{
   success: boolean;
   error?: string;
@@ -547,7 +549,7 @@ export async function sendNoteNotification(data: NoteNotificationData): Promise<
 }> {
   try {
     if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured');
+      console.error(`[Email Service] RESEND_API_KEY not configured - cannot send email for project "${data.projectName}" to ${data.founderName || data.userEmail}`);
       return {
         success: false,
         error: 'Email service not configured'
@@ -1095,22 +1097,20 @@ View Dashboard: ${process.env.NEXT_PUBLIC_SITE_URL || 'https://redverse.online'}
 Redverse
     `;
 
-    const result = await resend.emails.send({
+    await resend.emails.send({
       from: 'Redverse <hello@redverse.online>',
       to: data.userEmail,
       subject: actionText,
       html: emailHtml,
       text: emailText,
     });
-
-    console.log('Note notification email sent successfully:', result);
     
     return {
       success: true
     };
 
   } catch (error) {
-    console.error('Failed to send note notification email:', error);
+    console.error(`[Email Service] Email sending failed - project: "${data.projectName}", founder: ${data.founderName || data.userEmail}, error:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

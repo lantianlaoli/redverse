@@ -27,7 +27,7 @@ export function Header() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
                 <Image 
-                  src="/logo.png" 
+                  src="https://mzewkidgqgxygyciyvbl.supabase.co/storage/v1/object/public/images/other/logo.png" 
                   alt="Redverse logo - AI app marketing platform for China market" 
                   width={48} 
                   height={48}

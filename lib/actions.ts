@@ -6,6 +6,7 @@ import { supabase, Application, Note, uploadImage } from '@/lib/supabase';
 import { checkApplicationLimit } from '@/lib/subscription';
 import { revalidatePath } from 'next/cache';
 import { sendNewApplicationNotification, sendBugReportEmail, sendNoteNotification, sendFeedbackEmail } from './email';
+import { getUserInfo, getUserEmail } from './user-adapter';
 
 // Network diagnostic function
 async function diagnoseNetworkConnectivity(): Promise<{
@@ -47,13 +48,12 @@ async function diagnoseNetworkConnectivity(): Promise<{
 // Helper function to send bug report email
 async function sendBugReport(error: string, userId: string | null, formData: FormData) {
   try {
-    // Get user email safely
+    // Get user email safely with migration compatibility
     let userEmail = 'Unknown';
     if (userId) {
       try {
-        const client = await clerkClient();
-        const user = await client.users.getUser(userId);
-        userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
+        const email = await getUserEmail(userId);
+        userEmail = email || 'Unknown';
       } catch (e) {
         console.error('Failed to get user email for bug report:', e);
       }
@@ -646,20 +646,17 @@ export async function createNote(appId: string, formData: FormData): Promise<{
         .single();
 
       if (app && app.user_id) {
-        // Get user email
+        // Get user email with migration compatibility
         try {
-          const client = await clerkClient();
-          const user = await client.users.getUser(app.user_id);
-          const userEmail = user.emailAddresses?.[0]?.emailAddress;
-          const founderName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || undefined;
-
-          if (userEmail) {
+          const userInfo = await getUserInfo(app.user_id);
+          
+          if (userInfo?.email) {
             await sendNoteNotification({
-              userEmail,
+              userEmail: userInfo.email,
               projectName: app.name || 'Your Project',
               action: 'created',
               noteUrl: note.url || undefined,
-              founderName
+              founderName: userInfo.fullName
             });
           }
         } catch (userError) {
@@ -769,14 +766,11 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
           .single();
 
         if (app && app.user_id) {
-          // Get user email
+          // Get user email with migration compatibility
           try {
-            const client = await clerkClient();
-            const user = await client.users.getUser(app.user_id);
-            const userEmail = user.emailAddresses?.[0]?.emailAddress;
-            const founderName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || undefined;
+            const userInfo = await getUserInfo(app.user_id);
 
-            if (userEmail) {
+            if (userInfo?.email) {
               const changes = {
                 likes: {
                   old: oldNote.likes_count || 0,
@@ -810,11 +804,11 @@ export async function updateNote(noteId: string, formData: FormData): Promise<{
               
               if (hasChanges) {
                 await sendNoteNotification({
-                  userEmail,
+                  userEmail: userInfo.email,
                   projectName: app.name || 'Your Project',
                   action: 'updated',
                   noteUrl: url || undefined,
-                  founderName,
+                  founderName: userInfo.fullName,
                   changes
                 });
               }
@@ -1159,37 +1153,39 @@ export async function submitFeedback(feedbackText: string, applicationData?: {
       submissionKey: shortKey
     });
 
-    // Get user information
+    // Get user information with migration compatibility
     console.log('Debug: Getting user information for feedback submission', { userId });
     
     let userEmail = 'Unknown';
     let userName = 'Unknown User';
     
     try {
-      const client = await clerkClient();
-      console.log('Debug: Clerk client initialized successfully');
-      
-      const user = await client.users.getUser(userId);
-      console.log('Debug: User retrieved from Clerk', { 
-        userId: user.id,
-        hasEmailAddresses: !!user.emailAddresses?.length,
-        hasFirstName: !!user.firstName,
-        hasLastName: !!user.lastName
+      const userInfo = await getUserInfo(userId);
+      console.log('Debug: User info retrieved', { 
+        userId: userInfo?.id,
+        hasEmail: !!userInfo?.email,
+        hasFullName: !!userInfo?.fullName
       });
       
-      userEmail = user.emailAddresses?.[0]?.emailAddress || 'Unknown';
-      userName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : userEmail;
+      if (userInfo?.email) {
+        userEmail = userInfo.email;
+        userName = userInfo.fullName || userInfo.email;
+      } else {
+        console.log('Debug: No user info found, using fallback values');
+        userEmail = 'user-not-found@unknown.com';
+        userName = `User ${userId.substring(0, 8)}`;
+      }
       
       console.log('Debug: User info extracted', { userEmail: userEmail !== 'Unknown' ? 'extracted' : 'fallback', userName });
-    } catch (clerkError) {
-      console.error('Debug: Failed to get user from Clerk', {
-        error: clerkError,
-        errorMessage: clerkError instanceof Error ? clerkError.message : 'Unknown error',
+    } catch (userError) {
+      console.error('Debug: Failed to get user info', {
+        error: userError,
+        errorMessage: userError instanceof Error ? userError.message : 'Unknown error',
         userId
       });
       
       // Continue with fallback values
-      userEmail = 'clerk-error@unknown.com';
+      userEmail = 'user-error@unknown.com';
       userName = `User ${userId.substring(0, 8)}`;
     }
 

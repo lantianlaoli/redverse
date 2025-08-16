@@ -37,7 +37,7 @@ export function NoteModal({ isOpen, onClose, onSuccess, appId, note, mode }: Not
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // 当模态框打开时，根据模式设置表单数据
+  // Set form data based on mode when modal opens
   useEffect(() => {
     if (isOpen) {
       if (mode === 'create') {

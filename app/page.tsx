@@ -85,7 +85,7 @@ export default function Home() {
               {/* Profile Avatar and Status */}
               <div className="flex flex-col lg:flex-row lg:items-center items-center lg:justify-start justify-center mb-6 animate-fadeIn">
                 <Image
-                  src="/me.jpg"
+                  src="https://mzewkidgqgxygyciyvbl.supabase.co/storage/v1/object/public/images/other/founder_avatar.jpg"
                   alt="Redverse founder profile picture - AI app marketing expert"
                   width={60}
                   height={60}

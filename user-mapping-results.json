@@ -1,0 +1,143 @@
+{
+  "timestamp": "2025-08-15T15:14:55.083Z",
+  "results": {
+    "success": [
+      {
+        "userId": "user_2zlQmgVpapAPpAm5CggyHwQicfM",
+        "email": "lantianlaoli@gmail.com",
+        "firstName": "laoli",
+        "lastName": "lantian"
+      },
+      {
+        "userId": "user_300bUb8skmgGrPlHpCS7kLaetFC",
+        "email": "kamalovdamir2022@gmail.com",
+        "firstName": "Damir",
+        "lastName": "Kamalov"
+      },
+      {
+        "userId": "user_30BHx2Zk4VKUxVLPvoZ9K1Ipyhl",
+        "email": "yfw111realone@gmail.com",
+        "firstName": "Tanmay",
+        "lastName": ""
+      },
+      {
+        "userId": "user_30BQhJpvnjGqUsQV7RXrwAFieQ3",
+        "email": "aknurseidazym@gmail.com",
+        "firstName": "Aknur",
+        "lastName": "Seidazym"
+      },
+      {
+        "userId": "user_30D4scrbfyxe6Dy3sOWmM3D3Tj8",
+        "email": "marvel551478@gmail.com",
+        "firstName": "Miras",
+        "lastName": "Beketbai"
+      },
+      {
+        "userId": "user_30DEB3wOkinI2QcdQJZL2c0sav1",
+        "email": "vivekgautamofficial@gmail.com",
+        "firstName": "vivek",
+        "lastName": "gautam"
+      },
+      {
+        "userId": "user_30DLlalzOlyiO5Lj6qwBLEJzBbE",
+        "email": "berdyshev.k1004@gmail.com",
+        "firstName": "Kerey",
+        "lastName": "Berdyshev"
+      },
+      {
+        "userId": "user_30EFHX6cOhiHJtpZ5glsgp6wDWz",
+        "email": "abubakar16350@gmail.com",
+        "firstName": "Abu",
+        "lastName": "bakar"
+      },
+      {
+        "userId": "user_30Ol8tWFv3WhTZw3zVVGDEuPDsD",
+        "email": "1695219012@qq.com",
+        "firstName": "",
+        "lastName": ""
+      },
+      {
+        "userId": "user_30OxWIfyju4jWnm3J4qXjIA27Qs",
+        "email": "siddhesh.agarwal@gmail.com",
+        "firstName": "Siddhesh",
+        "lastName": "Agarwal"
+      },
+      {
+        "userId": "user_30V0H3XcDbDxXsEMU2WtrnPBXWJ",
+        "email": "tanmaygupta.0215@gmail.com",
+        "firstName": "Tanmay",
+        "lastName": "Gupta"
+      },
+      {
+        "userId": "user_30WD7zQVS55fMf2hwr5LfVUSeny",
+        "email": "ajpicard25@icloud.com",
+        "firstName": "",
+        "lastName": ""
+      },
+      {
+        "userId": "user_30aN2DKHOtj4NtwJvicICx3F2Vh",
+        "email": "u55861634@gmail.com",
+        "firstName": "Ujjwal",
+        "lastName": ""
+      },
+      {
+        "userId": "user_30b1TNHYxHZ2K33CDMcNp0B7Xpz",
+        "email": "adityathespiderman0403@gmail.com",
+        "firstName": "Aditya",
+        "lastName": "Jaiswal"
+      },
+      {
+        "userId": "user_30bcHhwBW5FLUnNMGBDJqm29Vn3",
+        "email": "ocrmddotcom@gmail.com",
+        "firstName": "ocrmd",
+        "lastName": ""
+      },
+      {
+        "userId": "user_30iPX8hJQZLx4JsIFr3zw3dRiha",
+        "email": "smt786.sm67@gmail.com",
+        "firstName": "Thoufic",
+        "lastName": ""
+      },
+      {
+        "userId": "user_30l90ltkDcBoo15ZIXyajS7G8ZB",
+        "email": "adamrofayel@gmail.com",
+        "firstName": "Adam",
+        "lastName": "Rofayel"
+      },
+      {
+        "userId": "user_30oOxcjmBxy0Tv6VEyzyFk9VqU0",
+        "email": "orifito@gmail.com",
+        "firstName": "Oriol",
+        "lastName": ""
+      },
+      {
+        "userId": "user_313FQpHoR6RPqFooBBktRQIO7oo",
+        "email": "jihalin995@bizmud.com",
+        "firstName": "",
+        "lastName": ""
+      },
+      {
+        "userId": "user_3192DKiuTk0pPNF6sT3J5Forc6y",
+        "email": "seowithbala@gmail.com",
+        "firstName": "Balamurugan",
+        "lastName": "K"
+      },
+      {
+        "userId": "user_31Bh6b5X7S3kzjI8uMWsY5BIoup",
+        "email": "corentin.probusiness@gmail.com",
+        "firstName": "Corentin",
+        "lastName": ""
+      }
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "migrationInfo": {
+    "timestamp": "2025-08-15T15:14:54.000Z",
+    "totalUsers": 21,
+    "successCount": 21,
+    "failedCount": 0,
+    "skippedCount": 0,
+    "expirationDays": 30
+  }
+}

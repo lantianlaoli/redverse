@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// PUT - 更新订阅计划
+// PUT - Update subscription plan
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -10,7 +10,7 @@ export async function PUT(
     const { plan_name, price_monthly, max_applications, features, enable, creem_product_id, creem_dev_product_id, is_one_time } = await request.json();
     const { id: planId } = await params;
 
-    // 验证必填字段
+    // Validate required fields
     if (!plan_name || plan_name.trim() === '') {
       return NextResponse.json(
         { error: 'Plan name is required' },
@@ -18,7 +18,7 @@ export async function PUT(
       );
     }
 
-    // 检查计划是否存在
+    // Check if plan exists
     const { data: existingPlan, error: fetchError } = await supabase
       .from('subscription_plans')
       .select('*')
@@ -32,7 +32,7 @@ export async function PUT(
       );
     }
 
-    // 如果计划名称变更，检查新名称是否已存在
+    // If plan name changed, check if new name already exists
     if (plan_name.trim() !== existingPlan.plan_name) {
       const { data: duplicatePlan } = await supabase
         .from('subscription_plans')
@@ -49,7 +49,7 @@ export async function PUT(
       }
     }
 
-    // 更新计划
+    // Update plan
     const { data: updatedPlan, error: updateError } = await supabase
       .from('subscription_plans')
       .update({
@@ -84,7 +84,7 @@ export async function PUT(
   }
 }
 
-// DELETE - 删除订阅计划
+// DELETE - Delete subscription plan
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -92,7 +92,7 @@ export async function DELETE(
   try {
     const { id: planId } = await params;
 
-    // 先获取要删除的计划信息
+    // First get plan info to be deleted
     const { data: planToDelete, error: fetchError } = await supabase
       .from('subscription_plans')
       .select('plan_name')
@@ -106,7 +106,7 @@ export async function DELETE(
       );
     }
 
-    // 检查是否有用户正在使用此计划
+    // Check if any users are using this plan
     const { data: activeSubscriptions, error: checkError } = await supabase
       .from('user_subscriptions')
       .select('id')
@@ -128,7 +128,7 @@ export async function DELETE(
       );
     }
 
-    // 删除计划
+    // Delete plan
     const { error: deleteError } = await supabase
       .from('subscription_plans')
       .delete()

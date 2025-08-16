@@ -92,7 +92,7 @@ export function TrustedBy() {
                       onError={(e) => {
                         // Fallback to default avatar if image fails to load
                         const target = e.target as HTMLImageElement;
-                        target.src = '/me.jpg';
+                        target.src = 'https://mzewkidgqgxygyciyvbl.supabase.co/storage/v1/object/public/images/other/founder_avatar.jpg';
                       }}
                     />
                   </div>
@@ -121,7 +121,7 @@ export function TrustedBy() {
                   >
                     <div className="w-12 h-12 rounded-full border-3 border-white shadow-lg hover:shadow-xl overflow-hidden bg-gray-100 transition-shadow duration-300">
                       <Image
-                        src="/me.jpg"
+                        src="https://mzewkidgqgxygyciyvbl.supabase.co/storage/v1/object/public/images/other/founder_avatar.jpg"
                         alt={`Trusted founder ${index + 1}`}
                         width={48}
                         height={48}

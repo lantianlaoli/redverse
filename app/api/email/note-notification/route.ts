@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendNoteNotification } from '../../../../lib/email';
+import { getUserEmail, getUserName } from '../../../../lib/user-adapter';
 
 interface NoteNotificationRequest {
-  userEmail: string;
+  userId: string;
   projectName: string;
   action: 'created' | 'updated' | 'report';
   noteUrl?: string;
-  founderName?: string;
   changes?: {
     likes: { old: number; new: number; diff: number };
     collects: { old: number; new: number; diff: number };
@@ -29,23 +29,39 @@ export async function POST(request: NextRequest) {
     const body: NoteNotificationRequest = await request.json();
     
     // Validate required fields
-    if (!body.userEmail || !body.projectName || !body.action) {
+    if (!body.userId || !body.projectName || !body.action) {
+      console.error(`[Email API] Missing required fields: userId=${!!body.userId}, projectName=${!!body.projectName}, action=${!!body.action}`);
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Missing required fields: userEmail, projectName, action' 
+          error: 'Missing required fields: userId, projectName, action' 
         },
         { status: 400 }
+      );
+    }
+    
+    // Get user email and name using user adapter
+    const userEmail = await getUserEmail(body.userId);
+    const founderName = await getUserName(body.userId);
+
+    if (!userEmail) {
+      console.error(`[Email API] User email not found - userID: ${body.userId}, project: "${body.projectName}"`);
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'User email not found for the provided user ID' 
+        },
+        { status: 404 }
       );
     }
 
     // Send notification using existing email service
     const result = await sendNoteNotification({
-      userEmail: body.userEmail,
+      userEmail: userEmail,
       projectName: body.projectName,
       action: body.action,
       noteUrl: body.noteUrl,
-      founderName: body.founderName,
+      founderName: founderName || undefined,
       changes: body.changes,
       completeData: body.completeData,
       dataDate: body.dataDate,
@@ -54,6 +70,7 @@ export async function POST(request: NextRequest) {
     if (result.success) {
       return NextResponse.json({ success: true });
     } else {
+      console.error(`[Email API] Email sending failed - project: "${body.projectName}", founder: ${founderName || userEmail}, error: ${result.error}`);
       return NextResponse.json(
         { 
           success: false, 
@@ -64,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error('Error sending note notification:', error);
+    console.error(`[Email API] Email sending exception:`, error);
     return NextResponse.json(
       { 
         success: false, 
