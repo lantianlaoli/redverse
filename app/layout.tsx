@@ -5,7 +5,6 @@ import { Analytics } from "@vercel/analytics/next";
 import { AdminFloatingButton } from '@/components/admin-floating-button';
 import { UserInitializer } from '@/components/user-initializer';
 import { ConditionalHeader } from '@/components/conditional-header';
-import { getClerkKeys } from '@/lib/clerk-config';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -94,10 +93,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { publishableKey } = getClerkKeys();
-  
   return (
-    <ClerkProvider publishableKey={publishableKey}>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}>
       <html lang="en" suppressHydrationWarning>
         <head>
           <meta name="google-site-verification" content="5VLUKXmW8gT248m1IKBZFLgD4DD8pmU1TzqAAb1zASo" />

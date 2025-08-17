@@ -64,9 +64,23 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     }
   };
 
-  const urlIsValid = isValidUrl(websiteUrl) && !isVercelDomain(websiteUrl);
+  // App store domain validation function
+  const isAppStoreDomain = (url: string): boolean => {
+    if (!url.trim()) return false;
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+      return hostname.includes('play.google.com') || 
+             hostname.includes('apps.apple.com');
+    } catch {
+      return false;
+    }
+  };
+
+  const urlIsValid = isValidUrl(websiteUrl) && !isVercelDomain(websiteUrl) && !isAppStoreDomain(websiteUrl);
   const showValidation = websiteUrl.length > 0;
   const isVercelUrl = isVercelDomain(websiteUrl);
+  const isAppStoreUrl = isAppStoreDomain(websiteUrl);
 
   // Fetch user subscription info when user is available
   useEffect(() => {
@@ -613,7 +627,12 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
                 Vercel domains are not allowed. Please use your custom domain.
               </p>
             )}
-            {!isValidUrl(websiteUrl) && !isVercelUrl && (
+            {isAppStoreUrl && (
+              <p className="text-sm text-red-600 text-center">
+                App store links are not allowed. Please use your product&apos;s landing page.
+              </p>
+            )}
+            {!isValidUrl(websiteUrl) && !isVercelUrl && !isAppStoreUrl && (
               <p className="text-sm text-red-600 text-center">
                 Please enter a valid URL (e.g., https://your-app.com)
               </p>
@@ -621,8 +640,8 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
           </>
         )}
 
-        {/* Submission Restrictions - Only show when Vercel domain is detected */}
-        {isVercelUrl && showValidation && submissionStatus === 'idle' && (
+        {/* Submission Restrictions - Show when invalid domain is detected */}
+        {(isVercelUrl || isAppStoreUrl) && showValidation && submissionStatus === 'idle' && (
           <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="flex items-start space-x-2">
               <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -638,6 +657,10 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className="text-amber-600 mt-0.5">•</span>
+                    <span>Cannot use app store links (Google Play, Apple App Store)</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
                     <span>Cannot be games or entertainment projects</span>
                   </li>
                   <li className="flex items-start space-x-2">
@@ -650,7 +673,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
                   </li>
                   <li className="flex items-start space-x-2">
                     <span className="text-amber-600 mt-0.5">•</span>
-                    <span>Must be landing pages or app store links</span>
+                    <span>Must be product landing pages with custom domains</span>
                   </li>
                 </ul>
               </div>

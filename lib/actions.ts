@@ -141,6 +141,24 @@ export async function submitApplication(formData: FormData) {
       };
     }
 
+    // Check for app store domains
+    try {
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
+      if (hostname.includes('play.google.com') || 
+          hostname.includes('apps.apple.com')) {
+        return {
+          success: false,
+          error: 'App store links are not allowed. Please use your product\'s landing page.'
+        };
+      }
+    } catch {
+      return {
+        success: false,
+        error: 'Invalid URL format'
+      };
+    }
+
     // Check subscription limits
     console.log('Debug: Checking subscription limits for user', { userId });
     

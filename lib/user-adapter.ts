@@ -41,7 +41,10 @@ export async function getUserInfo(userId: string): Promise<UserInfo | null> {
   try {
     console.log(`[UserAdapter] Getting user info for ID: ${userId}`);
 
-    // First, try to get user from production Clerk environment
+    // First, check Redis for test environment user mapping
+    const testUserEmail = await redis.get(`test_user_email:${userId}`);
+    
+    // Try to get user from production Clerk environment
     try {
       const client = await clerkClient();
       const user = await client.users.getUser(userId);
@@ -49,7 +52,6 @@ export async function getUserInfo(userId: string): Promise<UserInfo | null> {
       console.log(`[UserAdapter] Found user in production environment: ${userId}`);
       
       // Check if this user was previously in test environment (old user who re-registered)
-      const testUserEmail = await redis.get(`test_user_email:${userId}`);
       if (testUserEmail && testUserEmail === user.emailAddresses?.[0]?.emailAddress) {
         console.log(`[UserAdapter] User re-registered with same email: ${testUserEmail}`);
         // Mark this as a re-registered user (could be useful for analytics)
@@ -67,9 +69,7 @@ export async function getUserInfo(userId: string): Promise<UserInfo | null> {
     } catch {
       console.log(`[UserAdapter] User not found in production, checking Redis mapping: ${userId}`);
       
-      // If user not found in production, try Redis mapping for test environment users
-      const testUserEmail = await redis.get(`test_user_email:${userId}`);
-      
+      // If user not found in production, use Redis mapping for test environment users
       if (testUserEmail) {
         console.log(`[UserAdapter] Found email mapping in Redis: ${userId} -> ${testUserEmail}`);
         
