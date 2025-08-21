@@ -25,6 +25,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [hasUnloadListenerAdded, setHasUnloadListenerAdded] = useState<boolean>(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [userSubscriptionInfo, setUserSubscriptionInfo] = useState<{
     canSubmit: boolean;
     remainingCount: number;
@@ -100,7 +101,18 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
     }
   }, [user?.id]);
 
-  // Generate dynamic button text with emotional and encouraging language
+  // Button text rotation for encouraging engagement
+  useEffect(() => {
+    if (submissionStatus === 'idle' && !userSubscriptionInfo.isLoading) {
+      const interval = setInterval(() => {
+        setCurrentTextIndex(prev => (prev + 1) % 2);
+      }, 3000); // Change text every 3 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [submissionStatus, userSubscriptionInfo.isLoading]);
+
+  // Generate dynamic button text with two core free benefits
   const getButtonText = () => {
     if (userSubscriptionInfo.isLoading) {
       return "Preparing Launch...";
@@ -115,25 +127,12 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
       }
     }
     
-    // User can still submit
-    if (userSubscriptionInfo.remainingCount === 1) {
-      // Last submission for limited users
-      return "Final Launch Push";
-    } else if (userSubscriptionInfo.remainingCount <= 2 && userSubscriptionInfo.remainingCount > 0) {
-      // Few submissions left
-      return "One More Boost";
-    } else {
-      // Normal state - use encouraging language
-      const encouragingTexts = [
-        "Boost Your Launch",
-        "Ignite Your Vision", 
-        "Amplify Your Impact",
-        "Accelerate Your Dream"
-      ];
-      // Use a simple hash of user info to consistently show same text for same user
-      const textIndex = Math.abs((userSubscriptionInfo.planName + userSubscriptionInfo.remainingCount).length) % encouragingTexts.length;
-      return encouragingTexts[textIndex];
-    }
+    // All users see the same two core benefits rotating
+    const coreTexts = [
+      "Get Free Feedback",
+      "Get Marketing Note"
+    ];
+    return coreTexts[currentTextIndex];
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -611,9 +610,17 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
               <button
                 type="submit"
                 disabled={isPending || !urlIsValid || userSubscriptionInfo.isLoading}
-                className="bg-black text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ml-2"
+                className="relative bg-black text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ml-2 overflow-hidden"
               >
-                {getButtonText()}
+                <span 
+                  key={currentTextIndex}
+                  className="inline-block"
+                  style={{
+                    animation: 'textSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                  }}
+                >
+                  {getButtonText()}
+                </span>
               </button>
             </div>
           )}
@@ -680,6 +687,7 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
             </div>
           </div>
         )}
+
       </form>
       
       {/* CSS Animation Styles */}
@@ -718,6 +726,21 @@ export function QuickSubmit({ onSuccess }: QuickSubmitProps) {
           40% {
             transform: scale(1.2);
             opacity: 1;
+          }
+        }
+
+        @keyframes textSlideIn {
+          0% {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          50% {
+            opacity: 0.6;
+            transform: translateY(-2px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
 

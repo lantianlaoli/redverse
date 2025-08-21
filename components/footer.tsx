@@ -8,7 +8,7 @@ export function Footer() {
           <div className="text-center lg:text-left">
             <h3 className="text-2xl font-bold mb-4">Redverse</h3>
             <p className="text-gray-400 text-sm mb-4">
-              {process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'contact@redverse.com'}
+              {process.env.NEXT_PUBLIC_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'admin@redverse.com'}
             </p>
           </div>
 

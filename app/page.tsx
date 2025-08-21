@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { Leaderboard } from "@/components/leaderboard";
 import { FAQ } from "@/components/faq";
 import { Footer } from "@/components/footer";
-import { Pricing } from "@/components/pricing";
 import { ScrollAnimation } from "@/components/scroll-animation";
 import { QuickSubmit } from "@/components/quick-submit";
 import { TrustedBy } from "@/components/trusted-by";
@@ -213,34 +212,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Demo Video Section */}
-        <ScrollAnimation>
-          <div id="demo" className="py-16">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                See it in action
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                Watch how we transform your product into engaging Xiaohongshu content that resonates with Chinese users
-              </p>
-            </div>
-            
-            <div className="max-w-4xl mx-auto">
-              <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://www.youtube.com/embed/faGmS7aljKg?rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&controls=1"
-                  title="Redverse Demo - Launch your product on Xiaohongshu"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  className="absolute inset-0"
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        </ScrollAnimation>
 
         {/* Competitor Comparison Section */}
         <ScrollAnimation>
@@ -427,107 +398,25 @@ export default function Home() {
           </div>
         </ScrollAnimation>
 
-        {/* How it works Section */}
-        <ScrollAnimation>
-          <div id="how-it-works" className="py-20 border-t border-gray-200">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                How it works
-              </h2>
-              <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-                Want to understand the full strategy behind Xiaohongshu marketing? 
-                <Link href="/blog" className="text-gray-900 underline hover:text-gray-700 ml-1">
-                  Read our complete guide
-                </Link>
-              </p>
-            </div>
 
-            {/* Steps with curved arrows */}
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 relative">
-                {/* Step 1 */}
-                <ScrollAnimation animation="fadeInUp" delay={100}>
-                  <div className="text-center relative">
-                    <div className="mb-8">
-                      <div className="text-6xl md:text-7xl font-light text-gray-300 mb-6">01</div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                        Submit your product
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
-                        Share your product URL with us. We&apos;ll analyze your innovation and evaluate its potential for the Chinese market and Xiaohongshu platform.
-                      </p>
-                    </div>
-                  </div>
-                </ScrollAnimation>
-
-                {/* Curved Arrow 1 */}
-                <div className="hidden md:block absolute top-16 left-1/3 transform -translate-x-1/2 z-10">
-                  <svg width="120" height="60" viewBox="0 0 120 60" className="text-gray-300">
-                    <path d="M10 30 Q60 5 110 30" stroke="currentColor" strokeWidth="2" fill="none" strokeDasharray="5,5" />
-                    <path d="M105 25 L110 30 L105 35" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                </div>
-
-                {/* Step 2 */}
-                <ScrollAnimation animation="fadeInUp" delay={200}>
-                  <div className="text-center relative">
-                    <div className="mb-8">
-                      <div className="text-6xl md:text-7xl font-light text-gray-300 mb-6">02</div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                        We craft your post
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
-                        Our expert curator personally reviews your submission, creates engaging Chinese content, and prepares your product for the local audience.
-                      </p>
-                    </div>
-                  </div>
-                </ScrollAnimation>
-
-                {/* Curved Arrow 2 */}
-                <div className="hidden md:block absolute top-16 right-1/3 transform translate-x-1/2 z-10">
-                  <svg width="120" height="60" viewBox="0 0 120 60" className="text-gray-300">
-                    <path d="M10 30 Q60 5 110 30" stroke="currentColor" strokeWidth="2" fill="none" strokeDasharray="5,5" />
-                    <path d="M105 25 L110 30 L105 35" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                </div>
-
-                {/* Step 3 */}
-                <ScrollAnimation animation="fadeInUp" delay={300}>
-                  <div className="text-center relative">
-                    <div className="mb-8">
-                      <div className="text-6xl md:text-7xl font-light text-gray-300 mb-6">03</div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                        Go viral on Xiaohongshu
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
-                        Your product goes live on Xiaohongshu with optimized content designed to reach and engage millions of Chinese users for maximum impact.
-                      </p>
-                    </div>
-                  </div>
-                </ScrollAnimation>
-              </div>
-            </div>
-          </div>
-        </ScrollAnimation>
-
-        {/* Examples Section */}
+        {/* Example Section */}
         <ScrollAnimation>
           <div id="examples" className="py-16 border-t border-gray-200">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Examples
+                Example
               </h2>
             </div>
             
             <Leaderboard limit={3} />
             
-            {/* View All Examples Link */}
+            {/* View All Example Link */}
             <div className="text-center mt-8">
               <Link
                 href="/examples"
                 className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-full text-base font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200"
               >
-                View All Examples
+                View All Example
                 <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -536,12 +425,6 @@ export default function Home() {
           </div>
         </ScrollAnimation>
 
-        {/* Pricing Section */}
-        <ScrollAnimation animation="fadeIn">
-          <div id="pricing" className="py-16 border-t border-gray-200">
-            <Pricing />
-          </div>
-        </ScrollAnimation>
 
         {/* FAQ Section */}
         <ScrollAnimation animation="fadeInUp">

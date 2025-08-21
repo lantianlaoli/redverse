@@ -3,7 +3,6 @@
 import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SmoothScrollLink } from './smooth-scroll-link';
 import { useState } from 'react';
 
 export function Header() {
@@ -44,23 +43,17 @@ export function Header() {
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-6">
-              <SmoothScrollLink 
-                href="/#demo" 
+              <Link 
+                href="/tutorial" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Demo
-              </SmoothScrollLink>
-              <SmoothScrollLink 
-                href="/#how-it-works" 
-                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
-              >
-                How it works
-              </SmoothScrollLink>
+                Tutorial
+              </Link>
               <Link 
                 href="/examples" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Examples
+                Example
               </Link>
               <Link 
                 href="/blog" 
@@ -68,18 +61,12 @@ export function Header() {
               >
                 Blog
               </Link>
-              <SmoothScrollLink 
-                href="/#pricing" 
+              <Link 
+                href="/price" 
                 className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
               >
-                Pricing
-              </SmoothScrollLink>
-              <SmoothScrollLink 
-                href="/#questions" 
-                className="nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
-              >
-                Questions
-              </SmoothScrollLink>
+                Price
+              </Link>
               {user && (
                 <Link href="/dashboard" className="dashboard-highlight-btn">
                   Dashboard
@@ -132,26 +119,19 @@ export function Header() {
           {isMenuOpen && (
             <div className="lg:hidden mt-4 pt-4 border-t border-gray-200 mobile-menu-enter">
               <div className="flex flex-col space-y-3">
-                <SmoothScrollLink 
-                  href="/#demo" 
+                <Link 
+                  href="/tutorial" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Demo
-                </SmoothScrollLink>
-                <SmoothScrollLink 
-                  href="/#how-it-works" 
-                  className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
-                  onClick={closeMenu}
-                >
-                  How it works
-                </SmoothScrollLink>
+                  Tutorial
+                </Link>
                 <Link 
                   href="/examples" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Examples
+                  Example
                 </Link>
                 <Link 
                   href="/blog" 
@@ -160,20 +140,13 @@ export function Header() {
                 >
                   Blog
                 </Link>
-                <SmoothScrollLink 
-                  href="/#pricing" 
+                <Link 
+                  href="/price" 
                   className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
                   onClick={closeMenu}
                 >
-                  Pricing
-                </SmoothScrollLink>
-                <SmoothScrollLink 
-                  href="/#questions" 
-                  className="mobile-menu-item nav-link text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer pb-1"
-                  onClick={closeMenu}
-                >
-                  Questions
-                </SmoothScrollLink>
+                  Price
+                </Link>
                 {user && (
                   <Link 
                     href="/dashboard" 

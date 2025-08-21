@@ -104,14 +104,14 @@ export default async function BlogPage() {
     <div className="min-h-screen bg-white">
       
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
         {/* Breadcrumb Navigation */}
         <div className="mb-8">
           <Breadcrumb items={[{ label: 'Blog' }]} />
         </div>
         <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            AI App Marketing Blog
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Blog
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Expert insights, success stories, and proven strategies for launching AI apps in China through Xiaohongshu.

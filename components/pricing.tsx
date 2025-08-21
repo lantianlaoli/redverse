@@ -122,11 +122,6 @@ export function Pricing() {
   };
   return (
     <div>
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-          Pricing
-        </h2>
-      </div>
 
       <div className={`grid gap-8 max-w-6xl mx-auto items-center ${
         enabledPlans.length === 1 ? 'grid-cols-1 max-w-md' :

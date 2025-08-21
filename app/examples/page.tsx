@@ -6,11 +6,11 @@ import { LeaderboardStats } from "@/components/leaderboard-stats";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Examples - AI Apps on Xiaohongshu | Redverse",
+  title: "Example - AI Apps on Xiaohongshu | Redverse",
   description: "Discover AI applications launched on Xiaohongshu through Redverse. See real engagement metrics, likes, views, and comments from various app launches.",
   keywords: ["app examples in China", "Xiaohongshu marketing examples", "launch app in Chinese market", "Chinese social media promotion", "Redverse examples", "app localization China", "market your app in China"],
   openGraph: {
-    title: "Examples - AI Apps on Xiaohongshu",
+    title: "Example - AI Apps on Xiaohongshu",
     description: "Discover AI applications launched on Xiaohongshu through Redverse. See real engagement metrics and examples.",
     url: 'https://www.redverse.online/examples',
     images: [
@@ -18,12 +18,12 @@ export const metadata: Metadata = {
         url: '/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Redverse Examples - AI Apps on Xiaohongshu',
+        alt: 'Redverse Example - AI Apps on Xiaohongshu',
       },
     ],
   },
   twitter: {
-    title: "Examples - AI Apps on Xiaohongshu",
+    title: "Example - AI Apps on Xiaohongshu",
     description: "Discover AI applications launched on Xiaohongshu through Redverse. See real engagement metrics and examples.",
   },
   alternates: {
@@ -35,13 +35,13 @@ export default function ExamplesPage() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "AI Apps Examples - Xiaohongshu Launches",
-    "description": "Examples of AI applications launched on Xiaohongshu platform, showing engagement metrics and launch results.",
+    "name": "AI Apps Example - Xiaohongshu Launches",
+    "description": "Example of AI applications launched on Xiaohongshu platform, showing engagement metrics and launch results.",
     "url": "https://www.redverse.online/examples",
     "mainEntity": {
       "@type": "ItemList",
       "name": "AI Apps on Xiaohongshu",
-      "description": "Examples of AI applications launched through Redverse on Xiaohongshu platform",
+      "description": "Example of AI applications launched through Redverse on Xiaohongshu platform",
       "numberOfItems": "50+"
     }
   };
@@ -55,15 +55,15 @@ export default function ExamplesPage() {
         }}
       />
       
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 md:pt-24">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-32 pb-16">
         {/* Header Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-16">
           <ScrollAnimation animation="fadeInUp">
             {/* Page Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              AI App Examples
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Example
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Discover AI applications launched on Xiaohongshu through Redverse. 
               See real engagement metrics, explore different approaches, and get inspired for your own launch.
             </p>
@@ -75,7 +75,7 @@ export default function ExamplesPage() {
           <LeaderboardStats />
         </ScrollAnimation>
 
-        {/* Examples */}
+        {/* Example */}
         <ScrollAnimation animation="fadeIn" delay={400}>
           <div className="mb-16">
             <Leaderboard />
