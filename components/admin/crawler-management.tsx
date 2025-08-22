@@ -17,7 +17,7 @@ interface LoginStatus {
 
 export function CrawlerManagement() {
   const [loginStatus, setLoginStatus] = useState<LoginStatus | null>(null);
-  const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE || '13800138000';
+  const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE || '13259934802';
   const [phoneNumber, setPhoneNumber] = useState(adminPhone);
   const [smsCode, setSmsCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
